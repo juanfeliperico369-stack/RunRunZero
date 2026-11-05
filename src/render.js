@@ -35,7 +35,7 @@ const RN = {
   },
   camera(g, mode, time, dt) {
     const P = g.p, c = this.cam, asp = R.w / R.h, k = clamp((1.05 - asp) / 0.55, 0, 1);
-    if (mode === 'garage') { const a = time * 0.45 + 0.6; c.ex = Math.sin(a) * 3.3; c.ez = Math.cos(a) * 3.3; c.ey = 1.45; c.cx = 0; c.cy = 0.85; c.cz = 0; c.fov = 0.82 + k * 0.25; }
+    if (mode === 'garage') { const a = time * 0.45 + 0.6, rr = 4.9 + k * 0.6; c.ex = Math.sin(a) * rr; c.ez = Math.cos(a) * rr; c.ey = 1.7; c.cx = 0; c.cy = -0.55 - k * 0.2; c.cz = 0; c.fov = 0.9 + k * 0.2; }
     else if (mode === 'menu') { c.ex = P.x * 0.6 + 1.6; c.ey = 1.85 + P.y * 0.5; c.ez = 4.4 + k * 1.6; c.cx = P.x * 0.6; c.cy = 1.0 + P.y * 0.4; c.cz = -8; c.fov = 1.0 + k * 0.15; }
     else {
       this.camY = lerp(this.camY, P.y, Math.min(1, dt * 6));
