@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0e6378"><meta name="color-scheme" content="light">
+<title>Run Scooter</title>
+<meta name="description" content="Run Scooter: corredor sin fin en 3D por la ciclovía. Scooter, bici, skate, patines y monopatín eléctrico. Monedas, regalos y las páginas perdidas de EMSAY. Funciona sin internet.">
+<meta name="application-name" content="Run Scooter">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Run Scooter"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="48x48" href="favicon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Run Scooter"><meta property="og:locale" content="es_CO">
+<meta property="og:title" content="Run Scooter · la ciclovía sin fin">
+<meta property="og:description" content="Corre sin fin por la ciclovía en scooter, bici, skate, patines o monopatín eléctrico. ¡Juega gratis y sin internet!">
+<meta property="og:url" content="%URL%">
+<meta property="og:image" content="%URL%compartir.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Run Scooter, portada estilo revista EMSAY">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="%URL%compartir.png">
+<style>
+/*FONTS*/
+/*CSS*/
+</style></head>
+<body><noscript>Run Scooter necesita JavaScript activado.</noscript>
+<canvas id="cv"></canvas>
+<div id="ui">
+  <div id="hud" hidden>
+    <div class="hl"><div id="hScore" class="hs">0</div><div class="hc"><span class="coin"></span><b id="hCoins">0</b></div><div id="hDist" class="hd">0 M</div></div>
+    <div class="hr"><button id="bPause" data-act="pause" aria-label="Pausa">❚❚</button><div id="hMult" class="hm">×1</div><div id="hPow"></div></div>
+    <div id="hBanner"></div>
+    <div id="hTut" class="tut" hidden></div>
+    <div id="hStum" class="stum" hidden>¡CUIDADO!</div>
+    <div id="hCnt" class="cnt" hidden></div>
+    <div id="hFps" class="fps" hidden></div>
+  </div>
+
+  <section id="sCover" class="scr cover on">
+    <div class="cband"><div>EMSAY</div><div>DISPONIBLE CADA DOMINGO</div></div>
+    <div class="cbody">
+      <p class="srf">Carriles, saltos, regalos, pistas<br>y la historia de la ciclovía sin fin</p>
+      <h1 class="mega t1">RUN</h1>
+      <p class="kick">¿Sabes a dónde lleva?</p>
+      <h1 class="mega t2">SCOOTER</h1>
+      <div class="cmid"></div>
+      <div class="ctag">¡Recorre la<br>ciclovía<br>sin fin!!!</div>
+      <div class="cstats" id="cStats"></div>
+      <div class="cbtns">
+        <button class="btn pri big" data-act="play">▶ Jugar</button>
+        <div class="cgrid">
+          <button class="btn" data-act="go" data-arg="sGarage">Garaje</button>
+          <button class="btn" data-act="go" data-arg="sRank">Ranking</button>
+          <button class="btn" data-act="go" data-arg="sStory">Historia<i id="dStory" class="dot" hidden></i></button>
+          <button class="btn" data-act="go" data-arg="sMis">Misiones<i id="dMis" class="dot" hidden></i></button>
+          <button class="btn w2" data-act="go" data-arg="sSet">Ajustes</button>
+        </div>
+      </div>
+    </div>
+    <div class="cfoot"><span class="mega">La revista sobre ruedas más actual</span><span class="adv">Edición<b><span id="cEd">Nº 1</span></b>sin fin</span></div>
+  </section>
+
+  <section id="sGarage" class="scr gar">
+    <div class="show"><div class="ph"><button class="back" data-act="go" data-arg="sCover">◀ Portada</button><div class="wallet" id="gWallet"></div></div><div class="vname" id="gName"></div></div>
+    <div class="page pg-mus"><div class="wrap">
+      <div class="pag">PAG 9 · Sesión final</div>
+      <h2 class="h-final">En el garaje<br>y la ruta</h2>
+      <div class="tabs" id="gTabs"><button data-act="gtab" data-arg="veh" class="on"><span>Vehículos</span></button><button data-act="gtab" data-arg="cos"><span>Estilo</span></button><button data-act="gtab" data-arg="up"><span>Mejoras</span></button></div>
+      <div id="gBody"></div>
+    </div></div>
+  </section>
+
+  <section id="sRank" class="scr"><div class="page pg-gray"><div class="wrap">
+    <div class="ph"><button class="back" data-act="go" data-arg="sCover">◀ Portada</button><span class="pag">PAG 3 · Sesión 2</span></div>
+    <div class="boxed sp" style="text-align:center;font-size:clamp(16px,5vw,24px);margin-bottom:12px">Ranking</div>
+    <div id="rCard"></div>
+    <div class="tabs" id="rTabs"><button data-act="rtab" data-arg="city" class="on"><span>La ciudad</span></button><button data-act="rtab" data-arg="me"><span>Mis marcas</span></button></div>
+    <div id="rBody"></div>
+  </div></div></section>
+
+  <section id="sStory" class="scr"><div class="page pg-red"><div class="wrap">
+    <div class="ph"><button class="back" data-act="go" data-arg="sCover">◀ Portada</button><span class="pag">PAG 5 · Sesión 3</span></div>
+    <h2 class="h-serif">Las páginas perdidas de EMSAY</h2>
+    <p class="lede" id="stLede"></p>
+    <div class="pgrid" id="stGrid"></div>
+  </div></div></section>
+
+  <section id="sMis" class="scr"><div class="page pg-mar"><div class="wrap">
+    <div class="ph"><button class="back" data-act="go" data-arg="sCover">◀ Portada</button><span class="pag">PAG 7</span></div>
+    <div class="squig"></div>
+    <h2 class="h-groovy">Misiones:<br>tipos de reto</h2>
+    <div id="mBody"></div>
+    <div class="squig"></div>
+  </div></div></section>
+
+  <section id="sSet" class="scr"><div class="page pg-yel"><div class="wrap">
+    <div class="ph"><button class="back" data-act="go" data-arg="sCover">◀ Portada</button><span class="pag">PAG 1</span></div>
+    <div class="boxed sp" style="font-size:clamp(18px,6vw,28px);line-height:1.5;margin-bottom:10px">Sesión 1:<br>Ajustes &amp; datos</div>
+    <div id="setBody"></div>
+  </div></div></section>
+
+  <div id="oPause" class="ov"><div class="panel"><div class="pband"><span>EMSAY</span><span>PAUSA</span></div><div class="pin">
+    <div class="boxed sp" style="text-align:center;font-size:22px;margin-bottom:14px">Pausa</div>
+    <div class="cbtns" style="margin:0 auto"><button class="btn pri big" data-act="resume">▶ Seguir</button>
+      <div class="cgrid"><button class="btn" data-act="restart">Reiniciar</button><button class="btn" data-act="quit">Portada</button>
+      <button class="btn gh" data-act="tsfx" id="pSfx">Sonido</button><button class="btn gh" data-act="tmus" id="pMus">Música</button></div></div>
+  </div></div></div>
+
+  <div id="oRevive" class="ov"><div class="panel"><div class="pband"><span>EMSAY</span><span>¿SEGUIR?</span></div><div class="pin" style="text-align:center">
+    <p class="over-t">¡Al suelo!</p><p id="rvWhy" style="font-family:var(--fs);font-style:italic"></p>
+    <div class="ring" id="rvRing">5</div>
+    <div class="cbtns" style="margin:0 auto"><button class="btn red big" data-act="revive" id="rvBtn">Revivir</button><button class="btn gh" data-act="norevive">No, gracias</button></div>
+  </div></div></div>
+
+  <div id="oOver" class="ov"><div class="panel"><div class="pband"><span>EMSAY</span><span id="oDate"></span></div><div class="pin">
+    <p class="over-t">Fin de la <span>edición</span></p>
+    <div id="oBadge"></div>
+    <div class="film" style="margin:10px 0" id="oStats"></div>
+    <div id="oExtra"></div>
+    <div class="cbtns" style="margin:12px auto 0"><button class="btn pri big" data-act="play">↻ Otra vez</button>
+      <div class="cgrid"><button class="btn" data-act="quit">Portada</button><button class="btn" data-act="go" data-arg="sGarage">Garaje</button></div></div>
+  </div></div></div>
+
+  <div id="oDaily" class="ov"><div class="panel"><div class="pband"><span>EMSAY</span><span>REGALO DIARIO</span></div><div class="pin" style="text-align:center">
+    <p class="kick" style="font-size:20px">Disponible cada día</p><p class="over-t" style="color:var(--navy)">¡Tu regalo!</p>
+    <div id="dlBody"></div><button class="btn pri big" data-act="daily" style="margin-top:12px;width:100%">Abrir</button>
+  </div></div></div>
+
+  <div id="oRead" class="ov" data-act="closeRead"><div class="panel rd"><div class="pband"><span>EMSAY</span><span id="rdN"></span></div><div class="pin">
+    <h3 class="h-serif" id="rdT" style="font-size:34px"></h3><div class="film" id="rdX"></div>
+    <button class="btn" data-act="closeRead" style="margin-top:12px;width:100%">Cerrar</button>
+  </div></div></div>
+
+  <div id="oConf" class="ov"><div class="panel"><div class="pband"><span>EMSAY</span><span>CONFIRMAR</span></div><div class="pin">
+    <p id="cfT" style="font-weight:700"></p><div class="row" style="justify-content:flex-end"><button class="btn gh" data-act="cfNo">Cancelar</button><button class="btn red" data-act="cfYes">Sí</button></div>
+  </div></div></div>
+
+  <div id="toasts"></div>
+</div>
+<input type="file" id="fImp" accept="application/json,.json" hidden>
+<script>
+/*JS*/
+</script>
+</body></html>

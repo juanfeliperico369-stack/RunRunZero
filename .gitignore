@@ -1,0 +1,3 @@
+node_modules/
+tools/.bundle.check.js
+*.log
