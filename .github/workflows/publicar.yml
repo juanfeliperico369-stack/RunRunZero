@@ -4,7 +4,7 @@ on:
     branches: [ccr-cbc7f0af-0306uo, main]
     paths: ['web/**', 'apk/**', '.github/workflows/publicar.yml', 'tools/verify.mjs']
   workflow_dispatch:
-concurrency: { group: publicar, cancel-in-progress: true }
+concurrency: { group: publicar, cancel-in-progress: false }
 jobs:
   apk:
     runs-on: ubuntu-latest
