@@ -62,7 +62,7 @@ const RN = {
     else if (e.k === 'stumble') { this.emit(8, P.x, 0.2, P.s, hex('#b9a88a'), 4, 0.12, 0.5, 2); this.shake = 0.35; }
     else if (e.k === 'crash') { this.emit(16, P.x, 0.8, P.s, hex('#e8e4c4'), 8, 0.15, 1, 5); this.shake = 0.9; }
     else if (e.k === 'clue') this.emit(14, P.x, 1.2, P.s + 1, hex('#2dffb3'), 5, 0.1, 0.9, 4, 0.2);
-    else if (e.k === 'power' || e.k === 'gift') this.emit(12, P.x, 1.2, P.s + 1, hex(e.k === 'gift' ? '#ff2fb3' : '#39c8ff'), 5, 0.1, 0.7, 4, 0.3);
+    else if (e.k === 'power' || e.k === 'gift') this.emit(10, P.x, 1.4, P.s + 0.5, hex(e.k === 'gift' ? '#ff2fb3' : '#39c8ff'), 3, 0.06, 0.45, 3.5, 0.4);
     else if (e.k === 'land' && e.a > 0.35) this.emit(5, P.x, 0.1, P.s, hex('#cfc4a8'), 3, 0.1, 0.4, 1.5);
     else if (e.k === 'shield') { this.emit(14, P.x, 1, P.s, hex('#39c8ff'), 6, 0.12, 0.8, 4); this.shake = 0.5; }
   },

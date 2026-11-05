@@ -45,7 +45,7 @@ button:focus-visible{outline:3px solid var(--amb);outline-offset:2px}
 .cover .t2{font-size:clamp(72px,23vw,150px);color:var(--navy);margin-top:-.04em;text-shadow:0 3px 0 rgba(243,239,224,.6)}
 .cover .kick{font-size:clamp(16px,4.6vw,24px);margin:-2px 0 2px}
 .cmid{flex:1;min-height:60px}
-.ctag{align-self:flex-start;font-family:var(--fd);text-transform:uppercase;font-size:clamp(30px,9vw,54px);line-height:.86;color:var(--teal);text-align:left;text-shadow:0 2px 0 rgba(243,239,224,.9),0 0 12px rgba(243,239,224,.9)}
+.ctag{align-self:flex-start;font-family:var(--fd);text-transform:uppercase;font-size:clamp(28px,8.4vw,50px);line-height:.88;color:var(--teal);text-align:left;background:rgba(243,239,224,.9);padding:6px 10px 4px;border-left:6px solid var(--teal)}
 .cstats{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:8px 0 2px}
 .chip{font-family:var(--fm);font-size:12px;padding:4px 8px;border:2px solid var(--ink);background:var(--paper);color:var(--ink);white-space:nowrap}
 .chip b{font-family:var(--fb);font-weight:800}
