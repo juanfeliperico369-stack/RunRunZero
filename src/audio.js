@@ -45,6 +45,7 @@ const AU = {
       case 'click': this.tone(1200, t, 0.03, 'square', 0.05); break;
       case 'revive': this.tone(300, t, 0.4, 'triangle', 0.12, 1200); break;
       case 'shield': this.noise(t, 0.3, 0.2, 3000); this.tone(1500, t, 0.3, 'sine', 0.1, 700); break;
+      case 'pump': this.tone(260 + 520 * (this.pumpLv || 0), t, 0.05, 'square', 0.045, 380 + 620 * (this.pumpLv || 0)); break;
       case 'tut': this.tone(880, t, 0.12, 'sine', 0.1); break;
       case 'rank': [523, 659, 784, 1047, 1319].forEach((f, i) => this.tone(f, t + i * 0.09, 0.22, 'square', 0.07)); break;
       case 'buy': this.tone(784, t, 0.08, 'square', 0.07); this.tone(1175, t + 0.07, 0.16, 'square', 0.07); break;

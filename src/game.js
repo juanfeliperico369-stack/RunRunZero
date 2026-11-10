@@ -36,6 +36,11 @@ const TUT = [
 ];
 
 const vEst = (g, s) => (14 + 21 * (1 - Math.exp(-s / 2600))) * g.veh.spd;
+/* Relieve: subidas y bajadas (el mismo perfil usa el shader) */
+const HILL = s => { const e = clamp((s - 150) / 250, 0, 1); return e * (6.0 * Math.sin(s * 0.0105) + 2.2 * Math.sin(s * 0.027 + 1.7)); };
+const HILLD = s => HILL(s + 0.5) - HILL(s - 0.5);
+const hillK = sl => clamp(1 - 1.3 * sl, 0.84, 1.18);
+const FLOW = [0.6, 0.6, 0.2, 0.4, 0.3, 0.6, 0.35];
 const diffAt = s => clamp((s - 150) / 6500, 0, 1);
 
 function newGame(o) {
@@ -43,7 +48,7 @@ function newGame(o) {
   const g = {
     seed: o.seed >>> 0, rng: rngOf(o.seed), srng: rngOf((o.seed >>> 0) * 7 + 3), veh: v, demo: !!o.demo, ai: !!o.ai, t: 0,
     p: { s: 0, x: 0, lane: 1, from: 1, y: 0, vy: 0, gv: 0, v: 0, air: false, airT: 0, crouch: 0, fastFall: 0, jumps: 0, stumble: 0, slow: 1, inv: 0, alive: true, deadT: 0,
-      magnet: 0, turbo: 0, x2: 0, shield: 0, trickHit: 0, phase: 0, onTruck: null, lastLand: 0 },
+      magnet: 0, turbo: 0, x2: 0, shield: 0, boost: 0, sl: 0, trickHit: 0, phase: 0, onTruck: null, lastLand: 0 },
     obs: [], coins: [], items: [], scen: [], ev: [], lf: [0, 0, 0],
     genS: 42, scenS: -30, nextGate: 1000, edition: 0, score: 0, coinsRun: 0, starsRun: 0, clues: 0, gifts: 0, jumps: 0, ducks: 0, tricks: 0, powers: 0, trucks: 0,
     cleanS: 0, cleanBest: 0, revives: 0, cause: '', mult: o.mult || 1, bad: 0, rows: 0,
@@ -79,7 +84,7 @@ function coinArc(g, lane, sc, v, y0 = 0) {
 }
 
 function genRow(g) {
-  const r = g.rng, s = g.genS, d = diffAt(s), v = vEst(g, s);
+  const r = g.rng, s = g.genS, d = diffAt(s), v = vEst(g, s) * hillK(HILLD(s));
   const tg = lerp(1.22, 0.74, d), gap = Math.max(11, v * tg) * (1 + r() * 0.35);
   const st = ['free', 'free', 'free'];
   let len = 0, coinLane = -1, kind;
@@ -172,6 +177,7 @@ function genScen(g) {
     const f = pickW(r, th.far);
     if (r() < 0.75) g.scen.push({ k: f, s: s + r() * 4, x: side * (f === 'hill' ? 34 + r() * 20 : 12 + r() * 10), side, ry: f === 'bld' ? 0 : r() * 6.28, sc: f === 'bld' ? 1 : 0.9 + r() * 0.8, v: Math.floor(r() * 3), sh: 0.8 + r() * 0.3, z: zi, h: 0.7 + r() * 0.9, pi: r() < 0.5 ? 2 : 3 });
   }
+  if (r() < FLOW[zi]) { const sd = r() < 0.5 ? -1 : 1; g.scen.push({ k: 'flowers', s: s + r() * 4, x: sd * (5.9 + r() * 2.6), side: sd, ry: r() * 6.28, sc: 0.8 + r() * 0.5, v: 0, sh: 0.9 + r() * 0.2, z: zi }); }
   g.scenS += 6 + r() * 5;
 }
 
@@ -203,6 +209,8 @@ function input(g, k) {
     const jv = Math.sqrt(2 * GRAV * 1.55 * V.jmp);
     if (!P.air) { P.crouch = 0; P.air = true; P.airT = 0; P.vy = jv + Math.max(0, P.gv) * 0.5; P.jumps = 1; P.trickHit = 0; g.jumps++; ev(g, 'jump'); }
     else if (V.id === 'quad' && P.jumps < 2) { P.vy = jv * 0.85; P.jumps = 2; g.jumps++; ev(g, 'jump2'); }
+  } else if (k === 'B') {
+    P.boost = Math.min(1, P.boost + 0.13); g.boosts = (g.boosts || 0) + 1; ev(g, 'boost', P.boost);
   } else if (k === 'D') {
     if (P.air) { P.vy = Math.min(P.vy, -26); P.fastFall = 1; } else P.crouch = 0.62;
     ev(g, 'duck');
@@ -249,7 +257,8 @@ function step(g, dt, inp) {
   for (const k of ['magnet', 'turbo', 'x2']) if (P[k] > 0) { P[k] -= dt; if (P[k] <= 0) { P[k] = 0; if (k === 'turbo') P.inv = Math.max(P.inv, 1.5); ev(g, 'pEnd', k); } }
   // velocidad: v = (14 + 21·(1 − e^(−s/2600)))·vehículo  → de 14 a 35 m/s
   const base = vEst(g, P.s); P.slow = Math.min(1, P.slow + dt * 0.35);
-  const tv = base * (P.turbo > 0 ? 1.4 : 1) * P.slow;
+  P.boost = Math.max(0, P.boost - dt * 0.24); P.sl = HILLD(P.s);
+  const tv = (base + Math.min(0.3 * base, 6.5) * P.boost) * (P.turbo > 0 ? 1.4 : 1) * P.slow * hillK(P.sl);
   P.v += (tv - P.v) * Math.min(1, dt * (P.v < tv ? 2.2 : 6));
   const s0 = P.s; P.s += P.v * dt; P.phase += P.v * dt;
   // lateral
@@ -301,7 +310,7 @@ function step(g, dt, inp) {
     if (!P.alive) return;
   }
   // monedas
-  const mul = g.mult * (P.x2 > 0 ? 2 : 1) * (V.id === 'bike' ? 1.15 : 1), magR = P.magnet > 0 ? 16 : 0;
+  const mul = g.mult * (P.x2 > 0 ? 2 : 1) * (V.id === 'bike' ? 1.15 : 1) * (1 + 0.5 * P.boost), magR = P.magnet > 0 ? 16 : 0;
   for (const c of g.coins) {
     if (!c.alive) continue;
     if (magR && !c.mag && c.s > P.s - 2 && c.s < P.s + magR) c.mag = 1;
@@ -386,6 +395,7 @@ function aiThink(g, skill = 1) {
   if (f) {
     const lead = P.v * (0.2 + (1 - skill) * 0.08) + 0.35;
     if (f.need === 'jump' && !P.air && f.front <= lead && f.front > -0.3) return 'U';
+    if (f.need === 'jump' && P.air && P.vy < 2 && !P.fastFall && f.front > 0.5) { const tl = (P.vy + Math.sqrt(P.vy * P.vy + 2 * GRAV * Math.max(0, P.y - P.gy))) / GRAV; if (f.front / P.v < tl + 0.16) return 'D'; }
     if (f.need === 'duck' && f.front <= P.v * 0.3 + 0.4 && P.crouch < 0.18 && f.front > -0.5) return 'D';
   }
   return null;
@@ -397,6 +407,7 @@ function simulate(o) {
   const maxT = o.maxT || 240; let n = 0, inp = null, errs = [];
   while (g.p.alive && g.t < maxT) {
     if (n % 3 === 0) inp = aiThink(g, o.skill == null ? 1 : o.skill); else inp = null;
+    if (!inp && o.boost && n % 30 === 7) inp = 'B';
     step(g, DT, inp); n++;
     g.ev.length = 0;
     const P = g.p;

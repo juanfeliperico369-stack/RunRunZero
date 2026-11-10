@@ -8,7 +8,7 @@ const N = +(process.argv[2] || 100), maxT = +(process.argv[3] || 240);
 const vehs = ctx.__sim.VEH.map(v => v.id); const res = []; let errs = 0, bad = 0; const causes = {};
 const t0 = Date.now();
 for (let i = 0; i < N; i++) {
-  let r; try { r = ctx.__sim.simulate({ seed: 1000 + i * 7919, veh: vehs[i % vehs.length], maxT, skill: 1 }); }
+  let r; try { r = ctx.__sim.simulate({ seed: 1000 + i * 7919, veh: vehs[i % vehs.length], maxT, skill: 1, boost: i % 2 === 0 }); }
   catch (e) { console.log('EXCEPCIÓN seed', i, e.stack); errs++; continue; }
   res.push(r); errs += r.errs.length; bad += r.bad; causes[r.cause] = (causes[r.cause] || 0) + 1;
   if (r.errs.length) console.log('ERR', r.seed, r.errs);

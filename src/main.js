@@ -24,6 +24,7 @@ function startRun(ch) {
   G = newGame({ seed: ch ? daySeed() : (Math.random() * 4294967295) >>> 0, veh: S.veh, up: S.up, mult: 1 + 0.25 * rankOf(S.xp), cluesLeft: STORY.length - S.clues, tut: S.tut === 1 });
   Q.length = 0; acc = 0; overShown = false; reviveT = 0; RN.parts.length = 0; UI.hud = { s: -1, c: -1, d: -1, m: '', pk: '' };
   $('hud').hidden = false; $('hBanner').innerHTML = ''; UI.tut(-1); $('hCnt').hidden = true;
+  if (S.boostTip < 3) { S.boostTip++; setTimeout(() => { if (mode === 'play') UI.toast('Toca ⚡ IMPULSO seguido para acelerar: más velocidad, más puntos', 'g'); }, 2600); }
   G.ch = !!ch; UI.banner(0); AU.zone = 0; mode = 'play'; if (ch) UI.toast('★ RETO DEL DÍA · misma ruta para todos hoy', 'g'); fpsA = []; qChecked = false;
 }
 function toMenu() {
@@ -77,6 +78,7 @@ function events(g) {
       case 'tut': UI.tut(e.a); AU.sfx('tut'); break;
       case 'tutOk': UI.tut(-1); if (g.tut >= TUT.length && S.tut) { S.tut = 0; SV.save(); } break;
       case 'revive': AU.sfx('revive'); break;
+      case 'boost': AU.pumpLv = e.a; AU.sfx('pump'); break;
     }
   }
   g.ev.length = 0;
@@ -189,7 +191,7 @@ function act(a, arg, el) {
 
 /* ---- entrada: deslizar / teclado ---- */
 let sw = null;
-function key(k) { if (mode === 'play' && G && G.p.alive && Q.length < 3) Q.push(k); }
+function key(k) { if (mode === 'play' && G && G.p.alive && Q.length < 4) Q.push(k); }
 window.addEventListener('pointerdown', e => { if (mode !== 'play') return; if (e.target.closest && e.target.closest('button')) return; sw = { x: e.clientX, y: e.clientY, id: e.pointerId, used: false }; }, { passive: true });
 window.addEventListener('pointermove', e => {
   if (!sw || sw.used || e.pointerId !== sw.id) return; const dx = e.clientX - sw.x, dy = e.clientY - sw.y, th = 24;
@@ -199,7 +201,7 @@ window.addEventListener('pointermove', e => {
 window.addEventListener('pointerup', () => { sw = null; }, { passive: true });
 window.addEventListener('pointercancel', () => { sw = null; }, { passive: true });
 window.addEventListener('keydown', e => {
-  const k = e.key, m = { ArrowLeft: 'L', a: 'L', A: 'L', ArrowRight: 'R', d: 'R', D: 'R', ArrowUp: 'U', w: 'U', W: 'U', ' ': 'U', ArrowDown: 'D', s: 'D', S: 'D' }[k];
+  const k = e.key, m = { ArrowLeft: 'L', a: 'L', A: 'L', ArrowRight: 'R', d: 'R', D: 'R', ArrowUp: 'U', w: 'U', W: 'U', ' ': 'U', ArrowDown: 'D', s: 'D', S: 'D', e: 'B', E: 'B', Shift: 'B' }[k];
   if (m && (mode === 'play')) { e.preventDefault(); if (!e.repeat) key(m); return; }
   if ((k === 'Escape' || k === 'p' || k === 'P') && (mode === 'play' || mode === 'pause')) { e.preventDefault(); pause(mode === 'play'); }
   if (k === 'Enter' && mode === 'menu' && UI.cur === 'sCover') startRun(false);
@@ -263,6 +265,7 @@ function boot() {
   Promise.race([fl, new Promise(r => setTimeout(r, 1500))]).then(atlas, atlas);
   newDemo(); refreshPlayer(); UI.show('sCover'); $('hFps').hidden = !SV.S.set.fps;
   $('fImp').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { if (importJSON(String(r.result))) { refreshPlayer(); UI.show('sSet'); UI.toast('Partidas importadas ✔'); } else UI.toast('Archivo no válido'); }; r.readAsText(f); e.target.value = ''; });
+  const bb = $('bBoost'); bb.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (mode !== 'play') return; key('B'); bb.classList.add('hit'); clearTimeout(bb._t); bb._t = setTimeout(() => bb.classList.remove('hit'), 70); });
   setTimeout(askDaily, 600);
   requestAnimationFrame(loop);
   if ('serviceWorker' in navigator && /^https?:/.test(location.protocol) && !window.Capacitor && !/[?&]nosw/.test(location.search)) navigator.serviceWorker.register('sw.js').catch(e => ERR.push('sw: ' + e.message));

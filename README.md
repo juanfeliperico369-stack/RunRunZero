@@ -12,6 +12,9 @@ Funciona **sin internet**, en un solo `index.html`, sin librerías externas (mot
 - Esquiva baches, rocas, vallas, ramas bajas (solo agachado), carritos, puestos de revistas, furgones EMSAY (sube por la rampa amarilla) y otros ciclistas.
 - Dos golpes leves en menos de 3 s (conos, charcos o roces laterales) te tumban.
 - Poderes: imán, turbo (atraviesa todo), ×2 puntos y casco (te salva de un choque).
+- Botón **⚡ IMPULSO** (o tecla E/Shift): tócalo seguido para acelerar (hasta +6,5 m/s) y ganar hasta ×1,5 puntos.
+- **Subidas y bajadas**: el relieve frena en subida y acelera en bajada (±16 %).
+- Fauna silvestre decorativa: mariposas, pájaros, conejos, flores, semillas y luciérnagas de noche.
 - **Reto del día**: la misma ruta para todos cada día; llegar a 1500 m da ✦ 2.
 - Si te tambaleas, la **Tinta Gris** te persigue: otro golpe y te atrapa.
 - Cada 1000 m cambia la **edición** (paleta y escenario). Las **páginas perdidas** (12) cuentan la historia de Don Ramiro.

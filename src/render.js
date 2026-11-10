@@ -1,13 +1,13 @@
 /* ===== ESCENA · cámara, ediciones, jugador animado, partículas ===== */
 const v3 = () => [0, 0, 0];
 const RN = {
-  env: { top: v3(), hor: v3(), sunC: v3(), sun: v3(), stars: 0, amb: 1, sunI: 0.4, emit: 0.2, fogR: [60, 180], L: [-0.42, 0.78, 0.46], bend: [0, -0.00032], hy: 0.5, road: [v3(), v3(), v3(), v3(), v3()], scen: [v3(), v3(), v3(), v3(), v3()] },
+  env: { top: v3(), hor: v3(), sunC: v3(), sun: v3(), stars: 0, amb: 1, sunI: 0.4, emit: 0.2, fogR: [60, 180], L: [-0.42, 0.78, 0.46], bend: [0, -0.00032], hill: [0, 0, 0, 0], h0: 0, hy: 0.5, road: [v3(), v3(), v3(), v3(), v3()], scen: [v3(), v3(), v3(), v3(), v3()] },
   cam: { ex: 0, ey: 3, ez: 6, cx: 0, cy: 1, cz: -10, fov: 1 }, camY: 0, shake: 0, cr: 0,
   M: new Float32Array(16), A: new Float32Array(16), B: new Float32Array(16), C: new Float32Array(16), D: new Float32Array(16), E: new Float32Array(16),
   parts: [], mo: {}, branches: {}, pl: null, plKey: '', trailT: 0, quality: 1,
   init() {
     const mk = b => R.mesh(b), mo = this.mo;
-    for (const k of ['road', 'tree', 'pine', 'bush', 'lamp', 'bench', 'hill', 'billFrame', 'gateFrame', 'rock', 'cone', 'barrier', 'pothole', 'puddle', 'cart', 'kiosk', 'coin', 'gift', 'clue', 'magnet', 'shield', 'turbo', 'x2', 'cube', 'shadow', 'ink']) mo[k] = mk(MOD[k]());
+    for (const k of ['road', 'tree', 'pine', 'bush', 'lamp', 'bench', 'hill', 'billFrame', 'gateFrame', 'rock', 'cone', 'barrier', 'pothole', 'puddle', 'cart', 'kiosk', 'coin', 'gift', 'clue', 'magnet', 'shield', 'turbo', 'x2', 'cube', 'shadow', 'ink', 'flowers', 'wing', 'bfly', 'bird', 'bwing', 'rabbit']) mo[k] = mk(MOD[k]());
     mo.bld = []; for (let v = 0; v < 3; v++) mo.bld.push([mk(MOD.bld(v, 2)), mk(MOD.bld(v, 3))]);
     mo.bill = []; mo.gate = []; for (let i = 0; i < 10; i++) { mo.bill.push(mk(MOD.billPanel(i))); mo.gate.push(mk(MOD.gatePanel(i))); }
     mo.truck = [0, 1, 2].map(c => mk(MOD.truck(c))); mo.npc = [0, 1, 2, 3].map(c => mk(MOD.npc(c)));
@@ -43,6 +43,7 @@ const RN = {
       c.cx = P.x * 0.86; c.cy = 1.1 + this.camY * 0.5; c.cz = -10;
       c.fov = (lerp(58, 66, k) + clamp(P.v - 14, 0, 30) * 0.28 + (P.turbo > 0 ? 6 : 0)) * Math.PI / 180;
     }
+    if (mode !== 'garage') { this.slS = lerp(this.slS || 0, this.sl || 0, Math.min(1, dt * 4)); c.cy += this.slS * 10; }
     if (this.shake > 0) { c.ex += (Math.random() - 0.5) * this.shake; c.ey += (Math.random() - 0.5) * this.shake; this.shake = Math.max(0, this.shake - dt * 2.5); }
     // horizonte en pantalla (para el degradado del cielo)
     const E = this.env; M4.persp(R.P, c.fov, asp, 0.1, 400); M4.look(R.V, c.ex, c.ey, c.ez, c.cx, c.cy, c.cz);
@@ -84,7 +85,7 @@ const RN = {
     let dead = 0, slide = 0; if (!P.alive) { dead = Math.min(1.5, P.deadT * 4); slide = Math.min(3.5, P.deadT * 6); }
     const blink = P.inv > 0 && P.alive && Math.floor(time * 14) % 2;
     if (blink) return;
-    M4.trs(B, P.x, P.y, 0, spin, pitch - dead * 0.2, roll);
+    M4.trs(B, P.x, P.y, 0, spin, pitch - dead * 0.2 + Math.atan(this.sl || 0), roll);
     // vehículo
     const sk = id === 'quad' || id === 'inline';
     if (!sk) { M4.trs(A, 0, 0, -slide, vspin, 0, vflip + dead * 0.6); M4.mul(M, B, A); R.draw(pl.veh, M); }
@@ -111,12 +112,52 @@ const RN = {
     M4.trs(A, 0, 0, 0, 0, -lean, 0); M4.mul(D, C, A); R.draw(pl.t, D);
     for (let i = 0; i < 2; i++) { const ar = arms[i], sx = i ? 0.255 : -0.255; M4.trs(A, sx, 0.58, 0, 0, ar[0] + (id === 'skate' ? 0 : lean * 0.6), ar[1]); M4.mul(M, D, A); R.draw(pl.ar, M); }
   },
+  /* fauna silvestre: mariposas, pájaros, conejos, luciérnagas y semillas (solo decoración) */
+  wild(g, mode, time, dt) {
+    if (mode === 'garage') return;
+    const P = g.p, M = this.M, A = this.A, B = this.B, mo = this.mo, L = this.crit || (this.crit = []);
+    const zi = Math.floor(Math.max(0, P.s) / 1000) % ZONES.length, night = ZONES[zi].stars > 0.5, urban = zi === 2;
+    if (L.length < (this.quality < 0.7 ? 6 : 13) && Math.random() < dt * 3.2) {
+      const r = Math.random(), sd = Math.random() < 0.5 ? -1 : 1, s = P.s + 35 + Math.random() * 85;
+      const k = night ? (r < 0.8 ? 'fly' : 'bird') : r < (urban ? 0.3 : 0.55) ? 'bfly' : r < 0.75 ? 'bird' : r < (urban ? 0.78 : 0.9) ? 'rabbit' : 'seed';
+      const BF = ['#ff8a1e', '#ffd23a', '#39a0ff', '#f4f1e6', '#ff2fb3', '#2dffb3'];
+      L.push({ k, s, x: sd * (k === 'bird' ? 10 : 3 + Math.random() * 4), y: k === 'bird' ? 6 + Math.random() * 4 : k === 'rabbit' ? 0 : 0.8 + Math.random() * 1.4,
+        vx: -sd * (k === 'bird' ? 4 + Math.random() * 3 : k === 'rabbit' ? 2.6 + Math.random() : 0.7 + Math.random() * 1.3), vs: k === 'bird' ? (Math.random() - 0.5) * 6 : (Math.random() - 0.5) * 1.2,
+        vy: 0, t: 0, ph: Math.random() * 6.28, col: hex(k === 'fly' ? '#d8ff5a' : k === 'seed' ? '#ffffff' : BF[Math.floor(Math.random() * BF.length)]) });
+    }
+    for (let i = L.length - 1; i >= 0; i--) {
+      const c = L[i]; c.t += dt; c.x += c.vx * dt; c.s += c.vs * dt; c.y += c.vy * dt;
+      if (c.s < P.s - 8 || Math.abs(c.x) > 16 || c.t > 35 || c.y > 16) { L.splice(i, 1); continue; }
+      const z = -(c.s - P.s); if (z < -130) continue;
+      const near = z > -9 && z < 2 && Math.abs(c.x - P.x) < 2.6;
+      if (c.k === 'bfly') {
+        if (near) c.vy += dt * 10;
+        const fl = Math.sin(time * 17 + c.ph) * 1.1, y = c.y + Math.sin(time * 2.4 + c.ph) * 0.35, yaw = Math.atan2(-c.vx, c.vs);
+        M4.trs(M, c.x, y, z, yaw, 0, 0, 1.7); R.draw(mo.bfly, M);
+        M4.trs(A, 0, 0, 0, 0, 0, fl); M4.mul(B, M, A); R.draw(mo.wing, B, ONE, c.col);
+        M4.trs(A, 0, 0, 0, 0, 0, -fl, -1, 1, 1); M4.mul(B, M, A); R.draw(mo.wing, B, ONE, c.col);
+      } else if (c.k === 'bird') {
+        const fl = Math.sin(time * 9 + c.ph) * 0.7, yaw = Math.atan2(-c.vx, c.vs);
+        M4.trs(M, c.x, c.y + Math.sin(time * 1.5 + c.ph) * 0.4, z, yaw, 0, 0, 1.3); R.draw(mo.bird, M);
+        M4.trs(A, 0.05, 0.02, 0, 0, 0, fl); M4.mul(B, M, A); R.draw(mo.bwing, B);
+        M4.trs(A, -0.05, 0.02, 0, 0, 0, -fl, -1, 1, 1); M4.mul(B, M, A); R.draw(mo.bwing, B);
+      } else if (c.k === 'rabbit') {
+        if (near && !c.fled) { c.fled = 1; c.vx = Math.sign(c.x - P.x || 1) * 7; }
+        M4.trs(M, c.x, Math.abs(Math.sin(c.t * 7 + c.ph)) * 0.32, z, c.vx > 0 ? -Math.PI / 2 : Math.PI / 2, 0, 0, 1.25); R.draw(mo.rabbit, M);
+      } else {
+        const fly = c.k === 'fly', k = fly ? 0.07 * (0.55 + 0.45 * Math.sin(time * 5 + c.ph)) : 0.05;
+        c.x += Math.sin(time * 1.3 + c.ph) * dt * 0.6; if (!fly) c.vy = 0.25;
+        M4.trs(M, c.x, c.y + Math.sin(time * 1.7 + c.ph) * 0.3, z, time, time * 0.7, 0, k); R.draw(mo.cube, M, ONE, c.col, 1);
+      }
+    }
+  },
   frame(g, mode, time, dt, cos) {
     const P = g.p; if (!R.gl) return;
     this.zoneEnv(P.s);
     const E = this.env;
     E.bend[0] = mode === 'garage' ? 0 : 0.0017 * Math.sin(P.s / 520) * Math.sin(P.s / 190 + 0.7);
     E.bend[1] = mode === 'garage' ? 0 : -0.00032;
+    const hOn = mode === 'garage' ? 0 : 1, TAU = Math.PI * 2; E.hill[0] = (P.s * 0.0105) % TAU; E.hill[1] = (P.s * 0.027 + 1.7) % TAU; E.hill[2] = P.s; E.hill[3] = hOn; E.h0 = HILL(P.s); this.sl = hOn ? HILLD(P.s) : 0;
     this.camera(g, mode, time, dt);
     if (!R.begin(this.cam, E, time)) return;
     const mo = this.mo, M = this.M, zs = s => -(s - P.s), FAR = -E.fogR[1] - 12;
@@ -162,6 +203,7 @@ const RN = {
       M4.trs(M, it.x, y, z, 0, 0, time * 1.5); R.draw(mo.halo[it.k], M);
     }
     this.drawPlayer(g, time, dt);
+    this.wild(g, mode, time, dt);
     // la Tinta Gris persigue al jugador cuando se tambalea (y lo atrapa al caer)
     const it = mode === 'play' ? (!P.alive ? 1.45 : P.stumble > 0 ? 1 : 0) : 0; this.ink = lerp(this.ink || 0, it, Math.min(1, dt * (it > (this.ink || 0) ? 3 : 1.5)));
     if (this.ink > 0.03) { const k = this.ink, w = Math.sin(time * 9) * 0.06; M4.trs(M, P.x * 0.92, -1.3 * Math.max(0, 1 - k), 7.4 - 4.9 * k, Math.sin(time * 3) * 0.2, 0, 0, 0.6 + w, 0.6 - w, 0.6); R.draw(mo.ink, M); }
@@ -171,7 +213,7 @@ const RN = {
       p.vy -= 9 * p.gr * dt; p.x += p.vx * dt; p.y = Math.max(0.02, p.y + p.vy * dt); p.s += p.vs * dt;
       const k = p.sz * (0.4 + 0.6 * p.life / p.max); M4.trs(M, p.x, p.y, zs(p.s), 0, 0, 0, k * p.sx, k, k * p.sz2); R.draw(mo.cube, M, ONE, p.col, 1);
     }
-    if (P.turbo > 0 && mode === 'play') for (let i = 0; i < 3; i++) this.parts.push({ x: P.x + (Math.random() - 0.5) * 9, y: Math.random() * 5, s: P.s + 6 + Math.random() * 12, vx: 0, vy: 0, vs: 0, life: 0.12, max: 0.12, col: hex('#ffffff'), sz: 0.05, gr: 0, sx: 1, sz2: 40 });
+    if ((P.turbo > 0 || P.boost > 0.4) && mode === 'play') for (let i = 0; i < (P.turbo > 0 ? 3 : 1); i++) this.parts.push({ x: P.x + (Math.random() - 0.5) * 9, y: Math.random() * 5, s: P.s + 6 + Math.random() * 12, vx: 0, vy: 0, vs: 0, life: 0.12, max: 0.12, col: hex('#ffffff'), sz: 0.05, gr: 0, sx: 1, sz2: 40 });
     // sombras
     R.blend(true, 0.42);
     M4.trs(M, P.x, (P.gy || 0), 0, 0, 0, 0, 1.1 / (1 + Math.max(0, P.y - (P.gy || 0)) * 0.4)); R.draw(mo.shadow, M, ONE, ONE, 0);

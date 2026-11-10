@@ -49,7 +49,7 @@ if (dl) { const p = await dl.path(); const j = JSON.parse(fs.readFileSync(p, 'ut
 rep.export2 = await page.evaluate(() => { const t = window.__RS.exportJSON(); return window.__RS.importJSON(t) && window.__RS.exportCSV().split('\n').length; });
 // 100 partidas simuladas dentro del navegador
 rep.sim = await page.evaluate(n => { const out = { n, err: 0, bad: 0, dist: 0, causes: {} }; const V = ['scooter', 'quad', 'skate', 'bike', 'escooter'];
-  for (let i = 0; i < n; i++) { const r = window.__RS.simulate({ seed: 77 + i * 104729, veh: V[i % 5], maxT: 180, revive: i % 4 === 0 }); out.err += r.errs.length; out.bad += r.bad; out.dist += r.dist / n; out.causes[r.cause] = (out.causes[r.cause] || 0) + 1; }
+  for (let i = 0; i < n; i++) { const r = window.__RS.simulate({ seed: 77 + i * 104729, veh: V[i % 5], maxT: 180, revive: i % 4 === 0, boost: i % 2 === 1 }); out.err += r.errs.length; out.bad += r.bad; out.dist += r.dist / n; out.causes[r.cause] = (out.causes[r.cause] || 0) + 1; }
   out.dist = Math.round(out.dist); return out; }, N);
 rep.ERR = await page.evaluate(() => window.__RS.ERR.slice(0, 10)); rep.errores = errs.slice(0, 10);
 console.log(JSON.stringify(rep, null, 1));
