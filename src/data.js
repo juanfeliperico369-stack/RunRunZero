@@ -31,6 +31,10 @@ const COS = {
   estela: [
     { id: 't0', name: 'Ninguna', p: 0 }, { id: 't1', name: 'Polvo', p: 600 }, { id: 't2', name: 'Confeti EMSAY', p: 1500 },
     { id: 't3', name: 'Línea neón', st: 8 }, { id: 't4', name: 'Estrellas ✦', st: 12 }
+  ],
+  mascota: [
+    { id: 'm0', name: 'Sin mascota', p: 0 }, { id: 'm1', name: 'Perro Bache', c: '#c9935e', p: 2500 },
+    { id: 'm2', name: 'Gata Tinta', c: '#3a3a46', p: 3500 }, { id: 'm3', name: 'Loro Domingo', c: '#2dbd5a', st: 10 }
   ]
 };
 const COSI = {}; for (const k in COS) for (const c of COS[k]) COSI[c.id] = Object.assign({ cat: k }, c);
@@ -53,15 +57,15 @@ const ZRAW = [
   Z({ name: 'SESIÓN 1 · ESCUCHAR & OÍR', sub: '¿Estamos realmente conectados?', bill: 2, top: '#ffd77a', hor: '#fbe7a9', sunC: '#fffbe8', sun: [-0.3, 0.72, 0.06], stars: 0, amb: 0.85, sunI: 0.4, emit: 0.18, fog: [70, 185],
     road: ['#c94f3d', '#fff0c2', '#9cbf4a', '#fff6d5', '#3a2a1a'], scen: ['#6fae3e', '#6b4a2b', '#f4c95d', '#e7a33e', '#ffe9a8'], ui: '#b8281f' }),
   Z({ name: 'SESIÓN 2 · ORALIDAD', sub: '7 componentes & técnicas', bill: 3, top: '#c9ccd2', hor: '#9a9ea6', sunC: '#ffffff', sun: [0.2, 0.86, 0.04], stars: 0, amb: 0.8, sunI: 0.35, emit: 0.22, fog: [60, 175],
-    road: ['#3a3d44', '#b9bcc2', '#7f8d6c', '#ffffff', '#111111'], scen: ['#5f7a55', '#2b2d33', '#5c6068', '#7c8088', '#fff3c4'], ui: '#2b2d33' }),
+    road: ['#3a3d44', '#b9bcc2', '#7f8d6c', '#ffffff', '#111111'], scen: ['#5f7a55', '#2b2d33', '#5c6068', '#7c8088', '#fff3c4'], ui: '#2b2d33', tun: 1 }),
   Z({ name: 'SESIÓN 3 · DESENTRAÑAR', sub: 'Niveles de lectura', bill: 4, top: '#ff7a52', hor: '#c0191c', sunC: '#ffe2c2', sun: [0, 0.6, 0.11], stars: 0, amb: 0.75, sunI: 0.45, emit: 0.35, fog: [55, 170],
     road: ['#1a1a1a', '#e8e0d8', '#5a1d17', '#f2f2f2', '#f2f2f2'], scen: ['#2d2d2d', '#111111', '#8e1013', '#e8e0d8', '#ffd0a0'], ui: '#c0191c' }),
   Z({ name: 'TIPOLOGÍAS TEXTUALES', sub: 'Los tipos de texto en la ciudad', bill: 5, top: '#0c2533', hor: '#1b4459', sunC: '#ffe7c7', sun: [0.36, 0.8, 0.035], stars: 0.9, amb: 0.62, sunI: 0.3, emit: 0.8, fog: [55, 170],
-    road: ['#0f2a38', '#24506a', '#163847', '#ff5a2a', '#ff5a2a'], scen: ['#2f7d6d', '#0b1d27', '#ff5a2a', '#e8c25a', '#ffd27a'], ui: '#ff5a2a' }),
+    road: ['#0f2a38', '#24506a', '#163847', '#ff5a2a', '#ff5a2a'], scen: ['#2f7d6d', '#0b1d27', '#ff5a2a', '#e8c25a', '#ffd27a'], ui: '#ff5a2a', tun: 1 }),
   Z({ name: 'SESIÓN FINAL · LA RUTA', sub: 'En el discurso y la oratoria', bill: 6, top: '#f6cf6a', hor: '#c49a2c', sunC: '#fff3c8', sun: [-0.15, 0.62, 0.09], stars: 0, amb: 0.82, sunI: 0.42, emit: 0.3, fog: [65, 180],
     road: ['#5a3a1a', '#f5e6c0', '#8a7a2c', '#ffffff', '#ffffff'], scen: ['#8c6d1f', '#3b2410', '#6b3f16', '#f5e6c0', '#fff0b0'], ui: '#6b3f16' }),
   Z({ name: 'EDICIÓN NEÓN · DOC ELEMENT', sub: 'Negro total, bordes morados, letra azul', bill: 7, top: '#000000', hor: '#0b0418', sunC: '#a42cff', sun: [0, 0.7, 0.07], stars: 1, amb: 0.5, sunI: 0.22, emit: 1, fog: [50, 165],
-    road: ['#0b0418', '#4d1785', '#05010b', '#39c8ff', '#a42cff'], scen: ['#2dffb3', '#1a0636', '#0b0418', '#1a0636', '#ff2fb3'], ui: '#a42cff' }),
+    road: ['#0b0418', '#4d1785', '#05010b', '#39c8ff', '#a42cff'], scen: ['#2dffb3', '#1a0636', '#0b0418', '#1a0636', '#ff2fb3'], ui: '#a42cff', tun: 1 }),
   Z({ name: 'MALECÓN · EDICIÓN PLAYA', sub: 'Brisa, arena y revistas', bill: 1, top: '#5cc6ee', hor: '#f7e7c4', sunC: '#fff7d6', sun: [0.25, 0.8, 0.06], stars: 0, amb: 0.85, sunI: 0.42, emit: 0.2, fog: [75, 190],
     road: ['#d9572b', '#efe2bf', '#f0d9a0', '#ffffff', '#1d4e79'], scen: ['#3aa35a', '#8a5a32', '#ff5a2a', '#2f9fd1', '#ffd23a'], ui: '#2f9fd1' }),
   Z({ name: 'BOSQUE NUBLADO', sub: 'Entre pinos y neblina', bill: 8, top: '#9fbab3', hor: '#d7e3dc', sunC: '#ffffff', sun: [-0.2, 0.85, 0.04], stars: 0, amb: 0.78, sunI: 0.3, emit: 0.3, fog: [35, 145],

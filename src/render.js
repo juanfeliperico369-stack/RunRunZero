@@ -7,7 +7,7 @@ const RN = {
   parts: [], mo: {}, branches: {}, pl: null, plKey: '', trailT: 0, quality: 1,
   init() {
     const mk = b => R.mesh(b), mo = this.mo;
-    for (const k of ['road', 'tree', 'pine', 'bush', 'lamp', 'bench', 'hill', 'billFrame', 'gateFrame', 'rock', 'cone', 'barrier', 'pothole', 'puddle', 'cart', 'kiosk', 'coin', 'gift', 'clue', 'magnet', 'shield', 'turbo', 'x2', 'cube', 'shadow', 'ink', 'flowers', 'wing', 'bfly', 'bird', 'bwing', 'rabbit', 'palm', 'parasol', 'sea', 'mount', 'fence', 'coffee', 'rail', 'boat', 'buzon', 'flag', 'door', 'rarm', 'mag']) mo[k] = mk(MOD[k]());
+    for (const k of ['road', 'tree', 'pine', 'bush', 'lamp', 'bench', 'hill', 'billFrame', 'gateFrame', 'rock', 'cone', 'barrier', 'pothole', 'puddle', 'cart', 'kiosk', 'coin', 'gift', 'clue', 'magnet', 'shield', 'turbo', 'x2', 'cube', 'shadow', 'ink', 'flowers', 'wing', 'bfly', 'bird', 'bwing', 'rabbit', 'palm', 'parasol', 'sea', 'mount', 'fence', 'coffee', 'rail', 'boat', 'buzon', 'flag', 'door', 'rarm', 'mag', 'tunnel', 'portal']) mo[k] = mk(MOD[k]());
     mo.house = [0, 1, 2].map(v => mk(MOD.house(v))); mo.resi = [0, 1, 2].map(v => mk(MOD.resi(v))); this.proj = [];
     mo.bld = []; for (let v = 0; v < 3; v++) mo.bld.push([mk(MOD.bld(v, 2)), mk(MOD.bld(v, 3))]);
     mo.bill = []; mo.gate = []; for (let i = 0; i < 10; i++) { mo.bill.push(mk(MOD.billPanel(i))); mo.gate.push(mk(MOD.gatePanel(i))); }
@@ -21,6 +21,7 @@ const RN = {
     if (this.pl) for (const k in this.pl) R.free(this.pl[k]);
     const r = MOD.rider(cos);
     this.pl = { veh: R.mesh(MOD.veh(vid, cos.paint, cos.pe)), t: R.mesh(r.t), th: R.mesh(r.th), sn: R.mesh(r.sn), ar: R.mesh(r.ar) };
+    const pc = COSI[cos.pet]; if (pc && pc.c) { this.pl.pet = R.mesh(MOD.pet(cos.pet, pc.c)); this.pl.ptail = R.mesh(MOD.petTail(cos.pet, pc.c)); } this.petK = pc && pc.c ? cos.pet : null;
     this.vid = vid;
   },
   zoneEnv(s) {
@@ -159,6 +160,12 @@ const RN = {
     const P = g.p; if (!R.gl) return;
     this.zoneEnv(P.s);
     const E = this.env;
+    // clima (lluvia) y túneles: oscurecen el ambiente
+    const ed = Math.floor(Math.max(0, P.s) / 1000), u = P.s - ed * 1000, rt = mode === 'garage' ? 0 : RAINY(ed) ? clamp(Math.min(u, 1000 - u) / 60, 0, 1) : 0;
+    this.rk = lerp(this.rk || 0, rt, Math.min(1, dt * 2)); const rk = this.rk;
+    if (rk > 0.01) { const gr = [0.42, 0.45, 0.5]; lerp3(E.top, E.top, gr, 0.55 * rk); lerp3(E.hor, E.hor, [0.55, 0.58, 0.62], 0.45 * rk); E.amb *= 1 - 0.2 * rk; E.sunI *= 1 - 0.5 * rk; E.fogR[1] *= 1 - 0.25 * rk; E.fogR[0] *= 1 - 0.4 * rk; E.sun[2] *= 1 - rk; E.emit = Math.max(E.emit, 0.45 * rk); }
+    const inT = mode !== 'garage' && g.tuns && g.tuns.some(t => P.s > t[0] - 3 && P.s < t[1] + 2); this.tk = lerp(this.tk || 0, inT ? 1 : 0, Math.min(1, dt * 3)); const tk = this.tk;
+    if (tk > 0.01) { E.amb *= 1 - 0.5 * tk; E.sunI *= 1 - 0.85 * tk; E.emit = Math.max(E.emit, 0.9 * tk); lerp3(E.hor, E.hor, [0.08, 0.08, 0.1], 0.5 * tk); E.fogR[1] *= 1 - 0.3 * tk; }
     E.bend[0] = mode === 'garage' ? 0 : 0.0017 * Math.sin(P.s / 520) * Math.sin(P.s / 190 + 0.7);
     E.bend[1] = mode === 'garage' ? 0 : -0.00032;
     const hOn = mode === 'garage' ? 0 : 1, TAU = Math.PI * 2; E.hill[0] = (P.s * 0.0105) % TAU; E.hill[1] = (P.s * 0.027 + 1.7) % TAU; E.hill[2] = P.s; E.hill[3] = hOn; E.h0 = HILL(P.s); this.sl = hOn ? HILLD(P.s) : 0;
@@ -230,6 +237,12 @@ const RN = {
     }
     this.drawPlayer(g, time, dt);
     this.wild(g, mode, time, dt);
+    // mascota que corre al lado
+    if (this.petK && this.pl.pet && P.alive) {
+      const sd = mode === 'garage' ? 1 : g.petSide, pk = this.petK, py = P.air ? (P.gy || 0) : P.y; this.petX = lerp(this.petX == null ? P.x + sd : this.petX, P.x + sd * 0.95, Math.min(1, dt * 8));
+      if (pk === 'm3') { const f = Math.sin(time * 16) * 0.8; M4.trs(M, this.petX * 0.9 + sd * 0.1, P.y + 2.05 + Math.sin(time * 3) * 0.12, 0.25, 0, 0, 0, 1.3); R.draw(this.pl.pet, M); M4.trs(this.A, 0.08, 0.05, 0, 0, 0, f); M4.mul(this.B, M, this.A); R.draw(this.pl.ptail, this.B); M4.trs(this.A, -0.08, 0.05, 0, 0, 0, -f, -1, 1, 1); M4.mul(this.B, M, this.A); R.draw(this.pl.ptail, this.B); }
+      else { const run = mode === 'garage' ? 0.3 : 1, ph = time * 14, b = Math.abs(Math.sin(ph)) * 0.12 * run; M4.trs(M, this.petX, py + b, 0.3, 0, Math.sin(ph) * 0.12 * run, 0, 1.15); R.draw(this.pl.pet, M); M4.trs(this.A, 0, 0.5, 0.26, Math.sin(time * 12) * 0.6, 0, 0); M4.mul(this.B, M, this.A); R.draw(this.pl.ptail, this.B); }
+    }
     // la Tinta Gris persigue al jugador cuando se tambalea (y lo atrapa al caer)
     const it = mode === 'play' ? (!P.alive ? 1.45 : P.stumble > 0 ? 1 : 0) : 0; this.ink = lerp(this.ink || 0, it, Math.min(1, dt * (it > (this.ink || 0) ? 3 : 1.5)));
     if (this.ink > 0.03) { const k = this.ink, w = Math.sin(time * 9) * 0.06; M4.trs(M, P.x * 0.92, -1.3 * Math.max(0, 1 - k), 7.4 - 4.9 * k, Math.sin(time * 3) * 0.2, 0, 0, 0.6 + w, 0.6 - w, 0.6); R.draw(mo.ink, M); }

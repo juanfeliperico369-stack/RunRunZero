@@ -48,10 +48,16 @@ const AU = {
       case 'pump': this.tone(260 + 520 * (this.pumpLv || 0), t, 0.05, 'square', 0.045, 380 + 620 * (this.pumpLv || 0)); break;
       case 'deliver': this.noise(t, 0.18, 0.08, 2200, 'bandpass', null, 1.5); this.tone(1319, t + 0.16, 0.18, 'sine', 0.1); this.tone(1760, t + 0.24, 0.3, 'sine', 0.09); break;
       case 'dmiss': this.tone(240, t, 0.18, 'triangle', 0.08, 150); break;
+      case 'thunder': this.noise(t, 1.6, 0.35, 180, 'lowpass'); this.noise(t + 0.05, 0.5, 0.2, 600, 'lowpass'); break;
       case 'tut': this.tone(880, t, 0.12, 'sine', 0.1); break;
       case 'rank': [523, 659, 784, 1047, 1319].forEach((f, i) => this.tone(f, t + i * 0.09, 0.22, 'square', 0.07)); break;
       case 'buy': this.tone(784, t, 0.08, 'square', 0.07); this.tone(1175, t + 0.07, 0.16, 'square', 0.07); break;
     }
+  },
+  rainOn(on) {
+    if (!this.ctx) return; const c = this.ctx;
+    if (!this.rainG) { const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(); s.buffer = this.nb; s.loop = true; f.type = 'highpass'; f.frequency.value = 1400; g.gain.value = 0; s.connect(f); f.connect(g); g.connect(this.sg); s.start(); this.rainG = g; }
+    this.rainG.gain.setTargetAtTime(on ? 0.09 : 0, c.currentTime, 0.6);
   },
   music(on) {
     this.want = on; if (!this.ctx) return;

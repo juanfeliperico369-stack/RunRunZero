@@ -21,7 +21,7 @@ function startRun(ch) {
   const S = SV.S; AU.init(); AU.music(true); if (ch === undefined) ch = lastCh; lastCh = !!ch;
   UI.ov('oOver', 0); UI.ov('oRevive', 0); UI.ov('oPause', 0); UI.hideScreens(); UI.preview = null;
   refreshPlayer();
-  G = newGame({ seed: ch ? daySeed() : (Math.random() * 4294967295) >>> 0, veh: S.veh, up: S.up, mult: 1 + 0.25 * rankOf(S.xp), cluesLeft: STORY.length - S.clues, tut: S.tut === 1 });
+  G = newGame({ seed: ch ? daySeed() : (Math.random() * 4294967295) >>> 0, veh: S.veh, up: S.up, mult: 1 + 0.25 * rankOf(S.xp), cluesLeft: STORY.length - S.clues, tut: S.tut === 1, pet: S.cos.mascota && S.cos.mascota !== 'm0' });
   Q.length = 0; acc = 0; overShown = false; reviveT = 0; RN.parts.length = 0; UI.hud = { s: -1, c: -1, d: -1, m: '', pk: '' };
   $('hud').hidden = false; $('hBanner').innerHTML = ''; UI.tut(-1); $('hCnt').hidden = true;
   if (S.boostTip < 3) { S.boostTip++; setTimeout(() => { if (mode === 'play') UI.toast('Toca ⚡ IMPULSO seguido para acelerar: más velocidad, más puntos', 'g'); }, 2600); }
@@ -178,7 +178,7 @@ function act(a, arg, el) {
     }
     case 'read': UI.read(+arg); break;
     case 'closeRead': if (el && el.id === 'oRead' || el.tagName === 'BUTTON') { UI.ov('oRead', 0); UI.story(); } break;
-    case 'set': S.set[arg] = S.set[arg] ? 0 : 1; SV.save(); AU.set(S.set.sfx, S.set.music); $('hFps').hidden = !S.set.fps; UI.settings(); break;
+    case 'set': S.set[arg] = S.set[arg] ? 0 : 1; SV.save(); document.body.classList.toggle('lh', !!S.set.lh); AU.set(S.set.sfx, S.set.music); $('hFps').hidden = !S.set.fps; UI.settings(); break;
     case 'qual': S.set.q = arg; SV.save(); applyQuality(); UI.settings(); break;
     case 'tut': S.tut = 1; SV.save(); UI.toast('El tutorial saldrá en tu próxima partida'); break;
     case 'exp': saveFile('runscooter-partidas-' + dayKey() + '.json', exportJSON(), 'application/json').then(ok => ok && UI.toast('Partidas exportadas ✔')); break;
@@ -188,6 +188,16 @@ function act(a, arg, el) {
     case 'cfYes': UI.ov('oConf', 0); if (confirmFn) { const f = confirmFn; confirmFn = null; f(); } break;
     case 'cfNo': UI.ov('oConf', 0); confirmFn = null; if (UI.preview) { UI.preview = null; refreshPlayer(); UI.garage(); } break;
     case 'daily': claimDaily(); break;
+    case 'share': {
+      const g = G, url = (document.querySelector('meta[property="og:url"]') || {}).content || location.href;
+      const txt = g ? `¡Hice ${fmt(g.score)} puntos, ${fmt(g.p.s)} m y ${g.deliv} entregas en Run Scooter! 🛴 ¿Me ganas?` : '¡Juega Run Scooter, la ciclovía sin fin! 🛴';
+      const P = window.Capacitor && window.Capacitor.Plugins;
+      const wa = () => { window.open('https://wa.me/?text=' + encodeURIComponent(txt + ' ' + url), '_blank'); };
+      if (P && P.Share) P.Share.share({ title: 'Run Scooter', text: txt, url }).catch(wa);
+      else if (navigator.share) navigator.share({ title: 'Run Scooter', text: txt, url }).catch(e => { if (!e || e.name !== 'AbortError') wa(); });
+      else wa();
+      break;
+    }
   }
 }
 
@@ -249,6 +259,8 @@ function tick(dt) {
     if (count <= 0) { mode = 'play'; acc = 0; }
   }
   if (view !== 'garage') RN.trail(g, dt, SV.S.cos.estela);
+  const rn = view === 'play' && RN.rk > 0.35; if (rn !== tick.rain) { tick.rain = rn; $('rain').classList.toggle('on', rn); AU.rainOn(rn); }
+  if (rn && mode === 'play' && Math.random() < dt * 0.06) { const f = $('flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); setTimeout(() => AU.sfx('thunder'), 300 + Math.random() * 600); }
   if (SV.S.set.fps && mode === 'play') { const f = fpsA.length ? fpsA.length / fpsA.reduce((a, b) => a + b, 0) : 0; $('hFps').textContent = Math.round(f) + ' FPS · ' + R.draws + ' dibujos'; }
   AU.tempo = 112 + (g.p.v > 14 ? Math.min(26, (g.p.v - 14) * 1.2) : 0);
   RN.frame(g, view, now, dt);
@@ -260,7 +272,7 @@ function boot() {
   const cv = $('cv'); let ok = false;
   try { ok = R.init(cv); } catch (e) { ERR.push('webgl: ' + e.message); }
   if (!ok) { document.body.insertAdjacentHTML('beforeend', '<div class="nogl"><div><h1 class="mega" style="font-size:60px;color:#1d4e79">RUN SCOOTER</h1><p>Tu navegador no tiene WebGL activado. Prueba con Chrome, Safari o Firefox actualizados.</p></div></div>'); return; }
-  applyQuality(); window.addEventListener('resize', applyQuality);
+  applyQuality(); window.addEventListener('resize', applyQuality); document.body.classList.toggle('lh', !!SV.S.set.lh);
   RN.init(); AU.set(SV.S.set.sfx, SV.S.set.music);
   const atlas = () => { try { R.texture(makeAtlas()); } catch (e) { ERR.push('atlas: ' + e.message); } };
   const fl = document.fonts && document.fonts.load ? Promise.all([document.fonts.load('40px "Titulos"'), document.fonts.load('800 40px "Cuerpo"')]) : Promise.resolve();

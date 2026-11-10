@@ -153,6 +153,10 @@ button:focus-visible{outline:3px solid var(--amb);outline-offset:2px}
 .pop{position:absolute;left:50%;top:36%;transform:translateX(-50%);font-family:var(--fd);font-size:clamp(22px,6.5vw,32px);color:#fff;background:var(--teal);border:3px solid #111;padding:4px 12px;box-shadow:4px 4px 0 #111;white-space:nowrap;animation:popin 1s ease forwards}
 .pop.miss{background:var(--gray);color:#111}
 @keyframes popin{0%{opacity:0;transform:translate(-50%,10px) scale(.8)}14%{opacity:1;transform:translate(-50%,0) scale(1.06)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-18px)}}
+#rain{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity 1.2s;background:repeating-linear-gradient(104deg,transparent 0 26px,rgba(225,238,255,.34) 26px 27.5px),repeating-linear-gradient(98deg,transparent 0 41px,rgba(225,238,255,.22) 41px 42px);background-size:140px 170px,190px 230px;animation:rainf .3s linear infinite}
+#rain.on{opacity:1}@keyframes rainf{to{background-position:-34px 170px,-30px 230px}}
+#flash{position:absolute;inset:0;background:#f4f8ff;opacity:0;pointer-events:none}#flash.go{animation:flash .55s ease-out}@keyframes flash{0%{opacity:.7}100%{opacity:0}}
+.lh #hud .boost{right:auto;left:14px}
 .slope{display:inline-block;margin-top:6px;font-family:var(--fd);font-size:17px;padding:1px 8px;border:2px solid #111;box-shadow:2px 2px 0 #111}
 .slope.up{background:var(--paper);color:#111}.slope.dn{background:var(--red);color:#fff}
 #bPause{pointer-events:auto;width:48px;height:48px;background:var(--paper);color:#111;border:3px solid #111;font-size:18px;box-shadow:3px 3px 0 #111}

@@ -176,6 +176,10 @@ button:focus-visible{outline:3px solid var(--amb);outline-offset:2px}
 .pop{position:absolute;left:50%;top:36%;transform:translateX(-50%);font-family:var(--fd);font-size:clamp(22px,6.5vw,32px);color:#fff;background:var(--teal);border:3px solid #111;padding:4px 12px;box-shadow:4px 4px 0 #111;white-space:nowrap;animation:popin 1s ease forwards}
 .pop.miss{background:var(--gray);color:#111}
 @keyframes popin{0%{opacity:0;transform:translate(-50%,10px) scale(.8)}14%{opacity:1;transform:translate(-50%,0) scale(1.06)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-18px)}}
+#rain{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity 1.2s;background:repeating-linear-gradient(104deg,transparent 0 26px,rgba(225,238,255,.34) 26px 27.5px),repeating-linear-gradient(98deg,transparent 0 41px,rgba(225,238,255,.22) 41px 42px);background-size:140px 170px,190px 230px;animation:rainf .3s linear infinite}
+#rain.on{opacity:1}@keyframes rainf{to{background-position:-34px 170px,-30px 230px}}
+#flash{position:absolute;inset:0;background:#f4f8ff;opacity:0;pointer-events:none}#flash.go{animation:flash .55s ease-out}@keyframes flash{0%{opacity:.7}100%{opacity:0}}
+.lh #hud .boost{right:auto;left:14px}
 .slope{display:inline-block;margin-top:6px;font-family:var(--fd);font-size:17px;padding:1px 8px;border:2px solid #111;box-shadow:2px 2px 0 #111}
 .slope.up{background:var(--paper);color:#111}.slope.dn{background:var(--red);color:#fff}
 #bPause{pointer-events:auto;width:48px;height:48px;background:var(--paper);color:#111;border:3px solid #111;font-size:18px;box-shadow:3px 3px 0 #111}
@@ -222,6 +226,7 @@ button:focus-visible{outline:3px solid var(--amb);outline-offset:2px}
 <body><noscript>Run Scooter necesita JavaScript activado.</noscript>
 <canvas id="cv"></canvas>
 <div id="ui">
+  <div id="rain"></div><div id="flash"></div>
   <div id="hud" hidden>
     <div class="hl"><div id="hScore" class="hs">0</div><div class="hc"><span class="coin"></span><b id="hCoins">0</b></div><br><div class="hc dl" id="hDel" hidden></div><div id="hDist" class="hd">0 M</div><div id="hSlope" class="slope" hidden></div></div>
     <div class="hr"><button id="bPause" data-act="pause" aria-label="Pausa">❚❚</button><div id="hMult" class="hm">×1</div><div id="hPow"></div></div>
@@ -317,7 +322,7 @@ button:focus-visible{outline:3px solid var(--amb);outline-offset:2px}
     <div class="film" style="margin:10px 0" id="oStats"></div>
     <div id="oExtra"></div>
     <div class="cbtns" style="margin:12px auto 0"><button class="btn pri big" data-act="play">↻ Otra vez</button>
-      <div class="cgrid"><button class="btn" data-act="quit">Portada</button><button class="btn" data-act="go" data-arg="sGarage">Garaje</button></div></div>
+      <div class="cgrid"><button class="btn" data-act="quit">Portada</button><button class="btn" data-act="go" data-arg="sGarage">Garaje</button><button class="btn red w2" data-act="share">📲 Compartir por WhatsApp</button></div></div>
   </div></div></div>
 
   <div id="oDaily" class="ov"><div class="panel"><div class="pband"><span>EMSAY</span><span>REGALO DIARIO</span></div><div class="pin" style="text-align:center">
@@ -622,6 +627,10 @@ const COS = {
   estela: [
     { id: 't0', name: 'Ninguna', p: 0 }, { id: 't1', name: 'Polvo', p: 600 }, { id: 't2', name: 'Confeti EMSAY', p: 1500 },
     { id: 't3', name: 'Línea neón', st: 8 }, { id: 't4', name: 'Estrellas ✦', st: 12 }
+  ],
+  mascota: [
+    { id: 'm0', name: 'Sin mascota', p: 0 }, { id: 'm1', name: 'Perro Bache', c: '#c9935e', p: 2500 },
+    { id: 'm2', name: 'Gata Tinta', c: '#3a3a46', p: 3500 }, { id: 'm3', name: 'Loro Domingo', c: '#2dbd5a', st: 10 }
   ]
 };
 const COSI = {}; for (const k in COS) for (const c of COS[k]) COSI[c.id] = Object.assign({ cat: k }, c);
@@ -644,15 +653,15 @@ const ZRAW = [
   Z({ name: 'SESIÓN 1 · ESCUCHAR & OÍR', sub: '¿Estamos realmente conectados?', bill: 2, top: '#ffd77a', hor: '#fbe7a9', sunC: '#fffbe8', sun: [-0.3, 0.72, 0.06], stars: 0, amb: 0.85, sunI: 0.4, emit: 0.18, fog: [70, 185],
     road: ['#c94f3d', '#fff0c2', '#9cbf4a', '#fff6d5', '#3a2a1a'], scen: ['#6fae3e', '#6b4a2b', '#f4c95d', '#e7a33e', '#ffe9a8'], ui: '#b8281f' }),
   Z({ name: 'SESIÓN 2 · ORALIDAD', sub: '7 componentes & técnicas', bill: 3, top: '#c9ccd2', hor: '#9a9ea6', sunC: '#ffffff', sun: [0.2, 0.86, 0.04], stars: 0, amb: 0.8, sunI: 0.35, emit: 0.22, fog: [60, 175],
-    road: ['#3a3d44', '#b9bcc2', '#7f8d6c', '#ffffff', '#111111'], scen: ['#5f7a55', '#2b2d33', '#5c6068', '#7c8088', '#fff3c4'], ui: '#2b2d33' }),
+    road: ['#3a3d44', '#b9bcc2', '#7f8d6c', '#ffffff', '#111111'], scen: ['#5f7a55', '#2b2d33', '#5c6068', '#7c8088', '#fff3c4'], ui: '#2b2d33', tun: 1 }),
   Z({ name: 'SESIÓN 3 · DESENTRAÑAR', sub: 'Niveles de lectura', bill: 4, top: '#ff7a52', hor: '#c0191c', sunC: '#ffe2c2', sun: [0, 0.6, 0.11], stars: 0, amb: 0.75, sunI: 0.45, emit: 0.35, fog: [55, 170],
     road: ['#1a1a1a', '#e8e0d8', '#5a1d17', '#f2f2f2', '#f2f2f2'], scen: ['#2d2d2d', '#111111', '#8e1013', '#e8e0d8', '#ffd0a0'], ui: '#c0191c' }),
   Z({ name: 'TIPOLOGÍAS TEXTUALES', sub: 'Los tipos de texto en la ciudad', bill: 5, top: '#0c2533', hor: '#1b4459', sunC: '#ffe7c7', sun: [0.36, 0.8, 0.035], stars: 0.9, amb: 0.62, sunI: 0.3, emit: 0.8, fog: [55, 170],
-    road: ['#0f2a38', '#24506a', '#163847', '#ff5a2a', '#ff5a2a'], scen: ['#2f7d6d', '#0b1d27', '#ff5a2a', '#e8c25a', '#ffd27a'], ui: '#ff5a2a' }),
+    road: ['#0f2a38', '#24506a', '#163847', '#ff5a2a', '#ff5a2a'], scen: ['#2f7d6d', '#0b1d27', '#ff5a2a', '#e8c25a', '#ffd27a'], ui: '#ff5a2a', tun: 1 }),
   Z({ name: 'SESIÓN FINAL · LA RUTA', sub: 'En el discurso y la oratoria', bill: 6, top: '#f6cf6a', hor: '#c49a2c', sunC: '#fff3c8', sun: [-0.15, 0.62, 0.09], stars: 0, amb: 0.82, sunI: 0.42, emit: 0.3, fog: [65, 180],
     road: ['#5a3a1a', '#f5e6c0', '#8a7a2c', '#ffffff', '#ffffff'], scen: ['#8c6d1f', '#3b2410', '#6b3f16', '#f5e6c0', '#fff0b0'], ui: '#6b3f16' }),
   Z({ name: 'EDICIÓN NEÓN · DOC ELEMENT', sub: 'Negro total, bordes morados, letra azul', bill: 7, top: '#000000', hor: '#0b0418', sunC: '#a42cff', sun: [0, 0.7, 0.07], stars: 1, amb: 0.5, sunI: 0.22, emit: 1, fog: [50, 165],
-    road: ['#0b0418', '#4d1785', '#05010b', '#39c8ff', '#a42cff'], scen: ['#2dffb3', '#1a0636', '#0b0418', '#1a0636', '#ff2fb3'], ui: '#a42cff' }),
+    road: ['#0b0418', '#4d1785', '#05010b', '#39c8ff', '#a42cff'], scen: ['#2dffb3', '#1a0636', '#0b0418', '#1a0636', '#ff2fb3'], ui: '#a42cff', tun: 1 }),
   Z({ name: 'MALECÓN · EDICIÓN PLAYA', sub: 'Brisa, arena y revistas', bill: 1, top: '#5cc6ee', hor: '#f7e7c4', sunC: '#fff7d6', sun: [0.25, 0.8, 0.06], stars: 0, amb: 0.85, sunI: 0.42, emit: 0.2, fog: [75, 190],
     road: ['#d9572b', '#efe2bf', '#f0d9a0', '#ffffff', '#1d4e79'], scen: ['#3aa35a', '#8a5a32', '#ff5a2a', '#2f9fd1', '#ffd23a'], ui: '#2f9fd1' }),
   Z({ name: 'BOSQUE NUBLADO', sub: 'Entre pinos y neblina', bill: 8, top: '#9fbab3', hor: '#d7e3dc', sunC: '#ffffff', sun: [-0.2, 0.85, 0.04], stars: 0, amb: 0.78, sunI: 0.3, emit: 0.3, fog: [35, 145],
@@ -748,6 +757,9 @@ const OT = {
   rider: { hw: 0.5, hd: 0.85, y0: 0, y1: 1.8, fatal: 1, need: 'block', moving: 1, name: 'otro ciclista' }
 };
 const JUMPS = [['rock', 3], ['barrier', 2], ['pothole', 2.2], ['cone', 1.4], ['puddle', 1]];
+const JUMPS_R = JUMPS.map(j => j[0] === 'puddle' ? ['puddle', 3.5] : j);
+/* clima: algunas ediciones llueven (mismo resultado en lógica y render) */
+const RAINY = ed => ed > 0 && (Math.imul(ed + 7, 2654435761) >>> 0) % 4 === 1;
 const BLOCKS = [['cart', 2], ['kiosk', 1.4]];
 const THRAW = [
   { near: [['tree', 3.5], ['pine', 1], ['bush', 2], ['lamp', 1.5], ['bench', 1], ['bill', 1]], far: [['bld', 3], ['tree', 4], ['hill', 3]] },
@@ -786,7 +798,7 @@ function newGame(o) {
     p: { s: 0, x: 0, lane: 1, from: 1, y: 0, vy: 0, gv: 0, v: 0, air: false, airT: 0, crouch: 0, fastFall: 0, jumps: 0, stumble: 0, slow: 1, inv: 0, alive: true, deadT: 0,
       magnet: 0, turbo: 0, x2: 0, shield: 0, boost: 0, sl: 0, trickHit: 0, phase: 0, onTruck: null, lastLand: 0 },
     obs: [], coins: [], items: [], scen: [], ev: [], lf: [0, 0, 0],
-    genS: 42, scenS: -30, nextGate: 1000, dels: [], deliv: 0, dStreak: 0, dBest: 0, nextDel: 150, edition: 0, score: 0, coinsRun: 0, starsRun: 0, clues: 0, gifts: 0, jumps: 0, ducks: 0, tricks: 0, powers: 0, trucks: 0,
+    genS: 42, scenS: -30, nextGate: 1000, dels: [], deliv: 0, dStreak: 0, dBest: 0, nextDel: 150, tuns: [], pet: !!o.pet, petSide: 1, edition: 0, score: 0, coinsRun: 0, starsRun: 0, clues: 0, gifts: 0, jumps: 0, ducks: 0, tricks: 0, powers: 0, trucks: 0,
     cleanS: 0, cleanBest: 0, revives: 0, cause: '', mult: o.mult || 1, bad: 0, rows: 0,
     dur: { magnet: (8 + 2 * (up.magnet || 0)) * bat, turbo: (4.5 + (up.turbo || 0)) * bat, x2: (10 + 3 * (up.x2 || 0)) * bat },
     luck: up.gift || 0, nextGift: 380, nextClue: 320, cluesLeft: o.cluesLeft || 0, tut: o.tut ? 0 : -1, tutWait: null, ts: 1
@@ -820,6 +832,7 @@ function coinArc(g, lane, sc, v, y0 = 0) {
 }
 
 function genRow(g) {
+  const JP = RAINY(Math.floor(g.genS / 1000)) ? JUMPS_R : JUMPS;
   const r = g.rng, s = g.genS, d = diffAt(s), v = vEst(g, s) * hillK(HILLD(s));
   const tg = lerp(1.22, 0.74, d), gap = Math.max(11, v * tg) * (1 + r() * 0.35);
   const st = ['free', 'free', 'free'];
@@ -836,7 +849,7 @@ function genRow(g) {
   ]);
   g._kind = kind;
   const rl = () => Math.floor(r() * 3);
-  const anyType = () => pickW(r, JUMPS.concat(BLOCKS, [['branch', 1.3]]));
+  const anyType = () => pickW(r, JP.concat(BLOCKS, [['branch', 1.3]]));
   const place = (t, l) => {
     if (t === 'branch') { addOb(g, 'branch', l, s, { vis: { side: l === 0 ? -1 : 1, lanes: [l] } }); st[l] = 'duck'; }
     else { addOb(g, t, l, s); st[l] = OT[t].need; }
@@ -847,19 +860,19 @@ function genRow(g) {
     else {
       const l = ok[Math.floor(r() * ok.length)];
       addOb(g, 'rider', l, s, { col: Math.floor(r() * 4) }); st[l] = 'block';
-      if (d > 0.3 && r() < 0.6) { const l2 = (l + 1 + Math.floor(r() * 2)) % 3; place(pickW(r, JUMPS), l2); }
+      if (d > 0.3 && r() < 0.6) { const l2 = (l + 1 + Math.floor(r() * 2)) % 3; place(pickW(r, JP), l2); }
     }
   }
   if (kind === 'single') { place(anyType(), rl()); }
   else if (kind === 'double') { const f = rl(); for (let l = 0; l < 3; l++) if (l !== f) place(anyType(), l); }
   else if (kind === 'triple') {
     for (let l = 0; l < 3; l++) place(anyType(), l);
-    if (st.every(x => x === 'block')) { const l = rl(); g.obs = g.obs.filter(o => !(o.s === s && o.lane === l)); place(pickW(r, JUMPS), l); }
+    if (st.every(x => x === 'block')) { const l = rl(); g.obs = g.obs.filter(o => !(o.s === s && o.lane === l)); place(pickW(r, JP), l); }
   } else if (kind === 'branch') {
     const span = d > 0.3 ? 1 + Math.floor(r() * 3) : 1 + Math.floor(r() * 2), side = r() < 0.5 ? -1 : 1;
     const lanes = side > 0 ? [2, 1, 0].slice(0, span) : [0, 1, 2].slice(0, span);
     lanes.forEach((l, i) => { addOb(g, 'branch', l, s, { vis: i === 0 ? { side, lanes } : null }); st[l] = 'duck'; });
-    if (span < 3 && r() < 0.35 + d * 0.4) { const f = [0, 1, 2].filter(l => !lanes.includes(l)); place(pickW(r, BLOCKS.concat(JUMPS)), f[Math.floor(r() * f.length)]); }
+    if (span < 3 && r() < 0.35 + d * 0.4) { const f = [0, 1, 2].filter(l => !lanes.includes(l)); place(pickW(r, BLOCKS.concat(JP)), f[Math.floor(r() * f.length)]); }
   } else if (kind === 'trucks') {
     let opts;
     do { opts = [0, 1, 2].map(() => pickW(r, [['rt', 4], ['t', 3], ['e', 1.6]])); } while (!opts.includes('rt') && !opts.includes('e'));
@@ -911,6 +924,11 @@ function genRow(g) {
 
 function genScen(g) {
   const r = g.srng, s = g.scenS, zi = Math.floor(Math.max(0, s) / 1000) % ZONES.length, th = THEMES[zi];
+  const Z0 = ZONES[zi], inTun = x => g.tuns.some(t => x >= t[0] - 8 && x <= t[1] + 8);
+  if (Z0.tun && s > 300 && !inTun(s + 40) && s > (g.tuns.length ? g.tuns[g.tuns.length - 1][1] : 0) + 160 && r() < 0.06) { const a = s + 12, b = a + 70 + r() * 80; g.tuns.push([a, b]); for (const ps of [a, b]) g.scen.push({ k: 'portal', s: ps, x: 0, side: 1, ry: 0, sc: 1, v: 0, sh: 1, z: zi }); }
+  if (g.tuns.length > 4) g.tuns.shift();
+  const tn = g.tuns.find(t => s + 6 >= t[0] && s + 6 <= t[1]);
+  if (tn) { g.scen.push({ k: 'tunnel', s: s + 6, x: 0, side: 1, ry: 0, sc: 1, v: 0, sh: 1, z: zi }); g.scenS += 6 + r() * 5; return; }
   if (th.sea) g.scen.push({ k: 'sea', s, x: 9.6, side: 1, ry: 0, sc: 1, v: 0, sh: 1, z: zi });
   if (th.rail) for (const sd of [-1, 1]) g.scen.push({ k: 'rail', s, x: sd * 5.45, side: sd, ry: 0, sc: 1, v: 0, sh: 1, z: zi });
   if (s >= g.nextGate - 14) { const ed = g.nextGate / 1000; g.scen.push({ k: 'gate', s: g.nextGate, x: 0, ry: 0, sc: 1, z: ed % ZONES.length, v: 0, sh: 1 }); g.nextGate += 1000; }
@@ -1053,11 +1071,13 @@ function step(g, dt, inp) {
     } else stumble(g, o, moving);
     if (!P.alive) return;
   }
+  g.petSide = P.lane === 2 ? -1 : 1;
   // monedas
   const mul = g.mult * (P.x2 > 0 ? 2 : 1) * (V.id === 'bike' ? 1.15 : 1) * (1 + 0.5 * P.boost), magR = P.magnet > 0 ? 16 : 0;
   for (const c of g.coins) {
     if (!c.alive) continue;
     if (magR && !c.mag && c.s > P.s - 2 && c.s < P.s + magR) c.mag = 1;
+    else if (g.pet && !c.mag && c.s > P.s && c.s < P.s + 3.2 && Math.sign(c.x - P.x) === g.petSide && Math.abs(c.x - P.x) < 2.6 && c.y < 2.2 + P.y) c.mag = 1;
     else if (V.id === 'euc' && !c.mag && c.s > P.s - 1 && c.s < P.s + 4.5 && Math.abs(c.x - P.x) < 2.3 && Math.abs(c.y - P.y - 0.9) < 1.6) c.mag = 1;
     if (c.mag) { const k = Math.min(1, dt * 14); c.x += (P.x - c.x) * k; c.y += (P.y + 0.9 - c.y) * k; c.s += (P.s + 0.2 - c.s) * k; }
     if (c.s > zA - 0.6 && c.s < zB + 0.6 && Math.abs(c.x - P.x) < 0.95 && c.y > P.y - 0.4 && c.y < P.y + h + 0.5) {
@@ -1160,7 +1180,7 @@ function aiThink(g, skill = 1) {
 
 /* Simulación rápida sin render (bot de pruebas) */
 function simulate(o) {
-  const g = newGame({ seed: o.seed, veh: o.veh || 'scooter', ai: true, up: o.up, mult: 1, cluesLeft: 12 });
+  const g = newGame({ seed: o.seed, veh: o.veh || 'scooter', ai: true, up: o.up, mult: 1, cluesLeft: 12, pet: o.pet });
   const maxT = o.maxT || 240; let n = 0, inp = null, errs = [];
   while (g.p.alive && g.t < maxT) {
     if (n % 3 === 0) inp = aiThink(g, o.skill == null ? 1 : o.skill); else inp = null;
@@ -1451,6 +1471,19 @@ const MOD = {
   coffee() { const m = new MB(), r = rngOf(23); for (let i = 0; i < 4; i++) { const z = -4.5 + i * 3; m.ico(0, 0.6, z, 0.75, PC(0, 0.85 + r() * 0.2), 0, 0.9, r, 0.3); for (let k = 0; k < 7; k++) m.box((r() - 0.5) * 1.1, 0.35 + r() * 0.7, z + (r() - 0.5) * 1.1, 0.1, 0.1, 0.1, PC(4), 1); } return m; },
   rail() { const m = new MB(); for (let z = -6; z <= 6; z += 2) m.box(0, 0.55, z, 0.14, 1.1, 0.14, PC(2)); m.box(0, 1.1, 0, 0.2, 0.12, 12.2, PC(2, 1.1)); m.box(0, 0.6, 0, 0.06, 0.08, 12.2, PC(2, 0.9)); m.box(0, -0.6, 0, 0.6, 1.4, 12.2, PC(1, 0.8)); return m; },
   boat() { const m = new MB(); m.box(0, 0.25, 0, 1.6, 0.5, 4.2, PC(2)); m.box(0, 0.52, 0, 1.7, 0.08, 4.3, PC(4)); m.cyl(0, 0.5, 0.3, 0.06, 3.4, 5, PC(1)); m.tri([0, 3.8, 0.28], [0, 0.9, 0.28], [0, 0.9, -1.6], PC(3, 1.2), 1); return m; },
+  tunnel() { const m = new MB(); for (const sx of [-1, 1]) { m.box(sx * 5.8, 3.1, 0, 0.5, 6.2, 12.2, PC(2, 0.7)); m.box(sx * 5.53, 1.0, 0, 0.05, 0.12, 12.2, PC(4), 1); m.box(sx * 5.53, 4.6, 0, 0.05, 0.08, 12.2, PC(4, 0.8), 1); }
+    m.box(0, 6.35, 0, 12.1, 0.5, 12.2, PC(1, 0.7)); for (const sx of [-1, 1]) m.box(sx * 2.4, 6.08, 0, 0.45, 0.05, 9.5, hex('#fff3c4'), 1); return m; },
+  portal() { const m = new MB(); for (const sx of [-1, 1]) m.box(sx * 10, 4.8, 0, 8.4, 9.6, 1.2, PC(2, 0.85)); m.box(0, 8.0, 0, 12, 3.2, 1.2, PC(2, 0.85)); m.box(0, 6.4, -0.62, 12, 0.3, 0.05, PC(4), 1); m.box(0, 9.7, 0, 28.4, 0.3, 1.4, PC(1, 0.8)); return m; },
+  pet(k, col) {
+    const m = new MB(), c = hex(col), w = hex('#f4f1e6');
+    if (k === 'm1') { m.box(0, 0.42, 0, 0.26, 0.24, 0.55, c); m.box(0, 0.58, -0.36, 0.2, 0.2, 0.24, c); m.box(0, 0.53, -0.5, 0.12, 0.09, 0.1, w); m.box(0, 0.56, -0.56, 0.06, 0.05, 0.03, DK);
+      for (const sx of [-1, 1]) { m.box(sx * 0.11, 0.66, -0.3, 0.05, 0.16, 0.09, hex('#7a4f2a')); m.box(sx * 0.06, 0.62, -0.48, 0.03, 0.03, 0.02, DK); for (const z of [-0.18, 0.18]) m.box(sx * 0.09, 0.15, z, 0.07, 0.3, 0.07, c); }
+      m.box(0, 0.5, -0.12, 0.27, 0.05, 0.06, hex('#c0191c')); }
+    else if (k === 'm2') { m.box(0, 0.32, 0, 0.2, 0.2, 0.46, c); m.ico(0, 0.48, -0.3, 0.13, c); for (const sx of [-1, 1]) { m.at(sx * 0.07, 0.6, -0.3, 0, 0, sx * -0.2, 1, 1, 1, q => q.cyl(0, 0, 0, 0.05, 0.11, 4, c, 0, 0)); m.box(sx * 0.05, 0.5, -0.42, 0.035, 0.03, 0.02, hex('#ffd23a'), 1); for (const z of [-0.15, 0.15]) m.box(sx * 0.07, 0.12, z, 0.05, 0.24, 0.05, c); } }
+    else { m.ico(0, 0, 0, 0.13, c, 0, 1.3); m.ico(0, 0.17, -0.06, 0.09, c); m.box(0, 0.15, -0.16, 0.04, 0.05, 0.06, hex('#ffc23a')); m.box(0, -0.2, 0.12, 0.07, 0.04, 0.22, hex('#c0191c')); for (const sx of [-1, 1]) m.box(sx * 0.04, 0.2, -0.13, 0.025, 0.025, 0.01, DK); }
+    return m;
+  },
+  petTail(k, col) { const m = new MB(), c = hex(col); if (k === 'm3') { m.tri([0, 0, -0.08], [0.32, 0.02, 0.04], [0, 0, 0.12], c); } else m.at(0, 0, 0, 0, -0.9, 0, 1, 1, 1, q => q.box(0, 0.14, 0, 0.05, 0.28, 0.05, c)); return m; },
   /* ---- entregas: buzón, casitas, puerta, vecino, revista ---- */
   buzon() { const m = new MB(), t = hex('#0e6378'); m.box(0, 0.55, 0, 0.09, 1.1, 0.09, GR); m.box(0, 1.24, 0, 0.36, 0.34, 0.52, t); m.at(0, 1.4, 0, 0, Math.PI / 2, 0, 1, 1, 1, q => q.cyl(0, -0.26, 0, 0.18, 0.52, 8, t, 0, 0.18, false));
     m.box(-0.182, 1.26, 0, 0.01, 0.06, 0.3, DK); m.quad([0.182, 1.1, 0.2], [0.182, 1.1, -0.2], [0.182, 1.38, -0.2], [0.182, 1.38, 0.2], WH, 0.3, ATR.cover); m.box(0, 1.08, 0, 0.38, 0.05, 0.54, hex('#e8e4c4')); return m; },
@@ -1490,7 +1523,7 @@ const RN = {
   parts: [], mo: {}, branches: {}, pl: null, plKey: '', trailT: 0, quality: 1,
   init() {
     const mk = b => R.mesh(b), mo = this.mo;
-    for (const k of ['road', 'tree', 'pine', 'bush', 'lamp', 'bench', 'hill', 'billFrame', 'gateFrame', 'rock', 'cone', 'barrier', 'pothole', 'puddle', 'cart', 'kiosk', 'coin', 'gift', 'clue', 'magnet', 'shield', 'turbo', 'x2', 'cube', 'shadow', 'ink', 'flowers', 'wing', 'bfly', 'bird', 'bwing', 'rabbit', 'palm', 'parasol', 'sea', 'mount', 'fence', 'coffee', 'rail', 'boat', 'buzon', 'flag', 'door', 'rarm', 'mag']) mo[k] = mk(MOD[k]());
+    for (const k of ['road', 'tree', 'pine', 'bush', 'lamp', 'bench', 'hill', 'billFrame', 'gateFrame', 'rock', 'cone', 'barrier', 'pothole', 'puddle', 'cart', 'kiosk', 'coin', 'gift', 'clue', 'magnet', 'shield', 'turbo', 'x2', 'cube', 'shadow', 'ink', 'flowers', 'wing', 'bfly', 'bird', 'bwing', 'rabbit', 'palm', 'parasol', 'sea', 'mount', 'fence', 'coffee', 'rail', 'boat', 'buzon', 'flag', 'door', 'rarm', 'mag', 'tunnel', 'portal']) mo[k] = mk(MOD[k]());
     mo.house = [0, 1, 2].map(v => mk(MOD.house(v))); mo.resi = [0, 1, 2].map(v => mk(MOD.resi(v))); this.proj = [];
     mo.bld = []; for (let v = 0; v < 3; v++) mo.bld.push([mk(MOD.bld(v, 2)), mk(MOD.bld(v, 3))]);
     mo.bill = []; mo.gate = []; for (let i = 0; i < 10; i++) { mo.bill.push(mk(MOD.billPanel(i))); mo.gate.push(mk(MOD.gatePanel(i))); }
@@ -1504,6 +1537,7 @@ const RN = {
     if (this.pl) for (const k in this.pl) R.free(this.pl[k]);
     const r = MOD.rider(cos);
     this.pl = { veh: R.mesh(MOD.veh(vid, cos.paint, cos.pe)), t: R.mesh(r.t), th: R.mesh(r.th), sn: R.mesh(r.sn), ar: R.mesh(r.ar) };
+    const pc = COSI[cos.pet]; if (pc && pc.c) { this.pl.pet = R.mesh(MOD.pet(cos.pet, pc.c)); this.pl.ptail = R.mesh(MOD.petTail(cos.pet, pc.c)); } this.petK = pc && pc.c ? cos.pet : null;
     this.vid = vid;
   },
   zoneEnv(s) {
@@ -1642,6 +1676,12 @@ const RN = {
     const P = g.p; if (!R.gl) return;
     this.zoneEnv(P.s);
     const E = this.env;
+    // clima (lluvia) y túneles: oscurecen el ambiente
+    const ed = Math.floor(Math.max(0, P.s) / 1000), u = P.s - ed * 1000, rt = mode === 'garage' ? 0 : RAINY(ed) ? clamp(Math.min(u, 1000 - u) / 60, 0, 1) : 0;
+    this.rk = lerp(this.rk || 0, rt, Math.min(1, dt * 2)); const rk = this.rk;
+    if (rk > 0.01) { const gr = [0.42, 0.45, 0.5]; lerp3(E.top, E.top, gr, 0.55 * rk); lerp3(E.hor, E.hor, [0.55, 0.58, 0.62], 0.45 * rk); E.amb *= 1 - 0.2 * rk; E.sunI *= 1 - 0.5 * rk; E.fogR[1] *= 1 - 0.25 * rk; E.fogR[0] *= 1 - 0.4 * rk; E.sun[2] *= 1 - rk; E.emit = Math.max(E.emit, 0.45 * rk); }
+    const inT = mode !== 'garage' && g.tuns && g.tuns.some(t => P.s > t[0] - 3 && P.s < t[1] + 2); this.tk = lerp(this.tk || 0, inT ? 1 : 0, Math.min(1, dt * 3)); const tk = this.tk;
+    if (tk > 0.01) { E.amb *= 1 - 0.5 * tk; E.sunI *= 1 - 0.85 * tk; E.emit = Math.max(E.emit, 0.9 * tk); lerp3(E.hor, E.hor, [0.08, 0.08, 0.1], 0.5 * tk); E.fogR[1] *= 1 - 0.3 * tk; }
     E.bend[0] = mode === 'garage' ? 0 : 0.0017 * Math.sin(P.s / 520) * Math.sin(P.s / 190 + 0.7);
     E.bend[1] = mode === 'garage' ? 0 : -0.00032;
     const hOn = mode === 'garage' ? 0 : 1, TAU = Math.PI * 2; E.hill[0] = (P.s * 0.0105) % TAU; E.hill[1] = (P.s * 0.027 + 1.7) % TAU; E.hill[2] = P.s; E.hill[3] = hOn; E.h0 = HILL(P.s); this.sl = hOn ? HILLD(P.s) : 0;
@@ -1713,6 +1753,12 @@ const RN = {
     }
     this.drawPlayer(g, time, dt);
     this.wild(g, mode, time, dt);
+    // mascota que corre al lado
+    if (this.petK && this.pl.pet && P.alive) {
+      const sd = mode === 'garage' ? 1 : g.petSide, pk = this.petK, py = P.air ? (P.gy || 0) : P.y; this.petX = lerp(this.petX == null ? P.x + sd : this.petX, P.x + sd * 0.95, Math.min(1, dt * 8));
+      if (pk === 'm3') { const f = Math.sin(time * 16) * 0.8; M4.trs(M, this.petX * 0.9 + sd * 0.1, P.y + 2.05 + Math.sin(time * 3) * 0.12, 0.25, 0, 0, 0, 1.3); R.draw(this.pl.pet, M); M4.trs(this.A, 0.08, 0.05, 0, 0, 0, f); M4.mul(this.B, M, this.A); R.draw(this.pl.ptail, this.B); M4.trs(this.A, -0.08, 0.05, 0, 0, 0, -f, -1, 1, 1); M4.mul(this.B, M, this.A); R.draw(this.pl.ptail, this.B); }
+      else { const run = mode === 'garage' ? 0.3 : 1, ph = time * 14, b = Math.abs(Math.sin(ph)) * 0.12 * run; M4.trs(M, this.petX, py + b, 0.3, 0, Math.sin(ph) * 0.12 * run, 0, 1.15); R.draw(this.pl.pet, M); M4.trs(this.A, 0, 0.5, 0.26, Math.sin(time * 12) * 0.6, 0, 0); M4.mul(this.B, M, this.A); R.draw(this.pl.ptail, this.B); }
+    }
     // la Tinta Gris persigue al jugador cuando se tambalea (y lo atrapa al caer)
     const it = mode === 'play' ? (!P.alive ? 1.45 : P.stumble > 0 ? 1 : 0) : 0; this.ink = lerp(this.ink || 0, it, Math.min(1, dt * (it > (this.ink || 0) ? 3 : 1.5)));
     if (this.ink > 0.03) { const k = this.ink, w = Math.sin(time * 9) * 0.06; M4.trs(M, P.x * 0.92, -1.3 * Math.max(0, 1 - k), 7.4 - 4.9 * k, Math.sin(time * 3) * 0.2, 0, 0, 0.6 + w, 0.6 - w, 0.6); R.draw(mo.ink, M); }
@@ -1787,10 +1833,16 @@ const AU = {
       case 'pump': this.tone(260 + 520 * (this.pumpLv || 0), t, 0.05, 'square', 0.045, 380 + 620 * (this.pumpLv || 0)); break;
       case 'deliver': this.noise(t, 0.18, 0.08, 2200, 'bandpass', null, 1.5); this.tone(1319, t + 0.16, 0.18, 'sine', 0.1); this.tone(1760, t + 0.24, 0.3, 'sine', 0.09); break;
       case 'dmiss': this.tone(240, t, 0.18, 'triangle', 0.08, 150); break;
+      case 'thunder': this.noise(t, 1.6, 0.35, 180, 'lowpass'); this.noise(t + 0.05, 0.5, 0.2, 600, 'lowpass'); break;
       case 'tut': this.tone(880, t, 0.12, 'sine', 0.1); break;
       case 'rank': [523, 659, 784, 1047, 1319].forEach((f, i) => this.tone(f, t + i * 0.09, 0.22, 'square', 0.07)); break;
       case 'buy': this.tone(784, t, 0.08, 'square', 0.07); this.tone(1175, t + 0.07, 0.16, 'square', 0.07); break;
     }
+  },
+  rainOn(on) {
+    if (!this.ctx) return; const c = this.ctx;
+    if (!this.rainG) { const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(); s.buffer = this.nb; s.loop = true; f.type = 'highpass'; f.frequency.value = 1400; g.gain.value = 0; s.connect(f); f.connect(g); g.connect(this.sg); s.start(); this.rainG = g; }
+    this.rainG.gain.setTargetAtTime(on ? 0.09 : 0, c.currentTime, 0.6);
   },
   music(on) {
     this.want = on; if (!this.ctx) return;
@@ -1818,15 +1870,15 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const fmt = n => Math.round(n).toLocaleString('es-CO');
 const dayKey = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-const VERSION = '1.3.0', SKEY = 'runscooter.v1';
+const VERSION = '1.4.0', SKEY = 'runscooter.v1';
 const MREW = [100, 200, 350, 550, 800], MXP = [150, 300, 500, 800, 1200], DAILY = [100, 150, 200, 's1', 300, 400, 's3'];
 
 const SV = {
   S: null,
   def() {
-    return { v: 1, coins: 0, stars: 0, xp: 0, best: 0, bestDist: 0, veh: 'scooter', owned: { scooter: 1 }, cos: { casco: 'h0', ropa: 'r0', pintura: 'p0', estela: 't0' }, ownedCos: { h0: 1, r0: 1, p0: 1, t0: 1 },
+    return { v: 1, coins: 0, stars: 0, xp: 0, best: 0, bestDist: 0, veh: 'scooter', owned: { scooter: 1 }, cos: { casco: 'h0', ropa: 'r0', pintura: 'p0', estela: 't0', mascota: 'm0' }, ownedCos: { h0: 1, r0: 1, p0: 1, t0: 1, m0: 1 },
       up: { magnet: 0, turbo: 0, x2: 0, gift: 0 }, clues: 0, readClues: 0, mis: [], misLvl: {}, misDone: 0, daily: { last: '', streak: 0 }, ch: { day: '', best: 0, rew: '' }, boostTip: 0, rank: 0,
-      set: { sfx: 1, music: 1, vib: 1, q: 'auto', fps: 0 }, tut: 1, runs: [], tot: { runs: 0, dist: 0, coins: 0, time: 0 }, created: Date.now() };
+      set: { sfx: 1, music: 1, vib: 1, q: 'auto', fps: 0, lh: 0 }, tut: 1, runs: [], tot: { runs: 0, dist: 0, coins: 0, time: 0 }, created: Date.now() };
   },
   merge(a, b) {
     if (!b || typeof b !== 'object' || Array.isArray(b)) return a;
@@ -1854,7 +1906,7 @@ function newMis(S, ex) { const pool = MIS.filter(m => !ex.includes(m.k)); const 
 const misDef = k => MIS.find(m => m.k === k);
 const misVal = (k, g) => k === 'coins' ? g.coinsRun : k === 'dist' ? g.p.s : k === 'jumps' ? g.jumps : k === 'ducks' ? g.ducks : k === 'gifts' ? g.gifts : k === 'powers' ? g.powers : k === 'tricks' ? g.tricks : k === 'score' ? g.score : k === 'clean' ? Math.max(g.cleanBest, g.cleanS) : k === 'trucks' ? g.trucks : k === 'deliv' ? g.deliv : k === 'dstreak' ? g.dBest : g.edition + 1;
 const misText = m => misDef(m.k).t.replace('{n}', fmt(misDef(m.k).n[m.lvl]));
-const cosCfg = S => { const h = COSI[S.cos.casco], r = COSI[S.cos.ropa], p = COSI[S.cos.pintura]; return { helmet: h.c, he: !!h.e, shirt: r.a, pants: r.b, se: !!r.e, paint: p.c, pe: !!p.e }; };
+const cosCfg = S => { const h = COSI[S.cos.casco], r = COSI[S.cos.ropa], p = COSI[S.cos.pintura]; return { helmet: h.c, he: !!h.e, shirt: r.a, pants: r.b, se: !!r.e, paint: p.c, pe: !!p.e, pet: S.cos.mascota || 'm0' }; };
 const priceTxt = it => it.st ? '✦ ' + it.st : '◉ ' + fmt(it.p || 0);
 
 const UI = {
@@ -1891,11 +1943,11 @@ const UI = {
         return `<button class="card${sel ? ' sel' : ''}" data-act="veh" data-arg="${v.id}">${sel ? '<span class="tag">EN USO</span>' : ''}<span class="nm">${esc(v.name)}</span><span class="ds">${esc(v.desc)}</span>${st('Vel', v.spd)}${st('Salto', v.jmp)}${st('Manejo', v.hnd)}<span class="ds"><b>★ ${esc(v.perk)}</b></span><span class="pr">${own ? (sel ? '✔ Seleccionado' : 'Toca para usar') : '◉ ' + fmt(v.price)}</span></button>`;
       }).join('') + '</div>';
     } else if (this.gtab === 'cos') {
-      const N = { casco: 'Casco', ropa: 'Ropa', pintura: 'Pintura del vehículo', estela: 'Estela' };
+      const N = { casco: 'Casco', ropa: 'Ropa', pintura: 'Pintura del vehículo', estela: 'Estela', mascota: 'Mascota (atrapa monedas del carril vecino)' };
       for (const cat in COS) {
         h += `<div class="cat">${N[cat]}</div><div class="cards">` + COS[cat].map(c => {
           const own = S.ownedCos[c.id], sel = S.cos[cat] === c.id;
-          const sw = cat === 'ropa' ? `linear-gradient(90deg,${c.a} 50%,${c.b} 50%)` : cat === 'estela' ? '#111' : c.c;
+          const sw = cat === 'ropa' ? `linear-gradient(90deg,${c.a} 50%,${c.b} 50%)` : cat === 'estela' || !c.c ? '#111' : c.c;
           return `<button class="card${sel ? ' sel' : ''}" data-act="cos" data-arg="${c.id}">${sel ? '<span class="tag">PUESTO</span>' : ''}<span class="sw" style="background:${sw}"></span><span class="nm" style="font-size:18px">${esc(c.name)}</span><span class="pr">${own ? (sel ? '✔ Puesto' : 'Toca para usar') : priceTxt(c)}</span></button>`;
         }).join('') + '</div>';
       }
@@ -1943,7 +1995,7 @@ const UI = {
   settings() {
     const S = SV.S, t = (k, on, lab, sub) => `<div class="opt"><span>${lab}${sub ? '<small>' + sub + '</small>' : ''}</span><button class="tg${on ? ' on' : ''}" data-act="set" data-arg="${k}">${on ? 'SÍ' : 'NO'}</button></div>`;
     const q = ['auto', 'alta', 'baja'].map(x => `<button class="${S.set.q === x ? 'on' : ''}" data-act="qual" data-arg="${x}">${x}</button>`).join('');
-    $('setBody').innerHTML = t('sfx', S.set.sfx, 'Efectos de sonido') + t('music', S.set.music, 'Música') + t('vib', S.set.vib, 'Vibración', 'En celulares compatibles') + t('fps', S.set.fps, 'Mostrar FPS') +
+    $('setBody').innerHTML = t('sfx', S.set.sfx, 'Efectos de sonido') + t('music', S.set.music, 'Música') + t('vib', S.set.vib, 'Vibración', 'En celulares compatibles') + t('fps', S.set.fps, 'Mostrar FPS') + t('lh', S.set.lh, 'Modo zurdo', 'Botón ⚡ IMPULSO a la izquierda') +
       `<div class="opt"><span>Calidad gráfica<small>Auto ajusta según tu celular</small></span><div class="seg">${q}</div></div>
       <div class="opt"><span>Controles<small>Desliza ← → ↑ ↓ · Teclado: flechas, WASD, espacio, P = pausa</small></span></div>
       <div class="opt"><span>Tutorial<small>Volver a ver los gestos básicos</small></span><button class="tg" data-act="tut">VER</button></div>
@@ -1970,7 +2022,7 @@ const UI = {
     $('hStum').hidden = !(P.stumble > 0 && P.alive);
   },
   pop(txt, cls = '') { const el = $('hPop'); el.className = ''; void el.offsetWidth; el.className = 'pop ' + cls; el.textContent = txt; },
-  banner(ed) { const z = ZONES[ed % ZONES.length]; $('hBanner').innerHTML = `<div class="banner"><div class="sp">Edición ${ed + 1}</div><div class="mega">${esc(z.name)}</div></div>`; },
+  banner(ed) { const z = ZONES[ed % ZONES.length]; $('hBanner').innerHTML = `<div class="banner"><div class="sp">Edición ${ed + 1}${RAINY(ed) ? ' · ☂ lluvia' : ''}</div><div class="mega">${esc(z.name)}</div></div>`; },
   tut(i) { const T = TUT[i]; const el = $('hTut'); if (i < 0 || !T) { el.hidden = true; return; } el.innerHTML = `<b>${T.msg}</b><small>${esc(T.pc)}</small>`; el.hidden = false; }
 };
 
@@ -2029,7 +2081,7 @@ function startRun(ch) {
   const S = SV.S; AU.init(); AU.music(true); if (ch === undefined) ch = lastCh; lastCh = !!ch;
   UI.ov('oOver', 0); UI.ov('oRevive', 0); UI.ov('oPause', 0); UI.hideScreens(); UI.preview = null;
   refreshPlayer();
-  G = newGame({ seed: ch ? daySeed() : (Math.random() * 4294967295) >>> 0, veh: S.veh, up: S.up, mult: 1 + 0.25 * rankOf(S.xp), cluesLeft: STORY.length - S.clues, tut: S.tut === 1 });
+  G = newGame({ seed: ch ? daySeed() : (Math.random() * 4294967295) >>> 0, veh: S.veh, up: S.up, mult: 1 + 0.25 * rankOf(S.xp), cluesLeft: STORY.length - S.clues, tut: S.tut === 1, pet: S.cos.mascota && S.cos.mascota !== 'm0' });
   Q.length = 0; acc = 0; overShown = false; reviveT = 0; RN.parts.length = 0; UI.hud = { s: -1, c: -1, d: -1, m: '', pk: '' };
   $('hud').hidden = false; $('hBanner').innerHTML = ''; UI.tut(-1); $('hCnt').hidden = true;
   if (S.boostTip < 3) { S.boostTip++; setTimeout(() => { if (mode === 'play') UI.toast('Toca ⚡ IMPULSO seguido para acelerar: más velocidad, más puntos', 'g'); }, 2600); }
@@ -2186,7 +2238,7 @@ function act(a, arg, el) {
     }
     case 'read': UI.read(+arg); break;
     case 'closeRead': if (el && el.id === 'oRead' || el.tagName === 'BUTTON') { UI.ov('oRead', 0); UI.story(); } break;
-    case 'set': S.set[arg] = S.set[arg] ? 0 : 1; SV.save(); AU.set(S.set.sfx, S.set.music); $('hFps').hidden = !S.set.fps; UI.settings(); break;
+    case 'set': S.set[arg] = S.set[arg] ? 0 : 1; SV.save(); document.body.classList.toggle('lh', !!S.set.lh); AU.set(S.set.sfx, S.set.music); $('hFps').hidden = !S.set.fps; UI.settings(); break;
     case 'qual': S.set.q = arg; SV.save(); applyQuality(); UI.settings(); break;
     case 'tut': S.tut = 1; SV.save(); UI.toast('El tutorial saldrá en tu próxima partida'); break;
     case 'exp': saveFile('runscooter-partidas-' + dayKey() + '.json', exportJSON(), 'application/json').then(ok => ok && UI.toast('Partidas exportadas ✔')); break;
@@ -2196,6 +2248,16 @@ function act(a, arg, el) {
     case 'cfYes': UI.ov('oConf', 0); if (confirmFn) { const f = confirmFn; confirmFn = null; f(); } break;
     case 'cfNo': UI.ov('oConf', 0); confirmFn = null; if (UI.preview) { UI.preview = null; refreshPlayer(); UI.garage(); } break;
     case 'daily': claimDaily(); break;
+    case 'share': {
+      const g = G, url = (document.querySelector('meta[property="og:url"]') || {}).content || location.href;
+      const txt = g ? `¡Hice ${fmt(g.score)} puntos, ${fmt(g.p.s)} m y ${g.deliv} entregas en Run Scooter! 🛴 ¿Me ganas?` : '¡Juega Run Scooter, la ciclovía sin fin! 🛴';
+      const P = window.Capacitor && window.Capacitor.Plugins;
+      const wa = () => { window.open('https://wa.me/?text=' + encodeURIComponent(txt + ' ' + url), '_blank'); };
+      if (P && P.Share) P.Share.share({ title: 'Run Scooter', text: txt, url }).catch(wa);
+      else if (navigator.share) navigator.share({ title: 'Run Scooter', text: txt, url }).catch(e => { if (!e || e.name !== 'AbortError') wa(); });
+      else wa();
+      break;
+    }
   }
 }
 
@@ -2257,6 +2319,8 @@ function tick(dt) {
     if (count <= 0) { mode = 'play'; acc = 0; }
   }
   if (view !== 'garage') RN.trail(g, dt, SV.S.cos.estela);
+  const rn = view === 'play' && RN.rk > 0.35; if (rn !== tick.rain) { tick.rain = rn; $('rain').classList.toggle('on', rn); AU.rainOn(rn); }
+  if (rn && mode === 'play' && Math.random() < dt * 0.06) { const f = $('flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); setTimeout(() => AU.sfx('thunder'), 300 + Math.random() * 600); }
   if (SV.S.set.fps && mode === 'play') { const f = fpsA.length ? fpsA.length / fpsA.reduce((a, b) => a + b, 0) : 0; $('hFps').textContent = Math.round(f) + ' FPS · ' + R.draws + ' dibujos'; }
   AU.tempo = 112 + (g.p.v > 14 ? Math.min(26, (g.p.v - 14) * 1.2) : 0);
   RN.frame(g, view, now, dt);
@@ -2268,7 +2332,7 @@ function boot() {
   const cv = $('cv'); let ok = false;
   try { ok = R.init(cv); } catch (e) { ERR.push('webgl: ' + e.message); }
   if (!ok) { document.body.insertAdjacentHTML('beforeend', '<div class="nogl"><div><h1 class="mega" style="font-size:60px;color:#1d4e79">RUN SCOOTER</h1><p>Tu navegador no tiene WebGL activado. Prueba con Chrome, Safari o Firefox actualizados.</p></div></div>'); return; }
-  applyQuality(); window.addEventListener('resize', applyQuality);
+  applyQuality(); window.addEventListener('resize', applyQuality); document.body.classList.toggle('lh', !!SV.S.set.lh);
   RN.init(); AU.set(SV.S.set.sfx, SV.S.set.music);
   const atlas = () => { try { R.texture(makeAtlas()); } catch (e) { ERR.push('atlas: ' + e.message); } };
   const fl = document.fonts && document.fonts.load ? Promise.all([document.fonts.load('40px "Titulos"'), document.fonts.load('800 40px "Cuerpo"')]) : Promise.resolve();

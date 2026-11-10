@@ -17,6 +17,9 @@ Funciona **sin internet**, en un solo `index.html`, sin librerías externas (mot
 - Fauna silvestre decorativa: mariposas, pájaros, conejos, flores, semillas y luciérnagas de noche.
 - **Entregas**: pasa por el carril del borde junto a un buzón o casita y lanzas la revista (la bandera sube, se abre la puerta y el vecino saluda). Las rachas multiplican los puntos.
 - 11 ediciones: las 7 páginas de la revista más Malecón (playa), Bosque nublado, Finca cafetera y Puente sobre el río.
+- **Clima**: algunas ediciones llueven (gotas, relámpagos, truenos y más charcos). **Túneles** iluminados en las ediciones urbanas.
+- **Mascotas** (perro, gata, loro) que corren a tu lado y atrapan monedas del carril vecino.
+- **Compartir por WhatsApp** el puntaje al terminar; **modo zurdo** para el botón de impulso.
 - **Reto del día**: la misma ruta para todos cada día; llegar a 1500 m da ✦ 2.
 - Si te tambaleas, la **Tinta Gris** te persigue: otro golpe y te atrapa.
 - Cada 1000 m cambia la **edición** (paleta y escenario). Las **páginas perdidas** (12) cuentan la historia de Don Ramiro.

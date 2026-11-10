@@ -3,15 +3,15 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const fmt = n => Math.round(n).toLocaleString('es-CO');
 const dayKey = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-const VERSION = '1.3.0', SKEY = 'runscooter.v1';
+const VERSION = '1.4.0', SKEY = 'runscooter.v1';
 const MREW = [100, 200, 350, 550, 800], MXP = [150, 300, 500, 800, 1200], DAILY = [100, 150, 200, 's1', 300, 400, 's3'];
 
 const SV = {
   S: null,
   def() {
-    return { v: 1, coins: 0, stars: 0, xp: 0, best: 0, bestDist: 0, veh: 'scooter', owned: { scooter: 1 }, cos: { casco: 'h0', ropa: 'r0', pintura: 'p0', estela: 't0' }, ownedCos: { h0: 1, r0: 1, p0: 1, t0: 1 },
+    return { v: 1, coins: 0, stars: 0, xp: 0, best: 0, bestDist: 0, veh: 'scooter', owned: { scooter: 1 }, cos: { casco: 'h0', ropa: 'r0', pintura: 'p0', estela: 't0', mascota: 'm0' }, ownedCos: { h0: 1, r0: 1, p0: 1, t0: 1, m0: 1 },
       up: { magnet: 0, turbo: 0, x2: 0, gift: 0 }, clues: 0, readClues: 0, mis: [], misLvl: {}, misDone: 0, daily: { last: '', streak: 0 }, ch: { day: '', best: 0, rew: '' }, boostTip: 0, rank: 0,
-      set: { sfx: 1, music: 1, vib: 1, q: 'auto', fps: 0 }, tut: 1, runs: [], tot: { runs: 0, dist: 0, coins: 0, time: 0 }, created: Date.now() };
+      set: { sfx: 1, music: 1, vib: 1, q: 'auto', fps: 0, lh: 0 }, tut: 1, runs: [], tot: { runs: 0, dist: 0, coins: 0, time: 0 }, created: Date.now() };
   },
   merge(a, b) {
     if (!b || typeof b !== 'object' || Array.isArray(b)) return a;
@@ -39,7 +39,7 @@ function newMis(S, ex) { const pool = MIS.filter(m => !ex.includes(m.k)); const 
 const misDef = k => MIS.find(m => m.k === k);
 const misVal = (k, g) => k === 'coins' ? g.coinsRun : k === 'dist' ? g.p.s : k === 'jumps' ? g.jumps : k === 'ducks' ? g.ducks : k === 'gifts' ? g.gifts : k === 'powers' ? g.powers : k === 'tricks' ? g.tricks : k === 'score' ? g.score : k === 'clean' ? Math.max(g.cleanBest, g.cleanS) : k === 'trucks' ? g.trucks : k === 'deliv' ? g.deliv : k === 'dstreak' ? g.dBest : g.edition + 1;
 const misText = m => misDef(m.k).t.replace('{n}', fmt(misDef(m.k).n[m.lvl]));
-const cosCfg = S => { const h = COSI[S.cos.casco], r = COSI[S.cos.ropa], p = COSI[S.cos.pintura]; return { helmet: h.c, he: !!h.e, shirt: r.a, pants: r.b, se: !!r.e, paint: p.c, pe: !!p.e }; };
+const cosCfg = S => { const h = COSI[S.cos.casco], r = COSI[S.cos.ropa], p = COSI[S.cos.pintura]; return { helmet: h.c, he: !!h.e, shirt: r.a, pants: r.b, se: !!r.e, paint: p.c, pe: !!p.e, pet: S.cos.mascota || 'm0' }; };
 const priceTxt = it => it.st ? '✦ ' + it.st : '◉ ' + fmt(it.p || 0);
 
 const UI = {
@@ -76,11 +76,11 @@ const UI = {
         return `<button class="card${sel ? ' sel' : ''}" data-act="veh" data-arg="${v.id}">${sel ? '<span class="tag">EN USO</span>' : ''}<span class="nm">${esc(v.name)}</span><span class="ds">${esc(v.desc)}</span>${st('Vel', v.spd)}${st('Salto', v.jmp)}${st('Manejo', v.hnd)}<span class="ds"><b>★ ${esc(v.perk)}</b></span><span class="pr">${own ? (sel ? '✔ Seleccionado' : 'Toca para usar') : '◉ ' + fmt(v.price)}</span></button>`;
       }).join('') + '</div>';
     } else if (this.gtab === 'cos') {
-      const N = { casco: 'Casco', ropa: 'Ropa', pintura: 'Pintura del vehículo', estela: 'Estela' };
+      const N = { casco: 'Casco', ropa: 'Ropa', pintura: 'Pintura del vehículo', estela: 'Estela', mascota: 'Mascota (atrapa monedas del carril vecino)' };
       for (const cat in COS) {
         h += `<div class="cat">${N[cat]}</div><div class="cards">` + COS[cat].map(c => {
           const own = S.ownedCos[c.id], sel = S.cos[cat] === c.id;
-          const sw = cat === 'ropa' ? `linear-gradient(90deg,${c.a} 50%,${c.b} 50%)` : cat === 'estela' ? '#111' : c.c;
+          const sw = cat === 'ropa' ? `linear-gradient(90deg,${c.a} 50%,${c.b} 50%)` : cat === 'estela' || !c.c ? '#111' : c.c;
           return `<button class="card${sel ? ' sel' : ''}" data-act="cos" data-arg="${c.id}">${sel ? '<span class="tag">PUESTO</span>' : ''}<span class="sw" style="background:${sw}"></span><span class="nm" style="font-size:18px">${esc(c.name)}</span><span class="pr">${own ? (sel ? '✔ Puesto' : 'Toca para usar') : priceTxt(c)}</span></button>`;
         }).join('') + '</div>';
       }
@@ -128,7 +128,7 @@ const UI = {
   settings() {
     const S = SV.S, t = (k, on, lab, sub) => `<div class="opt"><span>${lab}${sub ? '<small>' + sub + '</small>' : ''}</span><button class="tg${on ? ' on' : ''}" data-act="set" data-arg="${k}">${on ? 'SÍ' : 'NO'}</button></div>`;
     const q = ['auto', 'alta', 'baja'].map(x => `<button class="${S.set.q === x ? 'on' : ''}" data-act="qual" data-arg="${x}">${x}</button>`).join('');
-    $('setBody').innerHTML = t('sfx', S.set.sfx, 'Efectos de sonido') + t('music', S.set.music, 'Música') + t('vib', S.set.vib, 'Vibración', 'En celulares compatibles') + t('fps', S.set.fps, 'Mostrar FPS') +
+    $('setBody').innerHTML = t('sfx', S.set.sfx, 'Efectos de sonido') + t('music', S.set.music, 'Música') + t('vib', S.set.vib, 'Vibración', 'En celulares compatibles') + t('fps', S.set.fps, 'Mostrar FPS') + t('lh', S.set.lh, 'Modo zurdo', 'Botón ⚡ IMPULSO a la izquierda') +
       `<div class="opt"><span>Calidad gráfica<small>Auto ajusta según tu celular</small></span><div class="seg">${q}</div></div>
       <div class="opt"><span>Controles<small>Desliza ← → ↑ ↓ · Teclado: flechas, WASD, espacio, P = pausa</small></span></div>
       <div class="opt"><span>Tutorial<small>Volver a ver los gestos básicos</small></span><button class="tg" data-act="tut">VER</button></div>
@@ -155,7 +155,7 @@ const UI = {
     $('hStum').hidden = !(P.stumble > 0 && P.alive);
   },
   pop(txt, cls = '') { const el = $('hPop'); el.className = ''; void el.offsetWidth; el.className = 'pop ' + cls; el.textContent = txt; },
-  banner(ed) { const z = ZONES[ed % ZONES.length]; $('hBanner').innerHTML = `<div class="banner"><div class="sp">Edición ${ed + 1}</div><div class="mega">${esc(z.name)}</div></div>`; },
+  banner(ed) { const z = ZONES[ed % ZONES.length]; $('hBanner').innerHTML = `<div class="banner"><div class="sp">Edición ${ed + 1}${RAINY(ed) ? ' · ☂ lluvia' : ''}</div><div class="mega">${esc(z.name)}</div></div>`; },
   tut(i) { const T = TUT[i]; const el = $('hTut'); if (i < 0 || !T) { el.hidden = true; return; } el.innerHTML = `<b>${T.msg}</b><small>${esc(T.pc)}</small>`; el.hidden = false; }
 };
 
