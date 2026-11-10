@@ -4,8 +4,11 @@ const VEH = [
   { id: 'quad', name: 'Patines quad', price: 1500, spd: 0.97, jmp: 1.0, hnd: 1.32, perk: 'Doble salto en el aire', desc: 'Dos ruedas adelante y dos atrás: el más ágil entre carriles.' },
   { id: 'inline', name: 'Patines en línea', price: 4000, spd: 1.06, jmp: 1.02, hnd: 1.18, perk: 'Rueda en hilera: los charcos no te tumban', desc: 'Cuatro ruedas en fila: el más veloz sobre el asfalto.' },
   { id: 'skate', name: 'Skate', price: 3000, spd: 0.99, jmp: 1.17, hnd: 1.06, perk: 'Ollie alto y trucos ×2', desc: 'Tabla, lija y actitud. Cada salto es un truco.' },
+  { id: 'long', name: 'Longboard', price: 3500, spd: 1.07, jmp: 0.95, hnd: 0.96, perk: 'Las bajadas aceleran el doble', desc: 'Tabla larga y ruedas blandas: vuela en las bajadas.' },
   { id: 'bike', name: 'Bicicleta', price: 5000, spd: 1.08, jmp: 0.93, hnd: 0.94, perk: '+15 % de puntos', desc: 'La reina de la ciclovía, con canasta de revistas.' },
-  { id: 'escooter', name: 'Monopatín eléctrico', price: 8000, spd: 1.04, jmp: 0.96, hnd: 1.0, perk: 'Poderes +35 % de duración', desc: 'Batería llena: imán, turbo y x2 duran más.' }
+  { id: 'trike', name: 'Triciclo de carga', price: 6000, spd: 0.96, jmp: 0.86, hnd: 0.9, perk: 'Entregas ×2 (puntos y monedas)', desc: 'El vehículo oficial de reparto EMSAY, con cajón de revistas.' },
+  { id: 'escooter', name: 'Monopatín eléctrico', price: 8000, spd: 1.04, jmp: 0.96, hnd: 1.0, perk: 'Poderes +35 % de duración', desc: 'Batería llena: imán, turbo y x2 duran más.' },
+  { id: 'euc', name: 'Monociclo eléctrico', price: 10000, spd: 1.05, jmp: 1.05, hnd: 1.12, perk: 'Mini imán: atrae monedas cercanas', desc: 'Una sola rueda y mucho equilibrio. El más moderno.' }
 ];
 const VEHI = Object.fromEntries(VEH.map(v => [v.id, v]));
 
@@ -44,7 +47,7 @@ const UPC = [400, 900, 1800, 3500, 6000];
 const Z = (o) => {
   const r = {}; for (const k in o) r[k] = Array.isArray(o[k]) && typeof o[k][0] === 'string' ? o[k].map(hex) : (typeof o[k] === 'string' && o[k][0] === '#' ? hex(o[k]) : o[k]); return r;
 };
-const ZONES = [
+const ZRAW = [
   Z({ name: 'PORTADA', sub: 'Disponible cada domingo', bill: 0, top: '#5fb3c9', hor: '#e8e4c4', sunC: '#fff7d6', sun: [0.32, 0.78, 0.05], stars: 0, amb: 0.82, sunI: 0.42, emit: 0.18, fog: [70, 185],
     road: ['#0e6378', '#d9d2b0', '#6f9e5a', '#e8e4c4', '#e8e4c4'], scen: ['#3f8a4f', '#5b4636', '#0e6378', '#e8e4c4', '#ffd36b'], ui: '#0e6378' }),
   Z({ name: 'SESIÓN 1 · ESCUCHAR & OÍR', sub: '¿Estamos realmente conectados?', bill: 2, top: '#ffd77a', hor: '#fbe7a9', sunC: '#fffbe8', sun: [-0.3, 0.72, 0.06], stars: 0, amb: 0.85, sunI: 0.4, emit: 0.18, fog: [70, 185],
@@ -58,8 +61,19 @@ const ZONES = [
   Z({ name: 'SESIÓN FINAL · LA RUTA', sub: 'En el discurso y la oratoria', bill: 6, top: '#f6cf6a', hor: '#c49a2c', sunC: '#fff3c8', sun: [-0.15, 0.62, 0.09], stars: 0, amb: 0.82, sunI: 0.42, emit: 0.3, fog: [65, 180],
     road: ['#5a3a1a', '#f5e6c0', '#8a7a2c', '#ffffff', '#ffffff'], scen: ['#8c6d1f', '#3b2410', '#6b3f16', '#f5e6c0', '#fff0b0'], ui: '#6b3f16' }),
   Z({ name: 'EDICIÓN NEÓN · DOC ELEMENT', sub: 'Negro total, bordes morados, letra azul', bill: 7, top: '#000000', hor: '#0b0418', sunC: '#a42cff', sun: [0, 0.7, 0.07], stars: 1, amb: 0.5, sunI: 0.22, emit: 1, fog: [50, 165],
-    road: ['#0b0418', '#4d1785', '#05010b', '#39c8ff', '#a42cff'], scen: ['#2dffb3', '#1a0636', '#0b0418', '#1a0636', '#ff2fb3'], ui: '#a42cff' })
+    road: ['#0b0418', '#4d1785', '#05010b', '#39c8ff', '#a42cff'], scen: ['#2dffb3', '#1a0636', '#0b0418', '#1a0636', '#ff2fb3'], ui: '#a42cff' }),
+  Z({ name: 'MALECÓN · EDICIÓN PLAYA', sub: 'Brisa, arena y revistas', bill: 1, top: '#5cc6ee', hor: '#f7e7c4', sunC: '#fff7d6', sun: [0.25, 0.8, 0.06], stars: 0, amb: 0.85, sunI: 0.42, emit: 0.2, fog: [75, 190],
+    road: ['#d9572b', '#efe2bf', '#f0d9a0', '#ffffff', '#1d4e79'], scen: ['#3aa35a', '#8a5a32', '#ff5a2a', '#2f9fd1', '#ffd23a'], ui: '#2f9fd1' }),
+  Z({ name: 'BOSQUE NUBLADO', sub: 'Entre pinos y neblina', bill: 8, top: '#9fbab3', hor: '#d7e3dc', sunC: '#ffffff', sun: [-0.2, 0.85, 0.04], stars: 0, amb: 0.78, sunI: 0.3, emit: 0.3, fog: [35, 145],
+    road: ['#2f5d3a', '#c9c2a8', '#3d6b3f', '#f4f1e6', '#8a7a5a'], scen: ['#2e6b3a', '#4a3426', '#5a7d5a', '#e8efe9', '#ffd36b'], ui: '#2f5d3a' }),
+  Z({ name: 'FINCA CAFETERA', sub: 'Montañas verdes y casitas de colores', bill: 9, top: '#7fc8f5', hor: '#fff1cf', sunC: '#fff8e0', sun: [0.3, 0.75, 0.06], stars: 0, amb: 0.85, sunI: 0.42, emit: 0.2, fog: [70, 185],
+    road: ['#7a3b1f', '#e9d8b4', '#7fb24a', '#ffffff', '#e9d8b4'], scen: ['#3f8a3a', '#6b4226', '#e7dfc8', '#c0191c', '#ff3b30'], ui: '#7a3b1f' }),
+  Z({ name: 'PUENTE SOBRE EL RÍO', sub: 'Rueda sobre el agua', bill: 0, top: '#6fb2d6', hor: '#cfe6ee', sunC: '#ffffff', sun: [-0.3, 0.8, 0.05], stars: 0, amb: 0.84, sunI: 0.4, emit: 0.25, fog: [70, 185],
+    road: ['#4a4f58', '#b9bcc2', '#2f7fb0', '#ffd23a', '#e8e4c4'], scen: ['#3f8a4f', '#3a3f4a', '#e8e4c4', '#f4f1e6', '#ffd23a'], ui: '#2f7fb0' })
 ];
+/* orden de las ediciones: la revista alterna sus páginas con los nuevos escenarios */
+const ZORD = [0, 1, 7, 2, 9, 3, 8, 4, 10, 5, 6];
+const ZONES = ZORD.map(i => ZRAW[i]);
 
 /* Historia · Las páginas perdidas de EMSAY (12 recortes) */
 const STORY = [
@@ -89,7 +103,9 @@ const MIS = [
   { k: 'score', t: 'Haz {n} puntos en una partida', n: [1500, 4000, 9000, 18000, 35000], run: 1 },
   { k: 'clean', t: 'Recorre {n} m sin tambalearte', n: [300, 700, 1200, 2000, 3000], run: 1 },
   { k: 'trucks', t: 'Sube a {n} furgones EMSAY', n: [2, 5, 10, 18, 30] },
-  { k: 'zone', t: 'Llega a la edición {n}', n: [2, 3, 4, 6, 8], run: 1 }
+  { k: 'zone', t: 'Llega a la edición {n}', n: [2, 3, 4, 6, 8], run: 1 },
+  { k: 'deliv', t: 'Entrega {n} revistas en buzones', n: [5, 15, 30, 55, 90] },
+  { k: 'dstreak', t: 'Encadena {n} entregas seguidas', n: [3, 5, 8, 12, 16], run: 1 }
 ];
 
 const RANKS = ['Novato', 'Aprendiz', 'Ciclista', 'Rodador', 'Acróbata', 'Veloz', 'Experto', 'Maestro', 'Élite', 'Leyenda'];

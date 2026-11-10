@@ -3,7 +3,7 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const fmt = n => Math.round(n).toLocaleString('es-CO');
 const dayKey = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-const VERSION = '1.2.0', SKEY = 'runscooter.v1';
+const VERSION = '1.3.0', SKEY = 'runscooter.v1';
 const MREW = [100, 200, 350, 550, 800], MXP = [150, 300, 500, 800, 1200], DAILY = [100, 150, 200, 's1', 300, 400, 's3'];
 
 const SV = {
@@ -37,7 +37,7 @@ const SV = {
 };
 function newMis(S, ex) { const pool = MIS.filter(m => !ex.includes(m.k)); const d = pool[Math.floor(Math.random() * pool.length)]; return { k: d.k, lvl: Math.min(4, S.misLvl[d.k] || 0), prog: 0, best: 0 }; }
 const misDef = k => MIS.find(m => m.k === k);
-const misVal = (k, g) => k === 'coins' ? g.coinsRun : k === 'dist' ? g.p.s : k === 'jumps' ? g.jumps : k === 'ducks' ? g.ducks : k === 'gifts' ? g.gifts : k === 'powers' ? g.powers : k === 'tricks' ? g.tricks : k === 'score' ? g.score : k === 'clean' ? Math.max(g.cleanBest, g.cleanS) : k === 'trucks' ? g.trucks : g.edition + 1;
+const misVal = (k, g) => k === 'coins' ? g.coinsRun : k === 'dist' ? g.p.s : k === 'jumps' ? g.jumps : k === 'ducks' ? g.ducks : k === 'gifts' ? g.gifts : k === 'powers' ? g.powers : k === 'tricks' ? g.tricks : k === 'score' ? g.score : k === 'clean' ? Math.max(g.cleanBest, g.cleanS) : k === 'trucks' ? g.trucks : k === 'deliv' ? g.deliv : k === 'dstreak' ? g.dBest : g.edition + 1;
 const misText = m => misDef(m.k).t.replace('{n}', fmt(misDef(m.k).n[m.lvl]));
 const cosCfg = S => { const h = COSI[S.cos.casco], r = COSI[S.cos.ropa], p = COSI[S.cos.pintura]; return { helmet: h.c, he: !!h.e, shirt: r.a, pants: r.b, se: !!r.e, paint: p.c, pe: !!p.e }; };
 const priceTxt = it => it.st ? '✦ ' + it.st : '◉ ' + fmt(it.p || 0);
@@ -137,11 +137,12 @@ const UI = {
       <div class="cat" style="color:#2b2112">Zona peligrosa</div><button class="btn red" data-act="reset">Borrar progreso</button>
       <div class="film" style="margin-top:16px;--fc:#a42cff">RUN SCOOTER v${VERSION} · juego offline<br>Estilo: revista EMSAY + Doc Element<br>Motor 3D propio · sin librerías · sin internet</div>`;
   },
-  hud: { s: -1, c: -1, d: -1, m: '', pk: '', b: -1, sl: 99 },
+  hud: { s: -1, c: -1, d: -1, m: '', pk: '', b: -1, sl: 99, dl: '' },
   updHud(g) {
     const H = this.hud, P = g.p, sc = Math.floor(g.score), c = g.coinsRun, d = Math.floor(P.s);
     if (sc !== H.s) { H.s = sc; $('hScore').textContent = fmt(sc); }
     if (c !== H.c) { H.c = c; $('hCoins').textContent = fmt(c); }
+    const dl = g.deliv + ':' + g.dStreak; if (dl !== H.dl) { H.dl = dl; const el = $('hDel'); el.hidden = !g.deliv; el.innerHTML = `✉ <b>${g.deliv}</b>${g.dStreak > 1 ? ' <small>racha ×' + g.dStreak + '</small>' : ''}`; }
     if (d !== H.d) { H.d = d; $('hDist').textContent = fmt(d) + ' M · ED. ' + (g.edition + 1); }
     const b = Math.round(P.boost * 20); if (b !== H.b) { H.b = b; $('bbF').style.height = (b * 5) + '%'; }
     const sl = Math.round(P.sl * 100); if (sl !== H.sl) { H.sl = sl; const el = $('hSlope'); el.hidden = Math.abs(sl) < 3; el.className = 'slope ' + (sl > 0 ? 'up' : 'dn'); el.textContent = (sl > 0 ? '▲ SUBIDA ' : '▼ BAJADA ') + Math.abs(sl) + ' %'; }
@@ -153,6 +154,7 @@ const UI = {
     for (const p of pw) { const el = $('pb-' + p[0]); if (el) el.style.width = (P[p[0]] / g.dur[p[0]] * 100).toFixed(1) + '%'; }
     $('hStum').hidden = !(P.stumble > 0 && P.alive);
   },
+  pop(txt, cls = '') { const el = $('hPop'); el.className = ''; void el.offsetWidth; el.className = 'pop ' + cls; el.textContent = txt; },
   banner(ed) { const z = ZONES[ed % ZONES.length]; $('hBanner').innerHTML = `<div class="banner"><div class="sp">Edición ${ed + 1}</div><div class="mega">${esc(z.name)}</div></div>`; },
   tut(i) { const T = TUT[i]; const el = $('hTut'); if (i < 0 || !T) { el.hidden = true; return; } el.innerHTML = `<b>${T.msg}</b><small>${esc(T.pc)}</small>`; el.hidden = false; }
 };
@@ -178,8 +180,8 @@ async function saveFile(name, text, mime) {
 }
 function exportJSON() { const S = SV.S; return JSON.stringify({ app: 'Run Scooter', version: VERSION, exportado: new Date().toISOString(), partidas: S.runs, perfil: S }, null, 1); }
 function exportCSV() {
-  const K = ['d', 'ch', 'veh', 'dist', 'score', 'coins', 'stars', 'clues', 'gifts', 'jumps', 'ducks', 'tricks', 'powers', 'trucks', 'ed', 'rev', 'time', 'cause', 'seed'];
-  const H = ['fecha', 'reto_dia', 'vehiculo', 'metros', 'puntos', 'monedas', 'estrellas', 'paginas', 'regalos', 'saltos', 'agachadas', 'trucos', 'poderes', 'furgones', 'edicion', 'revivir', 'segundos', 'causa', 'semilla'];
+  const K = ['d', 'ch', 'deliv', 'veh', 'dist', 'score', 'coins', 'stars', 'clues', 'gifts', 'jumps', 'ducks', 'tricks', 'powers', 'trucks', 'ed', 'rev', 'time', 'cause', 'seed'];
+  const H = ['fecha', 'reto_dia', 'entregas', 'vehiculo', 'metros', 'puntos', 'monedas', 'estrellas', 'paginas', 'regalos', 'saltos', 'agachadas', 'trucos', 'poderes', 'furgones', 'edicion', 'revivir', 'segundos', 'causa', 'semilla'];
   return [H.join(';')].concat(SV.S.runs.map(r => K.map(k => '"' + String(r[k] == null ? '' : r[k]).replace(/"/g, '""') + '"').join(';'))).join('\n');
 }
 function importJSON(text) {

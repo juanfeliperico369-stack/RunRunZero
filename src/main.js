@@ -79,6 +79,8 @@ function events(g) {
       case 'tutOk': UI.tut(-1); if (g.tut >= TUT.length && S.tut) { S.tut = 0; SV.save(); } break;
       case 'revive': AU.sfx('revive'); break;
       case 'boost': AU.pumpLv = e.a; AU.sfx('pump'); break;
+      case 'deliver': AU.sfx('deliver'); vib(15); UI.pop('✉ ¡ENTREGA! +' + fmt(e.a.pts) + (g.dStreak > 1 ? ' · racha ×' + g.dStreak : '')); if (g.deliv === 1 && !S.delTip) { S.delTip = 1; UI.toast('Ve por el carril del borde al pasar un buzón o casita: lanzas la revista', 'c'); } break;
+      case 'dmiss': AU.sfx('dmiss'); UI.pop('✉ Entrega perdida', 'miss'); break;
     }
   }
   g.ev.length = 0;
@@ -111,12 +113,12 @@ function endRun() {
     extra += `<p><b>Reto del día:</b> ${nb ? '¡nuevo mejor! ' : ''}${fmt(S.ch.best)} m · meta 1.500 m</p>`;
   }
   if (rk1 > rk0) { S.coins += 250 * rk1; S.stars += 1 + Math.floor(rk1 / 3); extra += `<div class="badge">¡NUEVO RANGO: ${esc(RANKS[rk1])}!</div><p>Premio: ◉ ${250 * rk1} · ✦ ${1 + Math.floor(rk1 / 3)} · puntos ×${(1 + 0.25 * rk1).toFixed(2)}</p>`; AU.sfx('rank'); }
-  S.runs.push({ d: new Date().toISOString(), seed: g.seed, veh: g.veh.id, dist: Math.floor(g.p.s), score: Math.floor(g.score), coins: g.coinsRun, stars: g.starsRun, clues: g.clues, gifts: g.gifts, jumps: g.jumps, ducks: g.ducks, tricks: g.tricks, powers: g.powers, trucks: g.trucks, ch: g.ch ? 1 : 0, ed: g.edition + 1, rev: g.revives, time: Math.round(g.t), cause: g.cause });
+  S.runs.push({ d: new Date().toISOString(), seed: g.seed, veh: g.veh.id, dist: Math.floor(g.p.s), score: Math.floor(g.score), coins: g.coinsRun, stars: g.starsRun, clues: g.clues, gifts: g.gifts, jumps: g.jumps, ducks: g.ducks, tricks: g.tricks, powers: g.powers, trucks: g.trucks, deliv: g.deliv, ch: g.ch ? 1 : 0, ed: g.edition + 1, rev: g.revives, time: Math.round(g.t), cause: g.cause });
   if (S.runs.length > 200) S.runs.splice(0, S.runs.length - 200);
   SV.save();
   $('oDate').textContent = new Date().toLocaleDateString('es-CO');
   $('oBadge').innerHTML = rec ? '<span class="badge">★ ¡NUEVO RÉCORD!</span>' : recD ? '<span class="badge">★ ¡RÉCORD DE DISTANCIA!</span>' : '';
-  $('oStats').innerHTML = `<div class="kv"><span>Puntos</span><b>${fmt(g.score)}</b><span>Distancia</span><b>${fmt(g.p.s)} m</b><span>Monedas</span><b>◉ ${fmt(g.coinsRun)}</b><span>Edición alcanzada</span><b>Nº ${g.edition + 1}</b><span>Trucos · Furgones</span><b>${g.tricks} · ${g.trucks}</b><span>XP ganada</span><b>+${fmt(xp)}</b><span>Mejor</span><b>${fmt(S.best)}</b></div>`;
+  $('oStats').innerHTML = `<div class="kv"><span>Puntos</span><b>${fmt(g.score)}</b><span>Distancia</span><b>${fmt(g.p.s)} m</b><span>Monedas</span><b>◉ ${fmt(g.coinsRun)}</b><span>Edición alcanzada</span><b>Nº ${g.edition + 1}</b><span>Entregas · mejor racha</span><b>✉ ${g.deliv} · ×${g.dBest}</b><span>Trucos · Furgones</span><b>${g.tricks} · ${g.trucks}</b><span>XP ganada</span><b>+${fmt(xp)}</b><span>Mejor</span><b>${fmt(S.best)}</b></div>`;
   const tip = TIPS[Math.floor(Math.random() * TIPS.length)];
   extra += (g.clues ? `<p><b>📰 ${g.clues} página(s) nueva(s).</b> Léelas en Historia.</p>` : '') + `<p style="font-family:var(--fs);font-style:italic">Te tumbó ${esc(g.cause || 'el destino')}. Consejo: ${esc(tip)}</p>`;
   $('oExtra').innerHTML = extra; UI.ov('oOver', 1);

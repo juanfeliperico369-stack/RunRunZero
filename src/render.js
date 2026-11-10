@@ -7,7 +7,8 @@ const RN = {
   parts: [], mo: {}, branches: {}, pl: null, plKey: '', trailT: 0, quality: 1,
   init() {
     const mk = b => R.mesh(b), mo = this.mo;
-    for (const k of ['road', 'tree', 'pine', 'bush', 'lamp', 'bench', 'hill', 'billFrame', 'gateFrame', 'rock', 'cone', 'barrier', 'pothole', 'puddle', 'cart', 'kiosk', 'coin', 'gift', 'clue', 'magnet', 'shield', 'turbo', 'x2', 'cube', 'shadow', 'ink', 'flowers', 'wing', 'bfly', 'bird', 'bwing', 'rabbit']) mo[k] = mk(MOD[k]());
+    for (const k of ['road', 'tree', 'pine', 'bush', 'lamp', 'bench', 'hill', 'billFrame', 'gateFrame', 'rock', 'cone', 'barrier', 'pothole', 'puddle', 'cart', 'kiosk', 'coin', 'gift', 'clue', 'magnet', 'shield', 'turbo', 'x2', 'cube', 'shadow', 'ink', 'flowers', 'wing', 'bfly', 'bird', 'bwing', 'rabbit', 'palm', 'parasol', 'sea', 'mount', 'fence', 'coffee', 'rail', 'boat', 'buzon', 'flag', 'door', 'rarm', 'mag']) mo[k] = mk(MOD[k]());
+    mo.house = [0, 1, 2].map(v => mk(MOD.house(v))); mo.resi = [0, 1, 2].map(v => mk(MOD.resi(v))); this.proj = [];
     mo.bld = []; for (let v = 0; v < 3; v++) mo.bld.push([mk(MOD.bld(v, 2)), mk(MOD.bld(v, 3))]);
     mo.bill = []; mo.gate = []; for (let i = 0; i < 10; i++) { mo.bill.push(mk(MOD.billPanel(i))); mo.gate.push(mk(MOD.gatePanel(i))); }
     mo.truck = [0, 1, 2].map(c => mk(MOD.truck(c))); mo.npc = [0, 1, 2, 3].map(c => mk(MOD.npc(c)));
@@ -65,6 +66,7 @@ const RN = {
     else if (e.k === 'clue') this.emit(14, P.x, 1.2, P.s + 1, hex('#2dffb3'), 5, 0.1, 0.9, 4, 0.2);
     else if (e.k === 'power' || e.k === 'gift') this.emit(10, P.x, 1.4, P.s + 0.5, hex(e.k === 'gift' ? '#ff2fb3' : '#39c8ff'), 3, 0.06, 0.45, 3.5, 0.4);
     else if (e.k === 'land' && e.a > 0.35) this.emit(5, P.x, 0.1, P.s, hex('#cfc4a8'), 3, 0.1, 0.4, 1.5);
+    else if (e.k === 'deliver') { const d = e.a; this.proj.push({ x0: P.x + (d.x > 0 ? 0.3 : -0.3), y0: P.y + 1.4, s0: P.s, x1: d.x, y1: 1.3, s1: d.s, t: 0, T: d.T }); this.throwT = 0.32; this.throwSide = d.x > 0 ? 1 : -1; }
     else if (e.k === 'shield') { this.emit(14, P.x, 1, P.s, hex('#39c8ff'), 6, 0.12, 0.8, 4); this.shake = 0.5; }
   },
   trail(g, dt, id) {
@@ -81,7 +83,7 @@ const RN = {
     this.cr = lerp(this.cr, P.crouch > 0 ? 1 : 0, Math.min(1, dt * 18)); const cr = this.cr;
     const tx = (P.lane - 1) * LW, roll = clamp((tx - P.x) * 0.16, -0.32, 0.32), pitch = P.air ? clamp(-P.vy * 0.012, -0.25, 0.25) : 0;
     let spin = 0, vspin = 0, vflip = 0;
-    if (P.air && !P.trickHit && P.airT > 0.15 && P.alive) { const k = clamp((P.airT - 0.15) / 0.38, 0, 1), e = k * k * (3 - 2 * k) * Math.PI * 2; if (id === 'skate') vflip = e; else if (id === 'scooter') vspin = e; else spin = e; }
+    if (P.air && !P.trickHit && P.airT > 0.15 && P.alive) { const k = clamp((P.airT - 0.15) / 0.38, 0, 1), e = k * k * (3 - 2 * k) * Math.PI * 2; if (id === 'skate') vflip = e; else if (id === 'scooter' || id === 'long') vspin = e; else spin = e; }
     let dead = 0, slide = 0; if (!P.alive) { dead = Math.min(1.5, P.deadT * 4); slide = Math.min(3.5, P.deadT * 6); }
     const blink = P.inv > 0 && P.alive && Math.floor(time * 14) % 2;
     if (blink) return;
@@ -94,8 +96,9 @@ const RN = {
     const ph = P.phase, grounded = !P.air && P.alive;
     if (id === 'scooter') { hy = 0.98 - 0.34 * cr; hz = 0.02; lean = 0.18 + 0.5 * cr; const f = time * 7.5, lift = Math.max(0, Math.cos(f)) * 0.16; feet = [[0.19, -0.06], grounded && cr < 0.5 ? [0.07 + lift, 0.2 + 0.25 * Math.sin(f)] : [0.19, 0.2]]; arms = [[0.72 + 0.3 * cr, 0.05], [0.72 + 0.3 * cr, -0.05]]; }
     else if (id === 'escooter') { hy = 1.02 - 0.34 * cr; hz = 0.03; lean = 0.12 + 0.5 * cr; feet = [[0.255, -0.17], [0.255, 0.2]]; arms = [[0.7 + 0.3 * cr, 0.05], [0.7 + 0.3 * cr, -0.05]]; }
-    else if (id === 'bike') { hy = 1.03 - 0.08 * cr; hz = 0.12; lean = 0.55 + 0.3 * cr; const f = ph * 0.7; feet = [[0.36 - 0.17 * Math.cos(f) + 0.07, -0.02 + 0.17 * Math.sin(f)], [0.36 + 0.17 * Math.cos(f) + 0.07, -0.02 - 0.17 * Math.sin(f)]]; arms = [[1.0, 0.08], [1.0, -0.08]]; }
-    else if (id === 'skate') { hy = 0.9 - 0.3 * cr; yaw = -1.35; lean = 0.15 + 0.4 * cr; feet = null; arms = [[0.25, 0.95], [0.25, -0.95]]; }
+    else if (id === 'bike' || id === 'trike') { hy = 1.03 - 0.08 * cr; hz = 0.12; lean = 0.55 + 0.3 * cr; const f = ph * 0.7; feet = [[0.36 - 0.17 * Math.cos(f) + 0.07, -0.02 + 0.17 * Math.sin(f)], [0.36 + 0.17 * Math.cos(f) + 0.07, -0.02 - 0.17 * Math.sin(f)]]; arms = [[1.0, 0.08], [1.0, -0.08]]; }
+    else if (id === 'euc') { hy = 1.02 - 0.34 * cr; lean = 0.1 + 0.5 * cr; feet = [[0.25, -0.02], [0.25, 0.02]]; arms = [[0.3, -0.6], [0.3, 0.6]]; splay = 0.12; }
+    else if (id === 'skate' || id === 'long') { hy = 0.9 - 0.3 * cr; yaw = -1.35; lean = 0.15 + 0.4 * cr; feet = null; arms = [[0.25, 0.95], [0.25, -0.95]]; }
     else { hy = (id === 'inline' ? 1.0 : 0.97) - 0.32 * cr; lean = 0.3 + 0.45 * cr; const f = time * (id === 'inline' ? 5.2 : 6.5); feet = [[0.17 + Math.max(0, -Math.cos(f)) * 0.08, 0.22 * Math.sin(f)], [0.17 + Math.max(0, Math.cos(f)) * 0.08, -0.22 * Math.sin(f)]]; arms = [[0.45 * Math.sin(f), 0.15], [-0.45 * Math.sin(f), -0.15]]; splay = 0.1; }
     if (!P.alive) { lean += dead * 0.6; }
     // cadera
@@ -110,7 +113,8 @@ const RN = {
     }
     // torso y brazos
     M4.trs(A, 0, 0, 0, 0, -lean, 0); M4.mul(D, C, A); R.draw(pl.t, D);
-    for (let i = 0; i < 2; i++) { const ar = arms[i], sx = i ? 0.255 : -0.255; M4.trs(A, sx, 0.58, 0, 0, ar[0] + (id === 'skate' ? 0 : lean * 0.6), ar[1]); M4.mul(M, D, A); R.draw(pl.ar, M); }
+    if (this.throwT > 0) { this.throwT = Math.max(0, this.throwT - dt); const k = Math.sin((1 - this.throwT / 0.32) * Math.PI), i = this.throwSide > 0 ? 1 : 0; arms = arms.slice(); arms[i] = [2.3 * k - lean * 0.6, this.throwSide * 0.9 * k]; }
+    for (let i = 0; i < 2; i++) { const ar = arms[i], sx = i ? 0.255 : -0.255; M4.trs(A, sx, 0.58, 0, 0, ar[0] + (id === 'skate' || id === 'long' ? 0 : lean * 0.6), ar[1]); M4.mul(M, D, A); R.draw(pl.ar, M); }
   },
   /* fauna silvestre: mariposas, pájaros, conejos, luciérnagas y semillas (solo decoración) */
   wild(g, mode, time, dt) {
@@ -192,6 +196,28 @@ const RN = {
       if (o.fly) { const f = o.fly; f.t += dt; const t = f.t; M4.trs(M, o.x + f.vx * t, Math.max(0, f.vy * t - GRAV * 0.5 * t * t), z - f.vz * t, f.ry * t, f.rx * t, 0); }
       else M4.trs(M, o.x, 0, z, 0, 0, 0);
       R.draw(m, M);
+    }
+    // entregas: buzones y casitas (bandera, puerta, vecino que saluda)
+    for (const d of g.dels) {
+      const z = zs(d.s); if (z < FAR || z > 16) continue;
+      const sx = d.x < 0 ? -1 : 1; if (d.done && d.ta == null) d.ta = time;
+      const up = d.done ? clamp((time - d.ta - (d.T || 0)) / 0.25, 0, 1) : 0;
+      M4.trs(M, d.x, 0, z, 0, 0, 0, sx, 1, 1); R.draw(mo.buzon, M);
+      M4.trs(this.A, 0.12, 1.22, 0.27, 0, (1 - up) * Math.PI / 2, 0); M4.mul(this.B, M, this.A); R.draw(mo.flag, this.B);
+      if (d.k === 'casita') {
+        R.draw(mo.house[d.v], M);
+        M4.trs(this.A, 1.36, 0, 0.79, -up * 1.7, 0, 0); M4.mul(this.B, M, this.A); R.draw(mo.door, this.B);
+        if (up > 0) {
+          const k = clamp((time - d.ta - (d.T || 0)) / 0.35, 0, 1), wv = Math.sin(time * 9) * 0.5;
+          M4.trs(this.A, 1.12, 0, 0.42, Math.PI / 2, 0, 0, 0.3 + 0.7 * k); M4.mul(this.B, M, this.A); R.draw(mo.resi[d.v], this.B);
+          M4.trs(this.A, 0.22, 1.18, 0, 0, 0, -0.45 + wv * 0.7); M4.mul(this.C, this.B, this.A); R.draw(mo.rarm, this.C);
+        }
+      }
+    }
+    for (let i = this.proj.length - 1; i >= 0; i--) {
+      const p = this.proj[i]; p.t += dt; const k = Math.min(1, p.t / p.T);
+      if (k >= 1) { this.emit(8, p.x1, p.y1, p.s1, hex('#ffc23a'), 3, 0.07, 0.5, 2.5); this.proj.splice(i, 1); continue; }
+      M4.trs(M, lerp(p.x0, p.x1, k), lerp(p.y0, p.y1, k) + 1.1 * 4 * k * (1 - k), zs(lerp(p.s0, p.s1, k)), time * 12, 0, time * 7); R.draw(mo.mag, M);
     }
     // monedas y objetos
     const spin = time * 4;

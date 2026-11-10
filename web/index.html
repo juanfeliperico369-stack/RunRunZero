@@ -172,6 +172,10 @@ button:focus-visible{outline:3px solid var(--amb);outline-offset:2px}
 .boost i{position:absolute;inset:0;display:block}
 .boost i b{position:absolute;left:0;right:0;bottom:0;height:0;background:var(--org)}
 .boost.hit{transform:translate(2px,2px) scale(.94);box-shadow:1px 1px 0 #111}
+.hc.dl{background:var(--teal);color:#fff;font-size:19px;padding:1px 9px}.hc.dl small{font-family:var(--fb);font-size:11px;font-weight:800;color:var(--amb)}
+.pop{position:absolute;left:50%;top:36%;transform:translateX(-50%);font-family:var(--fd);font-size:clamp(22px,6.5vw,32px);color:#fff;background:var(--teal);border:3px solid #111;padding:4px 12px;box-shadow:4px 4px 0 #111;white-space:nowrap;animation:popin 1s ease forwards}
+.pop.miss{background:var(--gray);color:#111}
+@keyframes popin{0%{opacity:0;transform:translate(-50%,10px) scale(.8)}14%{opacity:1;transform:translate(-50%,0) scale(1.06)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-18px)}}
 .slope{display:inline-block;margin-top:6px;font-family:var(--fd);font-size:17px;padding:1px 8px;border:2px solid #111;box-shadow:2px 2px 0 #111}
 .slope.up{background:var(--paper);color:#111}.slope.dn{background:var(--red);color:#fff}
 #bPause{pointer-events:auto;width:48px;height:48px;background:var(--paper);color:#111;border:3px solid #111;font-size:18px;box-shadow:3px 3px 0 #111}
@@ -219,9 +223,10 @@ button:focus-visible{outline:3px solid var(--amb);outline-offset:2px}
 <canvas id="cv"></canvas>
 <div id="ui">
   <div id="hud" hidden>
-    <div class="hl"><div id="hScore" class="hs">0</div><div class="hc"><span class="coin"></span><b id="hCoins">0</b></div><div id="hDist" class="hd">0 M</div><div id="hSlope" class="slope" hidden></div></div>
+    <div class="hl"><div id="hScore" class="hs">0</div><div class="hc"><span class="coin"></span><b id="hCoins">0</b></div><br><div class="hc dl" id="hDel" hidden></div><div id="hDist" class="hd">0 M</div><div id="hSlope" class="slope" hidden></div></div>
     <div class="hr"><button id="bPause" data-act="pause" aria-label="Pausa">❚❚</button><div id="hMult" class="hm">×1</div><div id="hPow"></div></div>
     <button id="bBoost" class="boost" aria-label="Impulso: toca seguido para acelerar"><i><b id="bbF"></b></i><span>⚡</span><small>IMPULSO</small></button>
+    <div id="hPop"></div>
     <div id="hBanner"></div>
     <div id="hTut" class="tut" hidden></div>
     <div id="hStum" class="stum" hidden>¡CUIDADO!</div>
@@ -590,8 +595,11 @@ const VEH = [
   { id: 'quad', name: 'Patines quad', price: 1500, spd: 0.97, jmp: 1.0, hnd: 1.32, perk: 'Doble salto en el aire', desc: 'Dos ruedas adelante y dos atrás: el más ágil entre carriles.' },
   { id: 'inline', name: 'Patines en línea', price: 4000, spd: 1.06, jmp: 1.02, hnd: 1.18, perk: 'Rueda en hilera: los charcos no te tumban', desc: 'Cuatro ruedas en fila: el más veloz sobre el asfalto.' },
   { id: 'skate', name: 'Skate', price: 3000, spd: 0.99, jmp: 1.17, hnd: 1.06, perk: 'Ollie alto y trucos ×2', desc: 'Tabla, lija y actitud. Cada salto es un truco.' },
+  { id: 'long', name: 'Longboard', price: 3500, spd: 1.07, jmp: 0.95, hnd: 0.96, perk: 'Las bajadas aceleran el doble', desc: 'Tabla larga y ruedas blandas: vuela en las bajadas.' },
   { id: 'bike', name: 'Bicicleta', price: 5000, spd: 1.08, jmp: 0.93, hnd: 0.94, perk: '+15 % de puntos', desc: 'La reina de la ciclovía, con canasta de revistas.' },
-  { id: 'escooter', name: 'Monopatín eléctrico', price: 8000, spd: 1.04, jmp: 0.96, hnd: 1.0, perk: 'Poderes +35 % de duración', desc: 'Batería llena: imán, turbo y x2 duran más.' }
+  { id: 'trike', name: 'Triciclo de carga', price: 6000, spd: 0.96, jmp: 0.86, hnd: 0.9, perk: 'Entregas ×2 (puntos y monedas)', desc: 'El vehículo oficial de reparto EMSAY, con cajón de revistas.' },
+  { id: 'escooter', name: 'Monopatín eléctrico', price: 8000, spd: 1.04, jmp: 0.96, hnd: 1.0, perk: 'Poderes +35 % de duración', desc: 'Batería llena: imán, turbo y x2 duran más.' },
+  { id: 'euc', name: 'Monociclo eléctrico', price: 10000, spd: 1.05, jmp: 1.05, hnd: 1.12, perk: 'Mini imán: atrae monedas cercanas', desc: 'Una sola rueda y mucho equilibrio. El más moderno.' }
 ];
 const VEHI = Object.fromEntries(VEH.map(v => [v.id, v]));
 
@@ -630,7 +638,7 @@ const UPC = [400, 900, 1800, 3500, 6000];
 const Z = (o) => {
   const r = {}; for (const k in o) r[k] = Array.isArray(o[k]) && typeof o[k][0] === 'string' ? o[k].map(hex) : (typeof o[k] === 'string' && o[k][0] === '#' ? hex(o[k]) : o[k]); return r;
 };
-const ZONES = [
+const ZRAW = [
   Z({ name: 'PORTADA', sub: 'Disponible cada domingo', bill: 0, top: '#5fb3c9', hor: '#e8e4c4', sunC: '#fff7d6', sun: [0.32, 0.78, 0.05], stars: 0, amb: 0.82, sunI: 0.42, emit: 0.18, fog: [70, 185],
     road: ['#0e6378', '#d9d2b0', '#6f9e5a', '#e8e4c4', '#e8e4c4'], scen: ['#3f8a4f', '#5b4636', '#0e6378', '#e8e4c4', '#ffd36b'], ui: '#0e6378' }),
   Z({ name: 'SESIÓN 1 · ESCUCHAR & OÍR', sub: '¿Estamos realmente conectados?', bill: 2, top: '#ffd77a', hor: '#fbe7a9', sunC: '#fffbe8', sun: [-0.3, 0.72, 0.06], stars: 0, amb: 0.85, sunI: 0.4, emit: 0.18, fog: [70, 185],
@@ -644,8 +652,19 @@ const ZONES = [
   Z({ name: 'SESIÓN FINAL · LA RUTA', sub: 'En el discurso y la oratoria', bill: 6, top: '#f6cf6a', hor: '#c49a2c', sunC: '#fff3c8', sun: [-0.15, 0.62, 0.09], stars: 0, amb: 0.82, sunI: 0.42, emit: 0.3, fog: [65, 180],
     road: ['#5a3a1a', '#f5e6c0', '#8a7a2c', '#ffffff', '#ffffff'], scen: ['#8c6d1f', '#3b2410', '#6b3f16', '#f5e6c0', '#fff0b0'], ui: '#6b3f16' }),
   Z({ name: 'EDICIÓN NEÓN · DOC ELEMENT', sub: 'Negro total, bordes morados, letra azul', bill: 7, top: '#000000', hor: '#0b0418', sunC: '#a42cff', sun: [0, 0.7, 0.07], stars: 1, amb: 0.5, sunI: 0.22, emit: 1, fog: [50, 165],
-    road: ['#0b0418', '#4d1785', '#05010b', '#39c8ff', '#a42cff'], scen: ['#2dffb3', '#1a0636', '#0b0418', '#1a0636', '#ff2fb3'], ui: '#a42cff' })
+    road: ['#0b0418', '#4d1785', '#05010b', '#39c8ff', '#a42cff'], scen: ['#2dffb3', '#1a0636', '#0b0418', '#1a0636', '#ff2fb3'], ui: '#a42cff' }),
+  Z({ name: 'MALECÓN · EDICIÓN PLAYA', sub: 'Brisa, arena y revistas', bill: 1, top: '#5cc6ee', hor: '#f7e7c4', sunC: '#fff7d6', sun: [0.25, 0.8, 0.06], stars: 0, amb: 0.85, sunI: 0.42, emit: 0.2, fog: [75, 190],
+    road: ['#d9572b', '#efe2bf', '#f0d9a0', '#ffffff', '#1d4e79'], scen: ['#3aa35a', '#8a5a32', '#ff5a2a', '#2f9fd1', '#ffd23a'], ui: '#2f9fd1' }),
+  Z({ name: 'BOSQUE NUBLADO', sub: 'Entre pinos y neblina', bill: 8, top: '#9fbab3', hor: '#d7e3dc', sunC: '#ffffff', sun: [-0.2, 0.85, 0.04], stars: 0, amb: 0.78, sunI: 0.3, emit: 0.3, fog: [35, 145],
+    road: ['#2f5d3a', '#c9c2a8', '#3d6b3f', '#f4f1e6', '#8a7a5a'], scen: ['#2e6b3a', '#4a3426', '#5a7d5a', '#e8efe9', '#ffd36b'], ui: '#2f5d3a' }),
+  Z({ name: 'FINCA CAFETERA', sub: 'Montañas verdes y casitas de colores', bill: 9, top: '#7fc8f5', hor: '#fff1cf', sunC: '#fff8e0', sun: [0.3, 0.75, 0.06], stars: 0, amb: 0.85, sunI: 0.42, emit: 0.2, fog: [70, 185],
+    road: ['#7a3b1f', '#e9d8b4', '#7fb24a', '#ffffff', '#e9d8b4'], scen: ['#3f8a3a', '#6b4226', '#e7dfc8', '#c0191c', '#ff3b30'], ui: '#7a3b1f' }),
+  Z({ name: 'PUENTE SOBRE EL RÍO', sub: 'Rueda sobre el agua', bill: 0, top: '#6fb2d6', hor: '#cfe6ee', sunC: '#ffffff', sun: [-0.3, 0.8, 0.05], stars: 0, amb: 0.84, sunI: 0.4, emit: 0.25, fog: [70, 185],
+    road: ['#4a4f58', '#b9bcc2', '#2f7fb0', '#ffd23a', '#e8e4c4'], scen: ['#3f8a4f', '#3a3f4a', '#e8e4c4', '#f4f1e6', '#ffd23a'], ui: '#2f7fb0' })
 ];
+/* orden de las ediciones: la revista alterna sus páginas con los nuevos escenarios */
+const ZORD = [0, 1, 7, 2, 9, 3, 8, 4, 10, 5, 6];
+const ZONES = ZORD.map(i => ZRAW[i]);
 
 /* Historia · Las páginas perdidas de EMSAY (12 recortes) */
 const STORY = [
@@ -675,7 +694,9 @@ const MIS = [
   { k: 'score', t: 'Haz {n} puntos en una partida', n: [1500, 4000, 9000, 18000, 35000], run: 1 },
   { k: 'clean', t: 'Recorre {n} m sin tambalearte', n: [300, 700, 1200, 2000, 3000], run: 1 },
   { k: 'trucks', t: 'Sube a {n} furgones EMSAY', n: [2, 5, 10, 18, 30] },
-  { k: 'zone', t: 'Llega a la edición {n}', n: [2, 3, 4, 6, 8], run: 1 }
+  { k: 'zone', t: 'Llega a la edición {n}', n: [2, 3, 4, 6, 8], run: 1 },
+  { k: 'deliv', t: 'Entrega {n} revistas en buzones', n: [5, 15, 30, 55, 90] },
+  { k: 'dstreak', t: 'Encadena {n} entregas seguidas', n: [3, 5, 8, 12, 16], run: 1 }
 ];
 
 const RANKS = ['Novato', 'Aprendiz', 'Ciclista', 'Rodador', 'Acróbata', 'Veloz', 'Experto', 'Maestro', 'Élite', 'Leyenda'];
@@ -728,15 +749,20 @@ const OT = {
 };
 const JUMPS = [['rock', 3], ['barrier', 2], ['pothole', 2.2], ['cone', 1.4], ['puddle', 1]];
 const BLOCKS = [['cart', 2], ['kiosk', 1.4]];
-const THEMES = [
+const THRAW = [
   { near: [['tree', 3.5], ['pine', 1], ['bush', 2], ['lamp', 1.5], ['bench', 1], ['bill', 1]], far: [['bld', 3], ['tree', 4], ['hill', 3]] },
   { near: [['tree', 3], ['bush', 2.5], ['lamp', 1.5], ['bench', 1.5], ['bill', 1.5]], far: [['bld', 5], ['tree', 3], ['hill', 2]] },
   { near: [['lamp', 3.5], ['bench', 1], ['bush', 1], ['tree', 1.5], ['bill', 3]], far: [['bld', 8.5], ['tree', 1.5]] },
   { near: [['tree', 3], ['lamp', 3], ['bill', 2], ['bush', 2]], far: [['bld', 6], ['hill', 4]] },
   { near: [['pine', 3], ['lamp', 3], ['bill', 2], ['bush', 2]], far: [['bld', 7], ['hill', 3]] },
   { near: [['tree', 4], ['bush', 2], ['bench', 1.5], ['bill', 2.5]], far: [['hill', 4], ['tree', 3], ['bld', 3]] },
-  { near: [['lamp', 4.5], ['bill', 3.5], ['bush', 2]], far: [['bld', 9], ['hill', 1]] }
+  { near: [['lamp', 4.5], ['bill', 3.5], ['bush', 2]], far: [['bld', 9], ['hill', 1]] },
+  { near: [['palm', 4], ['bench', 1], ['parasol', 2.5], ['bill', 1]], far: [['palm', 3], ['hill', 1], ['bld', 1.5]], sea: 1 },
+  { near: [['pine', 5], ['tree', 1.5], ['bush', 2], ['fence', 1.2]], far: [['pine', 5], ['mount', 2.5]] },
+  { near: [['coffee', 4], ['fence', 2], ['tree', 1.5], ['bench', 0.6], ['bill', 0.8]], far: [['coffee', 3], ['mount', 2], ['hill', 2]] },
+  { near: [['lamp', 2]], far: [['boat', 1.5], ['mount', 1.2]], rail: 1 }
 ];
+const THEMES = ZORD.map(i => THRAW[i]);
 const TUT = [
   { t: 'rock', lane: 1, need: 'jump', msg: 'DESLIZA ↑ PARA SALTAR', pc: 'Flecha ↑ · W · Espacio' },
   { t: 'branch', lane: 1, need: 'duck', msg: 'DESLIZA ↓ PARA AGACHARTE', pc: 'Flecha ↓ · S' },
@@ -748,7 +774,9 @@ const vEst = (g, s) => (14 + 21 * (1 - Math.exp(-s / 2600))) * g.veh.spd;
 const HILL = s => { const e = clamp((s - 150) / 250, 0, 1); return e * (6.0 * Math.sin(s * 0.0105) + 2.2 * Math.sin(s * 0.027 + 1.7)); };
 const HILLD = s => HILL(s + 0.5) - HILL(s - 0.5);
 const hillK = sl => clamp(1 - 1.3 * sl, 0.84, 1.18);
-const FLOW = [0.6, 0.6, 0.2, 0.4, 0.3, 0.6, 0.35];
+const FLOW = ZORD.map(i => [0.6, 0.6, 0.2, 0.4, 0.3, 0.6, 0.35, 0.2, 0.3, 0.5, 0][i]);
+/* buzones y casitas: probabilidad de casita por edición (−1 = sin entregas) */
+const DELK = ZORD.map(i => [0.6, 0.7, 0.15, 0.4, 0.3, 0.6, 0.2, 0.45, 0.6, 0.85, -1][i]);
 const diffAt = s => clamp((s - 150) / 6500, 0, 1);
 
 function newGame(o) {
@@ -758,7 +786,7 @@ function newGame(o) {
     p: { s: 0, x: 0, lane: 1, from: 1, y: 0, vy: 0, gv: 0, v: 0, air: false, airT: 0, crouch: 0, fastFall: 0, jumps: 0, stumble: 0, slow: 1, inv: 0, alive: true, deadT: 0,
       magnet: 0, turbo: 0, x2: 0, shield: 0, boost: 0, sl: 0, trickHit: 0, phase: 0, onTruck: null, lastLand: 0 },
     obs: [], coins: [], items: [], scen: [], ev: [], lf: [0, 0, 0],
-    genS: 42, scenS: -30, nextGate: 1000, edition: 0, score: 0, coinsRun: 0, starsRun: 0, clues: 0, gifts: 0, jumps: 0, ducks: 0, tricks: 0, powers: 0, trucks: 0,
+    genS: 42, scenS: -30, nextGate: 1000, dels: [], deliv: 0, dStreak: 0, dBest: 0, nextDel: 150, edition: 0, score: 0, coinsRun: 0, starsRun: 0, clues: 0, gifts: 0, jumps: 0, ducks: 0, tricks: 0, powers: 0, trucks: 0,
     cleanS: 0, cleanBest: 0, revives: 0, cause: '', mult: o.mult || 1, bad: 0, rows: 0,
     dur: { magnet: (8 + 2 * (up.magnet || 0)) * bat, turbo: (4.5 + (up.turbo || 0)) * bat, x2: (10 + 3 * (up.x2 || 0)) * bat },
     luck: up.gift || 0, nextGift: 380, nextClue: 320, cluesLeft: o.cluesLeft || 0, tut: o.tut ? 0 : -1, tutWait: null, ts: 1
@@ -873,17 +901,24 @@ function genRow(g) {
     else if (s > 160 && r() < 0.05) it = pickW(r, [['magnet', 3], ['turbo', 1.6], ['x2', 2.2], ['shield', 1.8]]);
     if (it) g.items.push({ k: it, lane: freeL, x: (freeL - 1) * LW, s: mid, y: 1.0, alive: 1 });
   }
+  const dz = Math.floor(mid / 1000) % ZONES.length;
+  if (mid >= g.nextDel && DELK[dz] >= 0) {
+    const ln = r() < 0.5 ? 0 : 2;
+    if (spotOk(g, ln, mid, 0.5) && spotOk(g, ln, mid - 7, 0.5) && spotOk(g, ln, mid + 3, 0.5)) { g.dels.push({ s: mid, lane: ln, x: ln === 0 ? -4.35 : 4.35, k: r() < DELK[dz] ? 'casita' : 'buzon', v: Math.floor(r() * 3), done: 0, miss: 0 }); g.nextDel = mid + 105 + r() * 130; }
+  }
   g.genS = s + len + gap;
 }
 
 function genScen(g) {
   const r = g.srng, s = g.scenS, zi = Math.floor(Math.max(0, s) / 1000) % ZONES.length, th = THEMES[zi];
+  if (th.sea) g.scen.push({ k: 'sea', s, x: 9.6, side: 1, ry: 0, sc: 1, v: 0, sh: 1, z: zi });
+  if (th.rail) for (const sd of [-1, 1]) g.scen.push({ k: 'rail', s, x: sd * 5.45, side: sd, ry: 0, sc: 1, v: 0, sh: 1, z: zi });
   if (s >= g.nextGate - 14) { const ed = g.nextGate / 1000; g.scen.push({ k: 'gate', s: g.nextGate, x: 0, ry: 0, sc: 1, z: ed % ZONES.length, v: 0, sh: 1 }); g.nextGate += 1000; }
   for (const side of [-1, 1]) {
     const k = pickW(r, th.near);
-    if (r() < 0.8) g.scen.push({ k, s: s + r() * 3, x: side * (k === 'bill' ? 7.2 : 6 + r() * 1.6), side, ry: k === 'bill' ? -side * 0.35 : r() * 6.28, sc: 0.85 + r() * 0.35, v: Math.floor(r() * 10), sh: 0.85 + r() * 0.25, z: zi });
-    const f = pickW(r, th.far);
-    if (r() < 0.75) g.scen.push({ k: f, s: s + r() * 4, x: side * (f === 'hill' ? 34 + r() * 20 : 12 + r() * 10), side, ry: f === 'bld' ? 0 : r() * 6.28, sc: f === 'bld' ? 1 : 0.9 + r() * 0.8, v: Math.floor(r() * 3), sh: 0.8 + r() * 0.3, z: zi, h: 0.7 + r() * 0.9, pi: r() < 0.5 ? 2 : 3 });
+    if (r() < 0.8) g.scen.push({ k, s: s + r() * 3, x: side * (k === 'bill' ? 7.2 : th.rail ? 5.6 : 6 + r() * 1.6), side, ry: k === 'bill' ? -side * 0.35 : r() * 6.28, sc: 0.85 + r() * 0.35, v: Math.floor(r() * 10), sh: 0.85 + r() * 0.25, z: zi });
+    const f = pickW(r, th.sea && side > 0 ? [['boat', 1]] : th.far);
+    if (r() < 0.75) g.scen.push({ k: f, s: s + r() * 4, x: side * (f === 'hill' ? 34 + r() * 20 : f === 'mount' ? 55 + r() * 30 : f === 'boat' ? 16 + r() * 26 : 12 + r() * 10), side, ry: f === 'bld' ? 0 : r() * 6.28, sc: f === 'bld' ? 1 : 0.9 + r() * 0.8, v: Math.floor(r() * 3), sh: 0.8 + r() * 0.3, z: zi, h: 0.7 + r() * 0.9, pi: r() < 0.5 ? 2 : 3 });
   }
   if (r() < FLOW[zi]) { const sd = r() < 0.5 ? -1 : 1; g.scen.push({ k: 'flowers', s: s + r() * 4, x: sd * (5.9 + r() * 2.6), side: sd, ry: r() * 6.28, sc: 0.8 + r() * 0.5, v: 0, sh: 0.9 + r() * 0.2, z: zi }); }
   g.scenS += 6 + r() * 5;
@@ -966,7 +1001,8 @@ function step(g, dt, inp) {
   // velocidad: v = (14 + 21·(1 − e^(−s/2600)))·vehículo  → de 14 a 35 m/s
   const base = vEst(g, P.s); P.slow = Math.min(1, P.slow + dt * 0.35);
   P.boost = Math.max(0, P.boost - dt * 0.24); P.sl = HILLD(P.s);
-  const tv = (base + Math.min(0.3 * base, 6.5) * P.boost) * (P.turbo > 0 ? 1.4 : 1) * P.slow * hillK(P.sl);
+  const hk = V.id === 'long' && P.sl < 0 ? clamp(1 - 2.6 * P.sl, 1, 1.32) : hillK(P.sl);
+  const tv = (base + Math.min(0.3 * base, 6.5) * P.boost) * (P.turbo > 0 ? 1.4 : 1) * P.slow * hk;
   P.v += (tv - P.v) * Math.min(1, dt * (P.v < tv ? 2.2 : 6));
   const s0 = P.s; P.s += P.v * dt; P.phase += P.v * dt;
   // lateral
@@ -1022,6 +1058,7 @@ function step(g, dt, inp) {
   for (const c of g.coins) {
     if (!c.alive) continue;
     if (magR && !c.mag && c.s > P.s - 2 && c.s < P.s + magR) c.mag = 1;
+    else if (V.id === 'euc' && !c.mag && c.s > P.s - 1 && c.s < P.s + 4.5 && Math.abs(c.x - P.x) < 2.3 && Math.abs(c.y - P.y - 0.9) < 1.6) c.mag = 1;
     if (c.mag) { const k = Math.min(1, dt * 14); c.x += (P.x - c.x) * k; c.y += (P.y + 0.9 - c.y) * k; c.s += (P.s + 0.2 - c.s) * k; }
     if (c.s > zA - 0.6 && c.s < zB + 0.6 && Math.abs(c.x - P.x) < 0.95 && c.y > P.y - 0.4 && c.y < P.y + h + 0.5) {
       c.alive = 0; g.coinsRun++; g.score += 10 * mul; ev(g, 'coin', c);
@@ -1032,6 +1069,16 @@ function step(g, dt, inp) {
     if (P.magnet > 0 && it.s > P.s - 1 && it.s < P.s + 10) { const k = Math.min(1, dt * 10); it.x += (P.x - it.x) * k; it.y += (P.y + 1 - it.y) * k; it.s += (P.s - it.s) * k; }
     if (it.s > zA - 0.8 && it.s < zB + 0.8 && Math.abs(it.x - P.x) < 1.05 && it.y > P.y - 0.6 && it.y < P.y + h + 0.6) { it.alive = 0; pickup(g, it); }
   }
+  // entregas: lanza la revista al buzón si vas por el carril de ese lado
+  for (const d of g.dels) {
+    if (d.done || d.miss) continue;
+    const ahead = d.s - P.s;
+    if (ahead < P.v * 0.36 + 1 && Math.abs(P.x - (d.lane - 1) * LW) < 1.25) {
+      d.done = 1; g.deliv++; g.dStreak++; g.dBest = Math.max(g.dBest, g.dStreak);
+      const k2 = V.id === 'trike' ? 2 : 1; d.pts = Math.round(50 * mul * (1 + 0.1 * Math.min(10, g.dStreak - 1)) * k2); g.score += d.pts; g.coinsRun += 5 * k2;
+      d.T = clamp(ahead / Math.max(P.v, 1), 0.15, 0.6); ev(g, 'deliver', d);
+    } else if (ahead < -0.5) { d.miss = 1; if (g.dStreak > 0) ev(g, 'dmiss', d); g.dStreak = 0; }
+  }
   // puntuación por distancia
   const ds = P.s - s0; g.score += ds * mul; g.cleanS += ds;
   const ed = Math.floor(P.s / 1000); if (ed > g.edition) { g.edition = ed; ev(g, 'zone', ed); }
@@ -1041,6 +1088,7 @@ function step(g, dt, inp) {
     g.obs = g.obs.filter(o => o.s + o.hd > cut && !(o.fly && o.fly.t > 2.5));
     g.coins = g.coins.filter(c => c.alive && c.s > cut);
     g.items = g.items.filter(i => i.alive && i.s > cut);
+    g.dels = g.dels.filter(d => d.s > cut - 12);
     g.scen = g.scen.filter(sc => sc.s > cut - (sc.k === 'bld' || sc.k === 'hill' ? 30 : 0));
   }
   genAhead(g);
@@ -1092,6 +1140,7 @@ function aiThink(g, skill = 1) {
       if (f.need !== 'block' && f.front < 0 && P.lane !== l) c += 150;
     }
     let n = 0; for (const cn of g.coins) if (cn.alive && cn.lane === l && cn.s > P.s && cn.s < P.s + 22) n++;
+    for (const d of g.dels) if (!d.done && !d.miss && d.lane === l && d.s - P.s > 0 && d.s - P.s < 32) c -= 1.2;
     return c - Math.min(1.5, n * 0.18);
   });
   let bl = P.lane;
@@ -1124,7 +1173,7 @@ function simulate(o) {
     if (P.y < -0.01 || P.y > 12) { errs.push('altura fuera de rango ' + P.y); break; }
     if (o.revive && !P.alive && g.revives < 1) { revive(g); }
   }
-  return { seed: o.seed, veh: g.veh.id, dist: Math.round(g.p.s), t: +g.t.toFixed(1), score: Math.round(g.score), coins: g.coinsRun, cause: g.p.alive ? 'tiempo' : g.cause, pat: g.causePat || '', bad: g.bad, rows: g.rows, jumps: g.jumps, ducks: g.ducks, tricks: g.tricks, trucks: g.trucks, gifts: g.gifts, clues: g.clues, powers: g.powers, errs };
+  return { seed: o.seed, veh: g.veh.id, dist: Math.round(g.p.s), t: +g.t.toFixed(1), score: Math.round(g.score), coins: g.coinsRun, cause: g.p.alive ? 'tiempo' : g.cause, pat: g.causePat || '', bad: g.bad, rows: g.rows, jumps: g.jumps, ducks: g.ducks, tricks: g.tricks, trucks: g.trucks, gifts: g.gifts, clues: g.clues, powers: g.powers, deliv: g.deliv, errs };
 }
 
 /* ---- models.js ---- */
@@ -1328,6 +1377,22 @@ const MOD = {
       m.box(0, 0.12, 0, 0.25, 0.035, 0.6, c, e); m.at(0, 0.15, -0.36, 0, -0.35, 0, 1, 1, 1, q => q.box(0, 0, 0, 0.25, 0.035, 0.16, c, e)); m.at(0, 0.15, 0.36, 0, 0.35, 0, 1, 1, 1, q => q.box(0, 0, 0, 0.25, 0.035, 0.16, c, e));
       m.box(0, 0.14, 0, 0.24, 0.01, 0.58, DK);
       for (const z of [-0.24, 0.24]) { m.box(0, 0.085, z, 0.2, 0.04, 0.05, GR); for (const sx of [-1, 1]) wheelX(m, sx * 0.11, 0.05, z, 0.05, 0.045, cr, 8); }
+    } else if (id === 'trike') {
+      for (const sx of [-1, 1]) wheelX(m, sx * 0.42, 0.26, -0.62, 0.26, 0.05, w, 12);
+      wheelX(m, 0, 0.32, 0.55, 0.32, 0.04, w, 14); m.box(0, 0.33, -0.62, 0.9, 0.05, 0.08, c, e);
+      m.box(0, 0.64, -0.62, 0.86, 0.5, 0.6, hex('#0e6378')); m.box(0, 0.9, -0.62, 0.9, 0.04, 0.64, cr);
+      for (const sx of [-1, 1]) m.quad([sx * 0.432, 0.45, -0.88], [sx * 0.432, 0.45, -0.36], [sx * 0.432, 0.84, -0.36], [sx * 0.432, 0.84, -0.88], WH, 0.3, ATR.cover);
+      m.quad([-0.3, 0.45, -0.922], [0.3, 0.45, -0.922], [0.3, 0.84, -0.922], [-0.3, 0.84, -0.922], WH, 0.3, BILL(0));
+      bar(m, 0, 0.36, -0.02, 0.95, -0.36, 0.06, c, e); bar(m, 0, 0.9, 0.12, 0.95, -0.36, 0.055, c, e); bar(m, 0, 0.36, -0.02, 0.92, 0.12, 0.055, c, e);
+      bar(m, 0, 0.36, -0.02, 0.32, 0.55, 0.04, c, e); bar(m, 0, 0.9, 0.12, 0.32, 0.55, 0.04, c, e); bar(m, 0, 0.36, -0.02, 0.36, -0.34, 0.05, c, e);
+      m.box(0, 0.97, 0.14, 0.14, 0.05, 0.26, DK); m.box(0, 1.08, -0.4, 0.6, 0.04, 0.04, w); bar(m, 0, 0.95, -0.36, 1.08, -0.4, 0.04, w); m.box(0, 0.36, -0.02, 0.32, 0.03, 0.06, DK);
+    } else if (id === 'euc') {
+      wheelX(m, 0, 0.3, 0, 0.3, 0.1, w, 14); wheelX(m, 0, 0.3, 0, 0.12, 0.13, GR, 8);
+      for (const sx of [-1, 1]) { m.box(sx * 0.085, 0.36, 0, 0.05, 0.42, 0.5, c, e); m.box(sx * 0.15, 0.17, 0, 0.12, 0.025, 0.2, DK); }
+      m.box(0, 0.6, 0, 0.2, 0.06, 0.36, c, e); m.box(0, 0.45, -0.31, 0.1, 0.05, 0.03, hex('#fff6c8'), 1); m.box(0, 0.45, 0.31, 0.1, 0.04, 0.03, hex('#ff2a2a'), 1);
+    } else if (id === 'long') {
+      m.box(0, 0.13, 0, 0.27, 0.035, 1.0, c, e); m.box(0, 0.152, 0, 0.26, 0.01, 0.96, DK);
+      for (const z of [-0.36, 0.36]) { m.box(0, 0.09, z, 0.24, 0.04, 0.06, GR); for (const sx of [-1, 1]) wheelX(m, sx * 0.13, 0.06, z, 0.06, 0.055, hex('#ff5a2a'), 10); }
     } else if (id === 'inline') {
       m.box(0, 0.2, 0.02, 0.125, 0.24, 0.27, c, e); m.box(0, 0.36, 0.07, 0.13, 0.12, 0.15, c, e); m.box(0, 0.3, 0.075, 0.135, 0.03, 0.155, DK);
       m.box(0, 0.07, 0, 0.045, 0.05, 0.36, GR); m.box(0, 0.055, 0.2, 0.05, 0.07, 0.07, DK);
@@ -1375,6 +1440,36 @@ const MOD = {
   rabbit() { const m = new MB(), c = hex('#a08a72'), w = hex('#f4f1e6');
     m.ico(0, 0.22, 0.03, 0.2, c, 0, 0.8); m.ico(0, 0.38, -0.17, 0.13, c); for (const sx of [-1, 1]) { m.at(sx * 0.05, 0.55, -0.15, 0, 0.25, sx * 0.15, 1, 1, 1, q => q.box(0, 0, 0, 0.045, 0.2, 0.05, c)); m.box(sx * 0.07, 0.41, -0.28, 0.025, 0.03, 0.02, DK); m.box(sx * 0.09, 0.06, -0.12, 0.06, 0.08, 0.14, c); }
     m.ico(0, 0.26, 0.23, 0.07, w); m.box(0, 0.36, -0.3, 0.03, 0.025, 0.02, hex('#e8a0a0')); return m; },
+  /* ---- escenarios nuevos (modo paleta) ---- */
+  palm() { const m = new MB(); let x = 0, y = 0; for (let i = 0; i < 6; i++) { const nx = x + 0.12 * i * 0.25; m.at(nx, y, 0, 0, 0, -0.06 * i, 1, 1, 1, q => q.cyl(0, 0, 0, 0.17 - i * 0.015, 0.75, 6, PC(1, i % 2 ? 0.9 : 1.05))); x = nx + 0.05; y += 0.73; }
+    for (let i = 0; i < 7; i++) { const a = i / 7 * 6.28; m.at(x, y, 0, a, 0, 0, 1, 1, 1, q => q.at(0, 0, -0.9, 0, 0.45, 0, 1, 1, 1, f => f.box(0, 0, 0, 0.5, 0.04, 1.9, PC(0, i % 2 ? 0.9 : 1.08)))); }
+    for (let i = 0; i < 3; i++) m.ico(x + Math.cos(i * 2) * 0.18, y - 0.18, Math.sin(i * 2) * 0.18, 0.12, PC(1, 0.7)); return m; },
+  parasol() { const m = new MB(); m.cyl(0, 0, 0, 0.04, 2.2, 5, PC(3, 1.6)); m.cyl(0, 1.95, 0, 1.25, 0.5, 8, PC(2), 0, 0.05, true); m.cyl(0, 1.97, 0, 0.7, 0.32, 8, PC(4), 0, 0.05, false); m.box(0.9, 0.03, 0.3, 0.8, 0.04, 1.7, PC(4, 1.1)); return m; },
+  sea() { const m = new MB(); m.quad([0, 0.03, 7.5], [80, 0.03, 7.5], [80, 0.03, -7.5], [0, 0.03, -7.5], PC(3), 1); for (const x of [2, 7, 15, 26]) m.quad([x, 0.05, 5], [x + 2.5, 0.05, 5], [x + 2.5, 0.05, -5], [x, 0.05, -5], PC(3, 1.3), 1); m.box(-0.2, 0.08, 0, 0.6, 0.16, 15, PC(1, 1.2)); return m; },
+  mount() { const m = new MB(); m.cyl(0, -1, 0, 24, 30, 7, PC(0, 0.72), 0, 0, false); m.cyl(0, 19.6, 0, 7.6, 9.4, 7, PC(3, 1.05), 0, 0, false); return m; },
+  fence() { const m = new MB(); for (let z = -6; z <= 6; z += 2) m.box(0, 0.55, z, 0.12, 1.1, 0.12, PC(1, 1.1)); for (const y of [0.45, 0.85]) m.box(0, y, 0, 0.06, 0.12, 12.2, PC(1, 1.25)); return m; },
+  coffee() { const m = new MB(), r = rngOf(23); for (let i = 0; i < 4; i++) { const z = -4.5 + i * 3; m.ico(0, 0.6, z, 0.75, PC(0, 0.85 + r() * 0.2), 0, 0.9, r, 0.3); for (let k = 0; k < 7; k++) m.box((r() - 0.5) * 1.1, 0.35 + r() * 0.7, z + (r() - 0.5) * 1.1, 0.1, 0.1, 0.1, PC(4), 1); } return m; },
+  rail() { const m = new MB(); for (let z = -6; z <= 6; z += 2) m.box(0, 0.55, z, 0.14, 1.1, 0.14, PC(2)); m.box(0, 1.1, 0, 0.2, 0.12, 12.2, PC(2, 1.1)); m.box(0, 0.6, 0, 0.06, 0.08, 12.2, PC(2, 0.9)); m.box(0, -0.6, 0, 0.6, 1.4, 12.2, PC(1, 0.8)); return m; },
+  boat() { const m = new MB(); m.box(0, 0.25, 0, 1.6, 0.5, 4.2, PC(2)); m.box(0, 0.52, 0, 1.7, 0.08, 4.3, PC(4)); m.cyl(0, 0.5, 0.3, 0.06, 3.4, 5, PC(1)); m.tri([0, 3.8, 0.28], [0, 0.9, 0.28], [0, 0.9, -1.6], PC(3, 1.2), 1); return m; },
+  /* ---- entregas: buzón, casitas, puerta, vecino, revista ---- */
+  buzon() { const m = new MB(), t = hex('#0e6378'); m.box(0, 0.55, 0, 0.09, 1.1, 0.09, GR); m.box(0, 1.24, 0, 0.36, 0.34, 0.52, t); m.at(0, 1.4, 0, 0, Math.PI / 2, 0, 1, 1, 1, q => q.cyl(0, -0.26, 0, 0.18, 0.52, 8, t, 0, 0.18, false));
+    m.box(-0.182, 1.26, 0, 0.01, 0.06, 0.3, DK); m.quad([0.182, 1.1, 0.2], [0.182, 1.1, -0.2], [0.182, 1.38, -0.2], [0.182, 1.38, 0.2], WH, 0.3, ATR.cover); m.box(0, 1.08, 0, 0.38, 0.05, 0.54, hex('#e8e4c4')); return m; },
+  flag() { const m = new MB(); m.box(0, 0.16, 0, 0.025, 0.32, 0.025, GR); m.box(0, 0.3, -0.09, 0.02, 0.12, 0.18, hex('#c0191c'), 1); return m; },
+  house(v) {
+    const m = new MB(), wall = hex(['#e8e4c4', '#fbe7a9', '#9fd3c7'][v]), roof = hex(['#c0191c', '#1b4459', '#6b3f16'][v]), hx = 2.75;
+    m.box(hx, 1.05, 0, 2.6, 2.1, 2.6, wall); m.box(hx, 0.08, 0, 2.8, 0.16, 2.8, hex('#8a8f96'));
+    const Y0 = 2.1, Y1 = 3.25; for (const s of [-1, 1]) m.quad([hx - 1.5, Y0, s * 1.5], [hx + 1.5, Y0, s * 1.5], [hx + 1.5, Y1, 0], [hx - 1.5, Y1, 0], roof);
+    for (const xx of [hx - 1.3, hx + 1.3]) m.tri([xx, Y0, -1.3], [xx, Y0, 1.3], [xx, Y1, 0], wall);
+    m.box(hx + 0.4, 2.9, 0.6, 0.35, 0.8, 0.35, hex('#5b4636'));
+    for (const z of [-0.75]) { m.box(hx - 1.31, 1.25, z, 0.04, 0.6, 0.6, hex('#ffd36b'), 1); m.box(hx - 1.33, 1.25, z, 0.04, 0.66, 0.05, DK); m.box(hx - 1.33, 1.25, z, 0.04, 0.05, 0.66, DK); }
+    m.box(hx - 1.32, 0.72, 0.4, 0.03, 1.42, 0.78, DK); m.box(hx - 1.5, 0.08, 0.4, 0.4, 0.06, 0.9, hex('#b9bcc2'));
+    for (const z of [-1.2, 1.2]) m.ico(hx - 1.5, 0.3, z, 0.32, hex('#3f8a4f'), 0, 0.8); return m;
+  },
+  door() { const m = new MB(); m.box(0, 0.66, -0.35, 0.05, 1.3, 0.7, hex('#8a5a32')); m.box(-0.04, 0.66, -0.62, 0.04, 0.06, 0.06, hex('#ffc23a'), 1); return m; },
+  resi(v) { const m = new MB(), c = hex(['#ff5a2a', '#2dffb3', '#a42cff'][v]); m.box(0, 0.45, 0, 0.32, 0.5, 0.2, hex('#1b4459')); m.box(0, 0.95, 0, 0.36, 0.5, 0.22, c); m.ico(0, 1.38, 0, 0.16, hex('#a8754e')); m.hemi(0, 1.42, 0.02, 0.17, 8, 2, hex('#2b2112'));
+    m.box(-0.08, 1.4, -0.15, 0.04, 0.035, 0.02, DK); m.box(0.08, 1.4, -0.15, 0.04, 0.035, 0.02, DK); m.box(0, 1.31, -0.155, 0.1, 0.025, 0.02, hex('#c0191c')); m.at(-0.22, 1.18, 0, 0, 0, -0.2, 1, 1, 1, q => q.box(0, -0.24, 0, 0.09, 0.48, 0.1, c)); return m; },
+  rarm() { const m = new MB(); m.box(0, 0.22, 0, 0.09, 0.44, 0.1, hex('#a8754e')); m.box(0, 0.48, 0, 0.11, 0.11, 0.06, hex('#a8754e')); return m; },
+  mag() { const m = new MB(); m.at(0, 0, 0, 0, 0, Math.PI / 2, 1, 1, 1, q => { q.cyl(0, -0.16, 0, 0.06, 0.32, 8, hex('#e8e4c4')); q.cyl(0, -0.05, 0, 0.065, 0.1, 8, hex('#0e6378'), 0.4); }); return m; },
   npc(col) {
     const m = new MB(), c = hex(['#ff5a2a', '#2dffb3', '#a42cff', '#ffc23a'][col]), w = hex('#2a2a30'), sk = hex('#a8754e');
     for (const z of [0.52, -0.52]) wheelX(m, 0, 0.34, z, 0.34, 0.04, w, 12);
@@ -1395,7 +1490,8 @@ const RN = {
   parts: [], mo: {}, branches: {}, pl: null, plKey: '', trailT: 0, quality: 1,
   init() {
     const mk = b => R.mesh(b), mo = this.mo;
-    for (const k of ['road', 'tree', 'pine', 'bush', 'lamp', 'bench', 'hill', 'billFrame', 'gateFrame', 'rock', 'cone', 'barrier', 'pothole', 'puddle', 'cart', 'kiosk', 'coin', 'gift', 'clue', 'magnet', 'shield', 'turbo', 'x2', 'cube', 'shadow', 'ink', 'flowers', 'wing', 'bfly', 'bird', 'bwing', 'rabbit']) mo[k] = mk(MOD[k]());
+    for (const k of ['road', 'tree', 'pine', 'bush', 'lamp', 'bench', 'hill', 'billFrame', 'gateFrame', 'rock', 'cone', 'barrier', 'pothole', 'puddle', 'cart', 'kiosk', 'coin', 'gift', 'clue', 'magnet', 'shield', 'turbo', 'x2', 'cube', 'shadow', 'ink', 'flowers', 'wing', 'bfly', 'bird', 'bwing', 'rabbit', 'palm', 'parasol', 'sea', 'mount', 'fence', 'coffee', 'rail', 'boat', 'buzon', 'flag', 'door', 'rarm', 'mag']) mo[k] = mk(MOD[k]());
+    mo.house = [0, 1, 2].map(v => mk(MOD.house(v))); mo.resi = [0, 1, 2].map(v => mk(MOD.resi(v))); this.proj = [];
     mo.bld = []; for (let v = 0; v < 3; v++) mo.bld.push([mk(MOD.bld(v, 2)), mk(MOD.bld(v, 3))]);
     mo.bill = []; mo.gate = []; for (let i = 0; i < 10; i++) { mo.bill.push(mk(MOD.billPanel(i))); mo.gate.push(mk(MOD.gatePanel(i))); }
     mo.truck = [0, 1, 2].map(c => mk(MOD.truck(c))); mo.npc = [0, 1, 2, 3].map(c => mk(MOD.npc(c)));
@@ -1453,6 +1549,7 @@ const RN = {
     else if (e.k === 'clue') this.emit(14, P.x, 1.2, P.s + 1, hex('#2dffb3'), 5, 0.1, 0.9, 4, 0.2);
     else if (e.k === 'power' || e.k === 'gift') this.emit(10, P.x, 1.4, P.s + 0.5, hex(e.k === 'gift' ? '#ff2fb3' : '#39c8ff'), 3, 0.06, 0.45, 3.5, 0.4);
     else if (e.k === 'land' && e.a > 0.35) this.emit(5, P.x, 0.1, P.s, hex('#cfc4a8'), 3, 0.1, 0.4, 1.5);
+    else if (e.k === 'deliver') { const d = e.a; this.proj.push({ x0: P.x + (d.x > 0 ? 0.3 : -0.3), y0: P.y + 1.4, s0: P.s, x1: d.x, y1: 1.3, s1: d.s, t: 0, T: d.T }); this.throwT = 0.32; this.throwSide = d.x > 0 ? 1 : -1; }
     else if (e.k === 'shield') { this.emit(14, P.x, 1, P.s, hex('#39c8ff'), 6, 0.12, 0.8, 4); this.shake = 0.5; }
   },
   trail(g, dt, id) {
@@ -1469,7 +1566,7 @@ const RN = {
     this.cr = lerp(this.cr, P.crouch > 0 ? 1 : 0, Math.min(1, dt * 18)); const cr = this.cr;
     const tx = (P.lane - 1) * LW, roll = clamp((tx - P.x) * 0.16, -0.32, 0.32), pitch = P.air ? clamp(-P.vy * 0.012, -0.25, 0.25) : 0;
     let spin = 0, vspin = 0, vflip = 0;
-    if (P.air && !P.trickHit && P.airT > 0.15 && P.alive) { const k = clamp((P.airT - 0.15) / 0.38, 0, 1), e = k * k * (3 - 2 * k) * Math.PI * 2; if (id === 'skate') vflip = e; else if (id === 'scooter') vspin = e; else spin = e; }
+    if (P.air && !P.trickHit && P.airT > 0.15 && P.alive) { const k = clamp((P.airT - 0.15) / 0.38, 0, 1), e = k * k * (3 - 2 * k) * Math.PI * 2; if (id === 'skate') vflip = e; else if (id === 'scooter' || id === 'long') vspin = e; else spin = e; }
     let dead = 0, slide = 0; if (!P.alive) { dead = Math.min(1.5, P.deadT * 4); slide = Math.min(3.5, P.deadT * 6); }
     const blink = P.inv > 0 && P.alive && Math.floor(time * 14) % 2;
     if (blink) return;
@@ -1482,8 +1579,9 @@ const RN = {
     const ph = P.phase, grounded = !P.air && P.alive;
     if (id === 'scooter') { hy = 0.98 - 0.34 * cr; hz = 0.02; lean = 0.18 + 0.5 * cr; const f = time * 7.5, lift = Math.max(0, Math.cos(f)) * 0.16; feet = [[0.19, -0.06], grounded && cr < 0.5 ? [0.07 + lift, 0.2 + 0.25 * Math.sin(f)] : [0.19, 0.2]]; arms = [[0.72 + 0.3 * cr, 0.05], [0.72 + 0.3 * cr, -0.05]]; }
     else if (id === 'escooter') { hy = 1.02 - 0.34 * cr; hz = 0.03; lean = 0.12 + 0.5 * cr; feet = [[0.255, -0.17], [0.255, 0.2]]; arms = [[0.7 + 0.3 * cr, 0.05], [0.7 + 0.3 * cr, -0.05]]; }
-    else if (id === 'bike') { hy = 1.03 - 0.08 * cr; hz = 0.12; lean = 0.55 + 0.3 * cr; const f = ph * 0.7; feet = [[0.36 - 0.17 * Math.cos(f) + 0.07, -0.02 + 0.17 * Math.sin(f)], [0.36 + 0.17 * Math.cos(f) + 0.07, -0.02 - 0.17 * Math.sin(f)]]; arms = [[1.0, 0.08], [1.0, -0.08]]; }
-    else if (id === 'skate') { hy = 0.9 - 0.3 * cr; yaw = -1.35; lean = 0.15 + 0.4 * cr; feet = null; arms = [[0.25, 0.95], [0.25, -0.95]]; }
+    else if (id === 'bike' || id === 'trike') { hy = 1.03 - 0.08 * cr; hz = 0.12; lean = 0.55 + 0.3 * cr; const f = ph * 0.7; feet = [[0.36 - 0.17 * Math.cos(f) + 0.07, -0.02 + 0.17 * Math.sin(f)], [0.36 + 0.17 * Math.cos(f) + 0.07, -0.02 - 0.17 * Math.sin(f)]]; arms = [[1.0, 0.08], [1.0, -0.08]]; }
+    else if (id === 'euc') { hy = 1.02 - 0.34 * cr; lean = 0.1 + 0.5 * cr; feet = [[0.25, -0.02], [0.25, 0.02]]; arms = [[0.3, -0.6], [0.3, 0.6]]; splay = 0.12; }
+    else if (id === 'skate' || id === 'long') { hy = 0.9 - 0.3 * cr; yaw = -1.35; lean = 0.15 + 0.4 * cr; feet = null; arms = [[0.25, 0.95], [0.25, -0.95]]; }
     else { hy = (id === 'inline' ? 1.0 : 0.97) - 0.32 * cr; lean = 0.3 + 0.45 * cr; const f = time * (id === 'inline' ? 5.2 : 6.5); feet = [[0.17 + Math.max(0, -Math.cos(f)) * 0.08, 0.22 * Math.sin(f)], [0.17 + Math.max(0, Math.cos(f)) * 0.08, -0.22 * Math.sin(f)]]; arms = [[0.45 * Math.sin(f), 0.15], [-0.45 * Math.sin(f), -0.15]]; splay = 0.1; }
     if (!P.alive) { lean += dead * 0.6; }
     // cadera
@@ -1498,7 +1596,8 @@ const RN = {
     }
     // torso y brazos
     M4.trs(A, 0, 0, 0, 0, -lean, 0); M4.mul(D, C, A); R.draw(pl.t, D);
-    for (let i = 0; i < 2; i++) { const ar = arms[i], sx = i ? 0.255 : -0.255; M4.trs(A, sx, 0.58, 0, 0, ar[0] + (id === 'skate' ? 0 : lean * 0.6), ar[1]); M4.mul(M, D, A); R.draw(pl.ar, M); }
+    if (this.throwT > 0) { this.throwT = Math.max(0, this.throwT - dt); const k = Math.sin((1 - this.throwT / 0.32) * Math.PI), i = this.throwSide > 0 ? 1 : 0; arms = arms.slice(); arms[i] = [2.3 * k - lean * 0.6, this.throwSide * 0.9 * k]; }
+    for (let i = 0; i < 2; i++) { const ar = arms[i], sx = i ? 0.255 : -0.255; M4.trs(A, sx, 0.58, 0, 0, ar[0] + (id === 'skate' || id === 'long' ? 0 : lean * 0.6), ar[1]); M4.mul(M, D, A); R.draw(pl.ar, M); }
   },
   /* fauna silvestre: mariposas, pájaros, conejos, luciérnagas y semillas (solo decoración) */
   wild(g, mode, time, dt) {
@@ -1580,6 +1679,28 @@ const RN = {
       if (o.fly) { const f = o.fly; f.t += dt; const t = f.t; M4.trs(M, o.x + f.vx * t, Math.max(0, f.vy * t - GRAV * 0.5 * t * t), z - f.vz * t, f.ry * t, f.rx * t, 0); }
       else M4.trs(M, o.x, 0, z, 0, 0, 0);
       R.draw(m, M);
+    }
+    // entregas: buzones y casitas (bandera, puerta, vecino que saluda)
+    for (const d of g.dels) {
+      const z = zs(d.s); if (z < FAR || z > 16) continue;
+      const sx = d.x < 0 ? -1 : 1; if (d.done && d.ta == null) d.ta = time;
+      const up = d.done ? clamp((time - d.ta - (d.T || 0)) / 0.25, 0, 1) : 0;
+      M4.trs(M, d.x, 0, z, 0, 0, 0, sx, 1, 1); R.draw(mo.buzon, M);
+      M4.trs(this.A, 0.12, 1.22, 0.27, 0, (1 - up) * Math.PI / 2, 0); M4.mul(this.B, M, this.A); R.draw(mo.flag, this.B);
+      if (d.k === 'casita') {
+        R.draw(mo.house[d.v], M);
+        M4.trs(this.A, 1.36, 0, 0.79, -up * 1.7, 0, 0); M4.mul(this.B, M, this.A); R.draw(mo.door, this.B);
+        if (up > 0) {
+          const k = clamp((time - d.ta - (d.T || 0)) / 0.35, 0, 1), wv = Math.sin(time * 9) * 0.5;
+          M4.trs(this.A, 1.12, 0, 0.42, Math.PI / 2, 0, 0, 0.3 + 0.7 * k); M4.mul(this.B, M, this.A); R.draw(mo.resi[d.v], this.B);
+          M4.trs(this.A, 0.22, 1.18, 0, 0, 0, -0.45 + wv * 0.7); M4.mul(this.C, this.B, this.A); R.draw(mo.rarm, this.C);
+        }
+      }
+    }
+    for (let i = this.proj.length - 1; i >= 0; i--) {
+      const p = this.proj[i]; p.t += dt; const k = Math.min(1, p.t / p.T);
+      if (k >= 1) { this.emit(8, p.x1, p.y1, p.s1, hex('#ffc23a'), 3, 0.07, 0.5, 2.5); this.proj.splice(i, 1); continue; }
+      M4.trs(M, lerp(p.x0, p.x1, k), lerp(p.y0, p.y1, k) + 1.1 * 4 * k * (1 - k), zs(lerp(p.s0, p.s1, k)), time * 12, 0, time * 7); R.draw(mo.mag, M);
     }
     // monedas y objetos
     const spin = time * 4;
@@ -1664,6 +1785,8 @@ const AU = {
       case 'revive': this.tone(300, t, 0.4, 'triangle', 0.12, 1200); break;
       case 'shield': this.noise(t, 0.3, 0.2, 3000); this.tone(1500, t, 0.3, 'sine', 0.1, 700); break;
       case 'pump': this.tone(260 + 520 * (this.pumpLv || 0), t, 0.05, 'square', 0.045, 380 + 620 * (this.pumpLv || 0)); break;
+      case 'deliver': this.noise(t, 0.18, 0.08, 2200, 'bandpass', null, 1.5); this.tone(1319, t + 0.16, 0.18, 'sine', 0.1); this.tone(1760, t + 0.24, 0.3, 'sine', 0.09); break;
+      case 'dmiss': this.tone(240, t, 0.18, 'triangle', 0.08, 150); break;
       case 'tut': this.tone(880, t, 0.12, 'sine', 0.1); break;
       case 'rank': [523, 659, 784, 1047, 1319].forEach((f, i) => this.tone(f, t + i * 0.09, 0.22, 'square', 0.07)); break;
       case 'buy': this.tone(784, t, 0.08, 'square', 0.07); this.tone(1175, t + 0.07, 0.16, 'square', 0.07); break;
@@ -1676,7 +1799,7 @@ const AU = {
   },
   sched() {
     const c = this.ctx; if (!c || c.state !== 'running') return;
-    const BASE = [0, 5, -2, 3, -5, 7, -3], PROG = [[0, 8, 3, 10], [0, 5, 8, 7], [0, 3, 10, 8], [0, 10, 8, 7]], z = this.zone % 7, prog = PROG[z % 4];
+    const BASE = [0, 5, 2, -2, 4, 3, -4, -5, 1, 7, -3], PROG = [[0, 8, 3, 10], [0, 5, 8, 7], [0, 3, 10, 8], [0, 10, 8, 7]], z = this.zone % 11, prog = PROG[z % 4];
     while (this.nextT < c.currentTime + 0.15) {
       const s = this.stepN % 16, bar = Math.floor(this.stepN / 16) % 4, t = this.nextT, root = 110 * Math.pow(1.0595, BASE[z] + prog[bar]), mg = this.mg;
       if (s % 4 === 0) this.tone(150, t, 0.14, 'sine', 0.5, 42, mg);
@@ -1695,7 +1818,7 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const fmt = n => Math.round(n).toLocaleString('es-CO');
 const dayKey = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-const VERSION = '1.2.0', SKEY = 'runscooter.v1';
+const VERSION = '1.3.0', SKEY = 'runscooter.v1';
 const MREW = [100, 200, 350, 550, 800], MXP = [150, 300, 500, 800, 1200], DAILY = [100, 150, 200, 's1', 300, 400, 's3'];
 
 const SV = {
@@ -1729,7 +1852,7 @@ const SV = {
 };
 function newMis(S, ex) { const pool = MIS.filter(m => !ex.includes(m.k)); const d = pool[Math.floor(Math.random() * pool.length)]; return { k: d.k, lvl: Math.min(4, S.misLvl[d.k] || 0), prog: 0, best: 0 }; }
 const misDef = k => MIS.find(m => m.k === k);
-const misVal = (k, g) => k === 'coins' ? g.coinsRun : k === 'dist' ? g.p.s : k === 'jumps' ? g.jumps : k === 'ducks' ? g.ducks : k === 'gifts' ? g.gifts : k === 'powers' ? g.powers : k === 'tricks' ? g.tricks : k === 'score' ? g.score : k === 'clean' ? Math.max(g.cleanBest, g.cleanS) : k === 'trucks' ? g.trucks : g.edition + 1;
+const misVal = (k, g) => k === 'coins' ? g.coinsRun : k === 'dist' ? g.p.s : k === 'jumps' ? g.jumps : k === 'ducks' ? g.ducks : k === 'gifts' ? g.gifts : k === 'powers' ? g.powers : k === 'tricks' ? g.tricks : k === 'score' ? g.score : k === 'clean' ? Math.max(g.cleanBest, g.cleanS) : k === 'trucks' ? g.trucks : k === 'deliv' ? g.deliv : k === 'dstreak' ? g.dBest : g.edition + 1;
 const misText = m => misDef(m.k).t.replace('{n}', fmt(misDef(m.k).n[m.lvl]));
 const cosCfg = S => { const h = COSI[S.cos.casco], r = COSI[S.cos.ropa], p = COSI[S.cos.pintura]; return { helmet: h.c, he: !!h.e, shirt: r.a, pants: r.b, se: !!r.e, paint: p.c, pe: !!p.e }; };
 const priceTxt = it => it.st ? '✦ ' + it.st : '◉ ' + fmt(it.p || 0);
@@ -1829,11 +1952,12 @@ const UI = {
       <div class="cat" style="color:#2b2112">Zona peligrosa</div><button class="btn red" data-act="reset">Borrar progreso</button>
       <div class="film" style="margin-top:16px;--fc:#a42cff">RUN SCOOTER v${VERSION} · juego offline<br>Estilo: revista EMSAY + Doc Element<br>Motor 3D propio · sin librerías · sin internet</div>`;
   },
-  hud: { s: -1, c: -1, d: -1, m: '', pk: '', b: -1, sl: 99 },
+  hud: { s: -1, c: -1, d: -1, m: '', pk: '', b: -1, sl: 99, dl: '' },
   updHud(g) {
     const H = this.hud, P = g.p, sc = Math.floor(g.score), c = g.coinsRun, d = Math.floor(P.s);
     if (sc !== H.s) { H.s = sc; $('hScore').textContent = fmt(sc); }
     if (c !== H.c) { H.c = c; $('hCoins').textContent = fmt(c); }
+    const dl = g.deliv + ':' + g.dStreak; if (dl !== H.dl) { H.dl = dl; const el = $('hDel'); el.hidden = !g.deliv; el.innerHTML = `✉ <b>${g.deliv}</b>${g.dStreak > 1 ? ' <small>racha ×' + g.dStreak + '</small>' : ''}`; }
     if (d !== H.d) { H.d = d; $('hDist').textContent = fmt(d) + ' M · ED. ' + (g.edition + 1); }
     const b = Math.round(P.boost * 20); if (b !== H.b) { H.b = b; $('bbF').style.height = (b * 5) + '%'; }
     const sl = Math.round(P.sl * 100); if (sl !== H.sl) { H.sl = sl; const el = $('hSlope'); el.hidden = Math.abs(sl) < 3; el.className = 'slope ' + (sl > 0 ? 'up' : 'dn'); el.textContent = (sl > 0 ? '▲ SUBIDA ' : '▼ BAJADA ') + Math.abs(sl) + ' %'; }
@@ -1845,6 +1969,7 @@ const UI = {
     for (const p of pw) { const el = $('pb-' + p[0]); if (el) el.style.width = (P[p[0]] / g.dur[p[0]] * 100).toFixed(1) + '%'; }
     $('hStum').hidden = !(P.stumble > 0 && P.alive);
   },
+  pop(txt, cls = '') { const el = $('hPop'); el.className = ''; void el.offsetWidth; el.className = 'pop ' + cls; el.textContent = txt; },
   banner(ed) { const z = ZONES[ed % ZONES.length]; $('hBanner').innerHTML = `<div class="banner"><div class="sp">Edición ${ed + 1}</div><div class="mega">${esc(z.name)}</div></div>`; },
   tut(i) { const T = TUT[i]; const el = $('hTut'); if (i < 0 || !T) { el.hidden = true; return; } el.innerHTML = `<b>${T.msg}</b><small>${esc(T.pc)}</small>`; el.hidden = false; }
 };
@@ -1870,8 +1995,8 @@ async function saveFile(name, text, mime) {
 }
 function exportJSON() { const S = SV.S; return JSON.stringify({ app: 'Run Scooter', version: VERSION, exportado: new Date().toISOString(), partidas: S.runs, perfil: S }, null, 1); }
 function exportCSV() {
-  const K = ['d', 'ch', 'veh', 'dist', 'score', 'coins', 'stars', 'clues', 'gifts', 'jumps', 'ducks', 'tricks', 'powers', 'trucks', 'ed', 'rev', 'time', 'cause', 'seed'];
-  const H = ['fecha', 'reto_dia', 'vehiculo', 'metros', 'puntos', 'monedas', 'estrellas', 'paginas', 'regalos', 'saltos', 'agachadas', 'trucos', 'poderes', 'furgones', 'edicion', 'revivir', 'segundos', 'causa', 'semilla'];
+  const K = ['d', 'ch', 'deliv', 'veh', 'dist', 'score', 'coins', 'stars', 'clues', 'gifts', 'jumps', 'ducks', 'tricks', 'powers', 'trucks', 'ed', 'rev', 'time', 'cause', 'seed'];
+  const H = ['fecha', 'reto_dia', 'entregas', 'vehiculo', 'metros', 'puntos', 'monedas', 'estrellas', 'paginas', 'regalos', 'saltos', 'agachadas', 'trucos', 'poderes', 'furgones', 'edicion', 'revivir', 'segundos', 'causa', 'semilla'];
   return [H.join(';')].concat(SV.S.runs.map(r => K.map(k => '"' + String(r[k] == null ? '' : r[k]).replace(/"/g, '""') + '"').join(';'))).join('\n');
 }
 function importJSON(text) {
@@ -1962,6 +2087,8 @@ function events(g) {
       case 'tutOk': UI.tut(-1); if (g.tut >= TUT.length && S.tut) { S.tut = 0; SV.save(); } break;
       case 'revive': AU.sfx('revive'); break;
       case 'boost': AU.pumpLv = e.a; AU.sfx('pump'); break;
+      case 'deliver': AU.sfx('deliver'); vib(15); UI.pop('✉ ¡ENTREGA! +' + fmt(e.a.pts) + (g.dStreak > 1 ? ' · racha ×' + g.dStreak : '')); if (g.deliv === 1 && !S.delTip) { S.delTip = 1; UI.toast('Ve por el carril del borde al pasar un buzón o casita: lanzas la revista', 'c'); } break;
+      case 'dmiss': AU.sfx('dmiss'); UI.pop('✉ Entrega perdida', 'miss'); break;
     }
   }
   g.ev.length = 0;
@@ -1994,12 +2121,12 @@ function endRun() {
     extra += `<p><b>Reto del día:</b> ${nb ? '¡nuevo mejor! ' : ''}${fmt(S.ch.best)} m · meta 1.500 m</p>`;
   }
   if (rk1 > rk0) { S.coins += 250 * rk1; S.stars += 1 + Math.floor(rk1 / 3); extra += `<div class="badge">¡NUEVO RANGO: ${esc(RANKS[rk1])}!</div><p>Premio: ◉ ${250 * rk1} · ✦ ${1 + Math.floor(rk1 / 3)} · puntos ×${(1 + 0.25 * rk1).toFixed(2)}</p>`; AU.sfx('rank'); }
-  S.runs.push({ d: new Date().toISOString(), seed: g.seed, veh: g.veh.id, dist: Math.floor(g.p.s), score: Math.floor(g.score), coins: g.coinsRun, stars: g.starsRun, clues: g.clues, gifts: g.gifts, jumps: g.jumps, ducks: g.ducks, tricks: g.tricks, powers: g.powers, trucks: g.trucks, ch: g.ch ? 1 : 0, ed: g.edition + 1, rev: g.revives, time: Math.round(g.t), cause: g.cause });
+  S.runs.push({ d: new Date().toISOString(), seed: g.seed, veh: g.veh.id, dist: Math.floor(g.p.s), score: Math.floor(g.score), coins: g.coinsRun, stars: g.starsRun, clues: g.clues, gifts: g.gifts, jumps: g.jumps, ducks: g.ducks, tricks: g.tricks, powers: g.powers, trucks: g.trucks, deliv: g.deliv, ch: g.ch ? 1 : 0, ed: g.edition + 1, rev: g.revives, time: Math.round(g.t), cause: g.cause });
   if (S.runs.length > 200) S.runs.splice(0, S.runs.length - 200);
   SV.save();
   $('oDate').textContent = new Date().toLocaleDateString('es-CO');
   $('oBadge').innerHTML = rec ? '<span class="badge">★ ¡NUEVO RÉCORD!</span>' : recD ? '<span class="badge">★ ¡RÉCORD DE DISTANCIA!</span>' : '';
-  $('oStats').innerHTML = `<div class="kv"><span>Puntos</span><b>${fmt(g.score)}</b><span>Distancia</span><b>${fmt(g.p.s)} m</b><span>Monedas</span><b>◉ ${fmt(g.coinsRun)}</b><span>Edición alcanzada</span><b>Nº ${g.edition + 1}</b><span>Trucos · Furgones</span><b>${g.tricks} · ${g.trucks}</b><span>XP ganada</span><b>+${fmt(xp)}</b><span>Mejor</span><b>${fmt(S.best)}</b></div>`;
+  $('oStats').innerHTML = `<div class="kv"><span>Puntos</span><b>${fmt(g.score)}</b><span>Distancia</span><b>${fmt(g.p.s)} m</b><span>Monedas</span><b>◉ ${fmt(g.coinsRun)}</b><span>Edición alcanzada</span><b>Nº ${g.edition + 1}</b><span>Entregas · mejor racha</span><b>✉ ${g.deliv} · ×${g.dBest}</b><span>Trucos · Furgones</span><b>${g.tricks} · ${g.trucks}</b><span>XP ganada</span><b>+${fmt(xp)}</b><span>Mejor</span><b>${fmt(S.best)}</b></div>`;
   const tip = TIPS[Math.floor(Math.random() * TIPS.length)];
   extra += (g.clues ? `<p><b>📰 ${g.clues} página(s) nueva(s).</b> Léelas en Historia.</p>` : '') + `<p style="font-family:var(--fs);font-style:italic">Te tumbó ${esc(g.cause || 'el destino')}. Consejo: ${esc(tip)}</p>`;
   $('oExtra').innerHTML = extra; UI.ov('oOver', 1);

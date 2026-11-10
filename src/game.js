@@ -20,15 +20,20 @@ const OT = {
 };
 const JUMPS = [['rock', 3], ['barrier', 2], ['pothole', 2.2], ['cone', 1.4], ['puddle', 1]];
 const BLOCKS = [['cart', 2], ['kiosk', 1.4]];
-const THEMES = [
+const THRAW = [
   { near: [['tree', 3.5], ['pine', 1], ['bush', 2], ['lamp', 1.5], ['bench', 1], ['bill', 1]], far: [['bld', 3], ['tree', 4], ['hill', 3]] },
   { near: [['tree', 3], ['bush', 2.5], ['lamp', 1.5], ['bench', 1.5], ['bill', 1.5]], far: [['bld', 5], ['tree', 3], ['hill', 2]] },
   { near: [['lamp', 3.5], ['bench', 1], ['bush', 1], ['tree', 1.5], ['bill', 3]], far: [['bld', 8.5], ['tree', 1.5]] },
   { near: [['tree', 3], ['lamp', 3], ['bill', 2], ['bush', 2]], far: [['bld', 6], ['hill', 4]] },
   { near: [['pine', 3], ['lamp', 3], ['bill', 2], ['bush', 2]], far: [['bld', 7], ['hill', 3]] },
   { near: [['tree', 4], ['bush', 2], ['bench', 1.5], ['bill', 2.5]], far: [['hill', 4], ['tree', 3], ['bld', 3]] },
-  { near: [['lamp', 4.5], ['bill', 3.5], ['bush', 2]], far: [['bld', 9], ['hill', 1]] }
+  { near: [['lamp', 4.5], ['bill', 3.5], ['bush', 2]], far: [['bld', 9], ['hill', 1]] },
+  { near: [['palm', 4], ['bench', 1], ['parasol', 2.5], ['bill', 1]], far: [['palm', 3], ['hill', 1], ['bld', 1.5]], sea: 1 },
+  { near: [['pine', 5], ['tree', 1.5], ['bush', 2], ['fence', 1.2]], far: [['pine', 5], ['mount', 2.5]] },
+  { near: [['coffee', 4], ['fence', 2], ['tree', 1.5], ['bench', 0.6], ['bill', 0.8]], far: [['coffee', 3], ['mount', 2], ['hill', 2]] },
+  { near: [['lamp', 2]], far: [['boat', 1.5], ['mount', 1.2]], rail: 1 }
 ];
+const THEMES = ZORD.map(i => THRAW[i]);
 const TUT = [
   { t: 'rock', lane: 1, need: 'jump', msg: 'DESLIZA ↑ PARA SALTAR', pc: 'Flecha ↑ · W · Espacio' },
   { t: 'branch', lane: 1, need: 'duck', msg: 'DESLIZA ↓ PARA AGACHARTE', pc: 'Flecha ↓ · S' },
@@ -40,7 +45,9 @@ const vEst = (g, s) => (14 + 21 * (1 - Math.exp(-s / 2600))) * g.veh.spd;
 const HILL = s => { const e = clamp((s - 150) / 250, 0, 1); return e * (6.0 * Math.sin(s * 0.0105) + 2.2 * Math.sin(s * 0.027 + 1.7)); };
 const HILLD = s => HILL(s + 0.5) - HILL(s - 0.5);
 const hillK = sl => clamp(1 - 1.3 * sl, 0.84, 1.18);
-const FLOW = [0.6, 0.6, 0.2, 0.4, 0.3, 0.6, 0.35];
+const FLOW = ZORD.map(i => [0.6, 0.6, 0.2, 0.4, 0.3, 0.6, 0.35, 0.2, 0.3, 0.5, 0][i]);
+/* buzones y casitas: probabilidad de casita por edición (−1 = sin entregas) */
+const DELK = ZORD.map(i => [0.6, 0.7, 0.15, 0.4, 0.3, 0.6, 0.2, 0.45, 0.6, 0.85, -1][i]);
 const diffAt = s => clamp((s - 150) / 6500, 0, 1);
 
 function newGame(o) {
@@ -50,7 +57,7 @@ function newGame(o) {
     p: { s: 0, x: 0, lane: 1, from: 1, y: 0, vy: 0, gv: 0, v: 0, air: false, airT: 0, crouch: 0, fastFall: 0, jumps: 0, stumble: 0, slow: 1, inv: 0, alive: true, deadT: 0,
       magnet: 0, turbo: 0, x2: 0, shield: 0, boost: 0, sl: 0, trickHit: 0, phase: 0, onTruck: null, lastLand: 0 },
     obs: [], coins: [], items: [], scen: [], ev: [], lf: [0, 0, 0],
-    genS: 42, scenS: -30, nextGate: 1000, edition: 0, score: 0, coinsRun: 0, starsRun: 0, clues: 0, gifts: 0, jumps: 0, ducks: 0, tricks: 0, powers: 0, trucks: 0,
+    genS: 42, scenS: -30, nextGate: 1000, dels: [], deliv: 0, dStreak: 0, dBest: 0, nextDel: 150, edition: 0, score: 0, coinsRun: 0, starsRun: 0, clues: 0, gifts: 0, jumps: 0, ducks: 0, tricks: 0, powers: 0, trucks: 0,
     cleanS: 0, cleanBest: 0, revives: 0, cause: '', mult: o.mult || 1, bad: 0, rows: 0,
     dur: { magnet: (8 + 2 * (up.magnet || 0)) * bat, turbo: (4.5 + (up.turbo || 0)) * bat, x2: (10 + 3 * (up.x2 || 0)) * bat },
     luck: up.gift || 0, nextGift: 380, nextClue: 320, cluesLeft: o.cluesLeft || 0, tut: o.tut ? 0 : -1, tutWait: null, ts: 1
@@ -165,17 +172,24 @@ function genRow(g) {
     else if (s > 160 && r() < 0.05) it = pickW(r, [['magnet', 3], ['turbo', 1.6], ['x2', 2.2], ['shield', 1.8]]);
     if (it) g.items.push({ k: it, lane: freeL, x: (freeL - 1) * LW, s: mid, y: 1.0, alive: 1 });
   }
+  const dz = Math.floor(mid / 1000) % ZONES.length;
+  if (mid >= g.nextDel && DELK[dz] >= 0) {
+    const ln = r() < 0.5 ? 0 : 2;
+    if (spotOk(g, ln, mid, 0.5) && spotOk(g, ln, mid - 7, 0.5) && spotOk(g, ln, mid + 3, 0.5)) { g.dels.push({ s: mid, lane: ln, x: ln === 0 ? -4.35 : 4.35, k: r() < DELK[dz] ? 'casita' : 'buzon', v: Math.floor(r() * 3), done: 0, miss: 0 }); g.nextDel = mid + 105 + r() * 130; }
+  }
   g.genS = s + len + gap;
 }
 
 function genScen(g) {
   const r = g.srng, s = g.scenS, zi = Math.floor(Math.max(0, s) / 1000) % ZONES.length, th = THEMES[zi];
+  if (th.sea) g.scen.push({ k: 'sea', s, x: 9.6, side: 1, ry: 0, sc: 1, v: 0, sh: 1, z: zi });
+  if (th.rail) for (const sd of [-1, 1]) g.scen.push({ k: 'rail', s, x: sd * 5.45, side: sd, ry: 0, sc: 1, v: 0, sh: 1, z: zi });
   if (s >= g.nextGate - 14) { const ed = g.nextGate / 1000; g.scen.push({ k: 'gate', s: g.nextGate, x: 0, ry: 0, sc: 1, z: ed % ZONES.length, v: 0, sh: 1 }); g.nextGate += 1000; }
   for (const side of [-1, 1]) {
     const k = pickW(r, th.near);
-    if (r() < 0.8) g.scen.push({ k, s: s + r() * 3, x: side * (k === 'bill' ? 7.2 : 6 + r() * 1.6), side, ry: k === 'bill' ? -side * 0.35 : r() * 6.28, sc: 0.85 + r() * 0.35, v: Math.floor(r() * 10), sh: 0.85 + r() * 0.25, z: zi });
-    const f = pickW(r, th.far);
-    if (r() < 0.75) g.scen.push({ k: f, s: s + r() * 4, x: side * (f === 'hill' ? 34 + r() * 20 : 12 + r() * 10), side, ry: f === 'bld' ? 0 : r() * 6.28, sc: f === 'bld' ? 1 : 0.9 + r() * 0.8, v: Math.floor(r() * 3), sh: 0.8 + r() * 0.3, z: zi, h: 0.7 + r() * 0.9, pi: r() < 0.5 ? 2 : 3 });
+    if (r() < 0.8) g.scen.push({ k, s: s + r() * 3, x: side * (k === 'bill' ? 7.2 : th.rail ? 5.6 : 6 + r() * 1.6), side, ry: k === 'bill' ? -side * 0.35 : r() * 6.28, sc: 0.85 + r() * 0.35, v: Math.floor(r() * 10), sh: 0.85 + r() * 0.25, z: zi });
+    const f = pickW(r, th.sea && side > 0 ? [['boat', 1]] : th.far);
+    if (r() < 0.75) g.scen.push({ k: f, s: s + r() * 4, x: side * (f === 'hill' ? 34 + r() * 20 : f === 'mount' ? 55 + r() * 30 : f === 'boat' ? 16 + r() * 26 : 12 + r() * 10), side, ry: f === 'bld' ? 0 : r() * 6.28, sc: f === 'bld' ? 1 : 0.9 + r() * 0.8, v: Math.floor(r() * 3), sh: 0.8 + r() * 0.3, z: zi, h: 0.7 + r() * 0.9, pi: r() < 0.5 ? 2 : 3 });
   }
   if (r() < FLOW[zi]) { const sd = r() < 0.5 ? -1 : 1; g.scen.push({ k: 'flowers', s: s + r() * 4, x: sd * (5.9 + r() * 2.6), side: sd, ry: r() * 6.28, sc: 0.8 + r() * 0.5, v: 0, sh: 0.9 + r() * 0.2, z: zi }); }
   g.scenS += 6 + r() * 5;
@@ -258,7 +272,8 @@ function step(g, dt, inp) {
   // velocidad: v = (14 + 21·(1 − e^(−s/2600)))·vehículo  → de 14 a 35 m/s
   const base = vEst(g, P.s); P.slow = Math.min(1, P.slow + dt * 0.35);
   P.boost = Math.max(0, P.boost - dt * 0.24); P.sl = HILLD(P.s);
-  const tv = (base + Math.min(0.3 * base, 6.5) * P.boost) * (P.turbo > 0 ? 1.4 : 1) * P.slow * hillK(P.sl);
+  const hk = V.id === 'long' && P.sl < 0 ? clamp(1 - 2.6 * P.sl, 1, 1.32) : hillK(P.sl);
+  const tv = (base + Math.min(0.3 * base, 6.5) * P.boost) * (P.turbo > 0 ? 1.4 : 1) * P.slow * hk;
   P.v += (tv - P.v) * Math.min(1, dt * (P.v < tv ? 2.2 : 6));
   const s0 = P.s; P.s += P.v * dt; P.phase += P.v * dt;
   // lateral
@@ -314,6 +329,7 @@ function step(g, dt, inp) {
   for (const c of g.coins) {
     if (!c.alive) continue;
     if (magR && !c.mag && c.s > P.s - 2 && c.s < P.s + magR) c.mag = 1;
+    else if (V.id === 'euc' && !c.mag && c.s > P.s - 1 && c.s < P.s + 4.5 && Math.abs(c.x - P.x) < 2.3 && Math.abs(c.y - P.y - 0.9) < 1.6) c.mag = 1;
     if (c.mag) { const k = Math.min(1, dt * 14); c.x += (P.x - c.x) * k; c.y += (P.y + 0.9 - c.y) * k; c.s += (P.s + 0.2 - c.s) * k; }
     if (c.s > zA - 0.6 && c.s < zB + 0.6 && Math.abs(c.x - P.x) < 0.95 && c.y > P.y - 0.4 && c.y < P.y + h + 0.5) {
       c.alive = 0; g.coinsRun++; g.score += 10 * mul; ev(g, 'coin', c);
@@ -324,6 +340,16 @@ function step(g, dt, inp) {
     if (P.magnet > 0 && it.s > P.s - 1 && it.s < P.s + 10) { const k = Math.min(1, dt * 10); it.x += (P.x - it.x) * k; it.y += (P.y + 1 - it.y) * k; it.s += (P.s - it.s) * k; }
     if (it.s > zA - 0.8 && it.s < zB + 0.8 && Math.abs(it.x - P.x) < 1.05 && it.y > P.y - 0.6 && it.y < P.y + h + 0.6) { it.alive = 0; pickup(g, it); }
   }
+  // entregas: lanza la revista al buzón si vas por el carril de ese lado
+  for (const d of g.dels) {
+    if (d.done || d.miss) continue;
+    const ahead = d.s - P.s;
+    if (ahead < P.v * 0.36 + 1 && Math.abs(P.x - (d.lane - 1) * LW) < 1.25) {
+      d.done = 1; g.deliv++; g.dStreak++; g.dBest = Math.max(g.dBest, g.dStreak);
+      const k2 = V.id === 'trike' ? 2 : 1; d.pts = Math.round(50 * mul * (1 + 0.1 * Math.min(10, g.dStreak - 1)) * k2); g.score += d.pts; g.coinsRun += 5 * k2;
+      d.T = clamp(ahead / Math.max(P.v, 1), 0.15, 0.6); ev(g, 'deliver', d);
+    } else if (ahead < -0.5) { d.miss = 1; if (g.dStreak > 0) ev(g, 'dmiss', d); g.dStreak = 0; }
+  }
   // puntuación por distancia
   const ds = P.s - s0; g.score += ds * mul; g.cleanS += ds;
   const ed = Math.floor(P.s / 1000); if (ed > g.edition) { g.edition = ed; ev(g, 'zone', ed); }
@@ -333,6 +359,7 @@ function step(g, dt, inp) {
     g.obs = g.obs.filter(o => o.s + o.hd > cut && !(o.fly && o.fly.t > 2.5));
     g.coins = g.coins.filter(c => c.alive && c.s > cut);
     g.items = g.items.filter(i => i.alive && i.s > cut);
+    g.dels = g.dels.filter(d => d.s > cut - 12);
     g.scen = g.scen.filter(sc => sc.s > cut - (sc.k === 'bld' || sc.k === 'hill' ? 30 : 0));
   }
   genAhead(g);
@@ -384,6 +411,7 @@ function aiThink(g, skill = 1) {
       if (f.need !== 'block' && f.front < 0 && P.lane !== l) c += 150;
     }
     let n = 0; for (const cn of g.coins) if (cn.alive && cn.lane === l && cn.s > P.s && cn.s < P.s + 22) n++;
+    for (const d of g.dels) if (!d.done && !d.miss && d.lane === l && d.s - P.s > 0 && d.s - P.s < 32) c -= 1.2;
     return c - Math.min(1.5, n * 0.18);
   });
   let bl = P.lane;
@@ -416,5 +444,5 @@ function simulate(o) {
     if (P.y < -0.01 || P.y > 12) { errs.push('altura fuera de rango ' + P.y); break; }
     if (o.revive && !P.alive && g.revives < 1) { revive(g); }
   }
-  return { seed: o.seed, veh: g.veh.id, dist: Math.round(g.p.s), t: +g.t.toFixed(1), score: Math.round(g.score), coins: g.coinsRun, cause: g.p.alive ? 'tiempo' : g.cause, pat: g.causePat || '', bad: g.bad, rows: g.rows, jumps: g.jumps, ducks: g.ducks, tricks: g.tricks, trucks: g.trucks, gifts: g.gifts, clues: g.clues, powers: g.powers, errs };
+  return { seed: o.seed, veh: g.veh.id, dist: Math.round(g.p.s), t: +g.t.toFixed(1), score: Math.round(g.score), coins: g.coinsRun, cause: g.p.alive ? 'tiempo' : g.cause, pat: g.causePat || '', bad: g.bad, rows: g.rows, jumps: g.jumps, ducks: g.ducks, tricks: g.tricks, trucks: g.trucks, gifts: g.gifts, clues: g.clues, powers: g.powers, deliv: g.deliv, errs };
 }

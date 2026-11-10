@@ -46,6 +46,8 @@ const AU = {
       case 'revive': this.tone(300, t, 0.4, 'triangle', 0.12, 1200); break;
       case 'shield': this.noise(t, 0.3, 0.2, 3000); this.tone(1500, t, 0.3, 'sine', 0.1, 700); break;
       case 'pump': this.tone(260 + 520 * (this.pumpLv || 0), t, 0.05, 'square', 0.045, 380 + 620 * (this.pumpLv || 0)); break;
+      case 'deliver': this.noise(t, 0.18, 0.08, 2200, 'bandpass', null, 1.5); this.tone(1319, t + 0.16, 0.18, 'sine', 0.1); this.tone(1760, t + 0.24, 0.3, 'sine', 0.09); break;
+      case 'dmiss': this.tone(240, t, 0.18, 'triangle', 0.08, 150); break;
       case 'tut': this.tone(880, t, 0.12, 'sine', 0.1); break;
       case 'rank': [523, 659, 784, 1047, 1319].forEach((f, i) => this.tone(f, t + i * 0.09, 0.22, 'square', 0.07)); break;
       case 'buy': this.tone(784, t, 0.08, 'square', 0.07); this.tone(1175, t + 0.07, 0.16, 'square', 0.07); break;
@@ -58,7 +60,7 @@ const AU = {
   },
   sched() {
     const c = this.ctx; if (!c || c.state !== 'running') return;
-    const BASE = [0, 5, -2, 3, -5, 7, -3], PROG = [[0, 8, 3, 10], [0, 5, 8, 7], [0, 3, 10, 8], [0, 10, 8, 7]], z = this.zone % 7, prog = PROG[z % 4];
+    const BASE = [0, 5, 2, -2, 4, 3, -4, -5, 1, 7, -3], PROG = [[0, 8, 3, 10], [0, 5, 8, 7], [0, 3, 10, 8], [0, 10, 8, 7]], z = this.zone % 11, prog = PROG[z % 4];
     while (this.nextT < c.currentTime + 0.15) {
       const s = this.stepN % 16, bar = Math.floor(this.stepN / 16) % 4, t = this.nextT, root = 110 * Math.pow(1.0595, BASE[z] + prog[bar]), mg = this.mg;
       if (s % 4 === 0) this.tone(150, t, 0.14, 'sine', 0.5, 42, mg);
