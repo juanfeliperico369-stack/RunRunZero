@@ -90,6 +90,13 @@ button:focus-visible{outline:3px solid var(--amb);outline-offset:2px}
 .pg-red{background:var(--red);color:#111}
 .pg-mar{background:var(--mar);color:#ffe0d2}
 .pg-mus{background:var(--mus);color:#1c1306}
+.pg-teal{background:var(--teal);color:var(--cream)}
+.achs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.ach{border:3px dashed rgba(232,228,196,.5);padding:10px;display:flex;flex-direction:column;gap:3px;color:rgba(232,228,196,.75)}
+.ach b{font-family:var(--fd);font-size:30px;line-height:1}
+.ach .nm{font-family:var(--fd);font-size:20px;text-transform:uppercase;line-height:.95}
+.ach .ds{font-size:12px;line-height:1.25}.ach .rw{font-family:var(--fm);font-size:11px;margin-top:auto}
+.ach.ok{border:3px solid #111;background:var(--amb);color:#111;box-shadow:4px 4px 0 #111;transform:rotate(var(--r))}
 .pg-paper{background:var(--paper);color:var(--navy)}
 .h-final{font-weight:800;color:#fff;font-size:clamp(30px,8.5vw,46px);line-height:1;margin:2px 0 10px;text-shadow:0 3px 6px rgba(0,0,0,.28)}
 .h-groovy{font-family:var(--fd);color:var(--org);font-size:clamp(46px,14vw,78px);line-height:.85;text-shadow:4px 4px 0 #0b1d27;margin:4px 0 6px;text-transform:uppercase;letter-spacing:.02em}
@@ -257,7 +264,8 @@ button:focus-visible{outline:3px solid var(--amb);outline-offset:2px}
           <button class="btn" data-act="go" data-arg="sRank">Ranking</button>
           <button class="btn" data-act="go" data-arg="sStory">Historia<i id="dStory" class="dot" hidden></i></button>
           <button class="btn" data-act="go" data-arg="sMis">Misiones<i id="dMis" class="dot" hidden></i></button>
-          <button class="btn w2" data-act="go" data-arg="sSet">Ajustes</button>
+          <button class="btn" data-act="go" data-arg="sAch">Logros</button>
+          <button class="btn" data-act="go" data-arg="sSet">Ajustes</button>
         </div>
       </div>
     </div>
@@ -295,6 +303,12 @@ button:focus-visible{outline:3px solid var(--amb);outline-offset:2px}
     <h2 class="h-groovy">Misiones:<br>tipos de reto</h2>
     <div id="mBody"></div>
     <div class="squig"></div>
+  </div></div></section>
+
+  <section id="sAch" class="scr"><div class="page pg-teal"><div class="wrap">
+    <div class="ph"><button class="back" data-act="go" data-arg="sCover">◀ Portada</button><span class="pag">PAG 11 · Salón de la fama</span></div>
+    <h2 class="mega" style="font-size:clamp(54px,17vw,96px);color:var(--cream)">Logros</h2><p class="kick" style="color:var(--amb);font-size:20px;margin:2px 0 12px">Medallas de la ciclovía · <span id="achN"></span></p>
+    <div class="achs" id="achBody"></div>
   </div></div></section>
 
   <section id="sSet" class="scr"><div class="page pg-yel"><div class="wrap">
@@ -628,6 +642,11 @@ const COS = {
     { id: 't0', name: 'Ninguna', p: 0 }, { id: 't1', name: 'Polvo', p: 600 }, { id: 't2', name: 'Confeti EMSAY', p: 1500 },
     { id: 't3', name: 'Línea neón', st: 8 }, { id: 't4', name: 'Estrellas ✦', st: 12 }
   ],
+  personaje: [
+    { id: 'c0', name: 'Repartidor', skin: '#c98e62', hair: 'corto', hc: '#2b2112', p: 0 }, { id: 'c1', name: 'Repartidora', skin: '#a8754e', hair: 'coleta', hc: '#1b1410', p: 0 },
+    { id: 'c2', name: 'Kevin', skin: '#6b4428', hair: 'afro', hc: '#141010', p: 800 }, { id: 'c3', name: 'Lu', skin: '#f0c9a8', hair: 'coleta', hc: '#c0391c', p: 800 },
+    { id: 'c4', name: 'La Patinadora', skin: '#c98e62', hair: 'moño', hc: '#a42cff', ach: 'a8' }, { id: 'c5', name: 'Don Ramiro', skin: '#d9a47e', hair: 'canoso', hc: '#e6e6e6', ach: 'a14' }
+  ],
   mascota: [
     { id: 'm0', name: 'Sin mascota', p: 0 }, { id: 'm1', name: 'Perro Bache', c: '#c9935e', p: 2500 },
     { id: 'm2', name: 'Gata Tinta', c: '#3a3a46', p: 3500 }, { id: 'm3', name: 'Loro Domingo', c: '#2dbd5a', st: 10 }
@@ -635,6 +654,19 @@ const COS = {
 };
 const COSI = {}; for (const k in COS) for (const c of COS[k]) COSI[c.id] = Object.assign({ cat: k }, c);
 
+/* Logros: [id, nombre, descripción, estrellas, condición(S, g), cosmético que regala] */
+const ACH = [
+  ['a1', 'Primera entrega', 'Entrega tu primera revista', 1, S => S.tot.deliv >= 1], ['a2', 'Cartero del barrio', 'Entrega 100 revistas en total', 2, S => S.tot.deliv >= 100],
+  ['a3', 'Racha de oro', 'Encadena 10 entregas seguidas', 2, (S, g) => g && g.dBest >= 10], ['a4', 'Medio camino', 'Recorre 2.000 m en una partida', 1, (S, g) => g && g.p.s >= 2000],
+  ['a5', 'Sin fin', 'Recorre 5.000 m en una partida', 3, (S, g) => g && g.p.s >= 5000], ['a6', 'Maratón', 'Suma 42.195 m en total', 2, S => S.tot.dist >= 42195],
+  ['a7', 'Bolsillo lleno', 'Junta 10.000 monedas en total', 2, S => S.tot.coins >= 10000], ['a8', 'Acróbata', 'Haz 25 trucos en una partida', 2, (S, g) => g && g.tricks >= 25, 'c4'],
+  ['a9', 'Rey del furgón', 'Sube a 15 furgones en una partida', 1, (S, g) => g && g.trucks >= 15], ['a10', 'Bajo la lluvia', 'Llega a una edición con lluvia', 1, (S, g) => g && g.rainSeen],
+  ['a11', 'Topo urbano', 'Atraviesa un túnel', 1, (S, g) => g && g.tunSeen], ['a12', 'Coleccionista', 'Ten los 9 vehículos', 3, S => VEH.every(v => S.owned[v.id])],
+  ['a13', 'Con estilo', 'Ten 15 cosméticos', 2, S => Object.keys(S.ownedCos).length >= 15], ['a14', 'Lector de EMSAY', 'Recupera las 12 páginas', 3, S => S.clues >= 12, 'c5'],
+  ['a15', 'Madrugador', 'Racha de 7 días de regalo', 2, S => S.daily.streak >= 7], ['a16', 'Retador', 'Supera un Reto del día', 1, S => !!S.ch.rew],
+  ['a17', 'Leyenda', 'Llega al rango Leyenda', 3, S => rankOf(S.xp) >= 9], ['a18', 'Poder total', 'Usa 8 poderes en una partida', 1, (S, g) => g && g.powers >= 8],
+  ['a19', 'Mejor amigo', 'Consigue una mascota', 1, S => Object.keys(S.ownedCos).some(k => /^m[1-9]/.test(k))], ['a20', 'Velocista', 'Toca ⚡ 150 veces en una partida', 1, (S, g) => g && (g.boosts || 0) >= 150]
+];
 const UPG = [
   { id: 'magnet', name: 'Imán', base: 8, per: 2, icon: '∩' },
   { id: 'turbo', name: 'Turbo', base: 4.5, per: 1, icon: '⚡' },
@@ -859,7 +891,7 @@ function genRow(g) {
     if (!ok.length) kind = 'single';
     else {
       const l = ok[Math.floor(r() * ok.length)];
-      addOb(g, 'rider', l, s, { col: Math.floor(r() * 4) }); st[l] = 'block';
+      addOb(g, 'rider', l, s, { col: Math.floor(r() * 4), nk: Math.floor(r() * 3) }); st[l] = 'block';
       if (d > 0.3 && r() < 0.6) { const l2 = (l + 1 + Math.floor(r() * 2)) % 3; place(pickW(r, JP), l2); }
     }
   }
@@ -1101,7 +1133,8 @@ function step(g, dt, inp) {
   }
   // puntuación por distancia
   const ds = P.s - s0; g.score += ds * mul; g.cleanS += ds;
-  const ed = Math.floor(P.s / 1000); if (ed > g.edition) { g.edition = ed; ev(g, 'zone', ed); }
+  const ed = Math.floor(P.s / 1000); if (ed > g.edition) { g.edition = ed; if (RAINY(ed)) g.rainSeen = 1; ev(g, 'zone', ed); }
+  if (!g.tunSeen && g.tuns.length && g.tuns.some(t => P.s > t[0] + 5 && P.s < t[1])) g.tunSeen = 1;
   // limpieza y generación
   if ((g._cl = (g._cl || 0) + 1) % 30 === 0) {
     const cut = P.s - 18;
@@ -1425,11 +1458,16 @@ const MOD = {
   },
   /* ---- repartidor (origen en la cadera) ---- */
   rider(cos) {
-    const sh = hex(cos.shirt), pa = hex(cos.pants), he = hex(cos.helmet), se = cos.se ? 1 : 0, hE = cos.he ? 1 : 0;
+    const sh = hex(cos.shirt), pa = hex(cos.pants), he = hex(cos.helmet), se = cos.se ? 1 : 0, hE = cos.he ? 1 : 0, SKIN = hex(cos.skin || '#c98e62'), hc = hex(cos.hc || '#2b2112');
     const t = new MB();
     t.box(0, 0.06, 0, 0.36, 0.16, 0.22, pa); t.box(0, 0.36, 0, 0.4, 0.5, 0.24, sh, se); t.box(0, 0.62, 0, 0.13, 0.08, 0.13, SKIN);
     t.ico(0, 0.82, 0, 0.165, SKIN); for (const x of [-0.055, 0.055]) t.box(x, 0.84, -0.155, 0.04, 0.035, 0.02, DK);
     t.hemi(0, 0.86, 0, 0.19, 10, 3, he, hE); t.box(0, 0.88, -0.18, 0.3, 0.035, 0.1, he, hE);
+    const hr = cos.hair || 'corto';
+    if (hr === 'afro') t.ico(0, 0.8, 0.03, 0.205, hc, 0, 0.95); else t.box(0, 0.79, 0.12, 0.27, 0.13, 0.08, hc);
+    if (hr === 'coleta') { t.box(0, 0.66, 0.2, 0.08, 0.28, 0.07, hc); t.box(0, 0.79, 0.19, 0.09, 0.04, 0.05, hex('#ff2fb3')); }
+    if (hr === 'moño') { t.ico(0, 0.97, 0.15, 0.09, hc); t.box(0, 0.7, 0.16, 0.22, 0.1, 0.05, hc); }
+    if (hr === 'canoso') { for (const x of [-0.16, 0.16]) t.box(x, 0.82, 0.01, 0.04, 0.1, 0.18, hc); t.box(0, 0.775, -0.165, 0.13, 0.03, 0.03, hc); }
     t.box(0, 0.38, 0.2, 0.36, 0.4, 0.18, hex('#0e6378')); t.box(0, 0.5, 0.295, 0.36, 0.08, 0.01, hex('#e8e4c4'), 0.5);
     for (const x of [-0.13, 0.13]) t.box(x, 0.4, -0.125, 0.04, 0.46, 0.02, DK);
     const th = new MB(); th.box(0, -0.21, 0, 0.155, 0.44, 0.165, pa);
@@ -1503,6 +1541,21 @@ const MOD = {
     m.box(-0.08, 1.4, -0.15, 0.04, 0.035, 0.02, DK); m.box(0.08, 1.4, -0.15, 0.04, 0.035, 0.02, DK); m.box(0, 1.31, -0.155, 0.1, 0.025, 0.02, hex('#c0191c')); m.at(-0.22, 1.18, 0, 0, 0, -0.2, 1, 1, 1, q => q.box(0, -0.24, 0, 0.09, 0.48, 0.1, c)); return m; },
   rarm() { const m = new MB(); m.box(0, 0.22, 0, 0.09, 0.44, 0.1, hex('#a8754e')); m.box(0, 0.48, 0, 0.11, 0.11, 0.06, hex('#a8754e')); return m; },
   mag() { const m = new MB(); m.at(0, 0, 0, 0, 0, Math.PI / 2, 1, 1, 1, q => { q.cyl(0, -0.16, 0, 0.06, 0.32, 8, hex('#e8e4c4')); q.cyl(0, -0.05, 0, 0.065, 0.1, 8, hex('#0e6378'), 0.4); }); return m; },
+  npcRun(col, sk) {
+    const m = new MB(), c = hex(['#ff5a2a', '#2dffb3', '#a42cff', '#ffc23a'][col]), s = hex(['#a8754e', '#6b4428', '#f0c9a8', '#c98e62'][col]), sh = hex('#1b4459');
+    m.box(0, 0.93, 0, 0.34, 0.16, 0.22, sh);
+    m.at(0, 1.0, 0, 0, sk ? -0.7 : -0.15, 0, 1, 1, 1, q => { q.box(0, 0.28, 0, 0.38, 0.52, 0.24, c); q.ico(0, 0.7, 0, 0.15, s); q.hemi(0, 0.74, 0, 0.165, 8, 2, sk ? c : hex('#2b2112')); q.box(0, 0.74, -0.08, 0.32, 0.04, 0.2, sk ? DK : c);
+      for (const sx of [-1, 1]) q.at(sx * 0.24, 0.5, 0, 0, sk ? 0.4 : 0.9 * sx, 0, 1, 1, 1, a => a.box(0, -0.22, 0, 0.1, 0.46, 0.11, s)); });
+    return m;
+  },
+  npcLeg(sk) { const m = new MB(); m.box(0, -0.44, 0, 0.14, 0.88, 0.15, hex('#1b4459')); m.box(0, -0.9, -0.05, 0.14, 0.09, 0.25, WH);
+    if (sk) { m.box(0, -0.99, 0, 0.04, 0.05, 0.32, GR); for (const z of [-0.12, -0.04, 0.04, 0.12]) wheelX(m, 0, -1.0, z, 0.04, 0.03, hex('#39c8ff'), 6); } return m; },
+  kite(v) { const m = new MB(), a = hex(['#ff2fb3', '#ffc23a', '#39c8ff'][v]), b = hex(['#ffc23a', '#c0191c', '#2dffb3'][v]);
+    m.tri([0, 1.1, 0], [0.75, 0, 0], [0, 0, 0], a, 0.4); m.tri([0, 1.1, 0], [-0.75, 0, 0], [0, 0, 0], b, 0.4); m.tri([0, -1.4, 0], [0.75, 0, 0], [0, 0, 0], b, 0.4); m.tri([0, -1.4, 0], [-0.75, 0, 0], [0, 0, 0], a, 0.4);
+    for (let i = 0; i < 6; i++) m.at(Math.sin(i) * 0.15, -1.6 - i * 0.45, 0, 0, 0, 0.6 * (i % 2 ? 1 : -1), 1, 1, 1, q => q.box(0, 0, 0, 0.26, 0.08, 0.02, i % 2 ? a : b, 0.4)); return m; },
+  balloon(v) { const m = new MB(), a = hex(['#c0191c', '#0e6378'][v]), b = hex(['#ffc23a', '#e8e4c4'][v]);
+    m.ico(0, 6, 0, 3.4, a, 0.2, 1.15); m.cyl(0, 3.4, 0, 2.6, 1.0, 10, b, 0.2, 3.1, false); m.cyl(0, 2.2, 0, 1.2, 1.2, 8, b, 0.2, 2.6, false);
+    for (const sx of [-0.4, 0.4]) for (const sz of [-0.4, 0.4]) m.box(sx, 1.5, sz, 0.03, 1.4, 0.03, DK); m.box(0, 0.4, 0, 1.0, 0.7, 1.0, hex('#8a5a32')); return m; },
   npc(col) {
     const m = new MB(), c = hex(['#ff5a2a', '#2dffb3', '#a42cff', '#ffc23a'][col]), w = hex('#2a2a30'), sk = hex('#a8754e');
     for (const z of [0.52, -0.52]) wheelX(m, 0, 0.34, z, 0.34, 0.04, w, 12);
@@ -1524,6 +1577,8 @@ const RN = {
   init() {
     const mk = b => R.mesh(b), mo = this.mo;
     for (const k of ['road', 'tree', 'pine', 'bush', 'lamp', 'bench', 'hill', 'billFrame', 'gateFrame', 'rock', 'cone', 'barrier', 'pothole', 'puddle', 'cart', 'kiosk', 'coin', 'gift', 'clue', 'magnet', 'shield', 'turbo', 'x2', 'cube', 'shadow', 'ink', 'flowers', 'wing', 'bfly', 'bird', 'bwing', 'rabbit', 'palm', 'parasol', 'sea', 'mount', 'fence', 'coffee', 'rail', 'boat', 'buzon', 'flag', 'door', 'rarm', 'mag', 'tunnel', 'portal']) mo[k] = mk(MOD[k]());
+    mo.runB = [0, 1, 2, 3].map(c => mk(MOD.npcRun(c, 0))); mo.skB = [0, 1, 2, 3].map(c => mk(MOD.npcRun(c, 1))); mo.runL = mk(MOD.npcLeg(0)); mo.skL = mk(MOD.npcLeg(1));
+    mo.kite = [0, 1, 2].map(v => mk(MOD.kite(v))); mo.balloon = [0, 1].map(v => mk(MOD.balloon(v)));
     mo.house = [0, 1, 2].map(v => mk(MOD.house(v))); mo.resi = [0, 1, 2].map(v => mk(MOD.resi(v))); this.proj = [];
     mo.bld = []; for (let v = 0; v < 3; v++) mo.bld.push([mk(MOD.bld(v, 2)), mk(MOD.bld(v, 3))]);
     mo.bill = []; mo.gate = []; for (let i = 0; i < 10; i++) { mo.bill.push(mk(MOD.billPanel(i))); mo.gate.push(mk(MOD.gatePanel(i))); }
@@ -1646,6 +1701,11 @@ const RN = {
         vx: -sd * (k === 'bird' ? 4 + Math.random() * 3 : k === 'rabbit' ? 2.6 + Math.random() : 0.7 + Math.random() * 1.3), vs: k === 'bird' ? (Math.random() - 0.5) * 6 : (Math.random() - 0.5) * 1.2,
         vy: 0, t: 0, ph: Math.random() * 6.28, col: hex(k === 'fly' ? '#d8ff5a' : k === 'seed' ? '#ffffff' : BF[Math.floor(Math.random() * BF.length)]) });
     }
+    // cielo festivo: cometas y globos aerostáticos (días sin lluvia)
+    const SK = this.sky || (this.sky = []);
+    if (!night && (this.rk || 0) < 0.3 && SK.length < 4 && Math.random() < dt * 0.35) { const b = Math.random() < 0.3, sd = Math.random() < 0.5 ? -1 : 1; SK.push({ b, s: P.s + 110 + Math.random() * 70, x: sd * (b ? 30 + Math.random() * 30 : 12 + Math.random() * 22), y: b ? 22 + Math.random() * 14 : 11 + Math.random() * 8, v: Math.floor(Math.random() * (b ? 2 : 3)), ph: Math.random() * 6 }); }
+    for (let i = SK.length - 1; i >= 0; i--) { const k = SK[i], z = -(k.s - P.s); if (z > 30) { SK.splice(i, 1); continue; } if (z < -200) continue;
+      if (k.b) { k.y += dt * 0.3; M4.trs(M, k.x, k.y, z, time * 0.1, 0, 0); R.draw(mo.balloon[k.v], M); } else { M4.trs(M, k.x + Math.sin(time * 0.8 + k.ph) * 1.2, k.y + Math.sin(time * 1.3 + k.ph), z, 0.4 * Math.sin(k.ph), 0, Math.sin(time * 1.1 + k.ph) * 0.35, 1.4); R.draw(mo.kite[k.v], M); } }
     for (let i = L.length - 1; i >= 0; i--) {
       const c = L[i]; c.t += dt; c.x += c.vx * dt; c.s += c.vs * dt; c.y += c.vy * dt;
       if (c.s < P.s - 8 || Math.abs(c.x) > 16 || c.t > 35 || c.y > 16) { L.splice(i, 1); continue; }
@@ -1714,6 +1774,12 @@ const RN = {
       const z = zs(o.s); if (z < FAR || z > 14) continue;
       let m;
       if (o.t === 'branch') { if (!o.vis) continue; m = this.branch(o.vis); M4.trs(M, 0, 0, z); R.draw(m, M); continue; }
+      if (o.t === 'rider' && o.nk && !o.fly && o.alive) {
+        const sk = o.nk === 2, ph = time * (sk ? 5 : 10) + o.R, B0 = this.B, A0 = this.A;
+        M4.trs(M, o.x, 0, z, 0, 0, 0); R.draw((sk ? mo.skB : mo.runB)[o.col || 0], M);
+        for (const sx of [-1, 1]) { const a = Math.sin(ph) * sx; M4.trs(A0, sx * 0.1, 0.95, 0, 0, sk ? 0.2 + 0.15 * a : 0.75 * a, sk ? sx * (0.12 + 0.18 * Math.max(0, a)) : 0); M4.mul(B0, M, A0); R.draw(sk ? mo.skL : mo.runL, B0); }
+        continue;
+      }
       if (o.t === 'truck') m = mo.truck[o.col || 0]; else if (o.t === 'rider') m = mo.npc[o.col || 0]; else m = mo[o.t];
       if (!m) continue;
       if (o.fly) { const f = o.fly; f.t += dt; const t = f.t; M4.trs(M, o.x + f.vx * t, Math.max(0, f.vy * t - GRAV * 0.5 * t * t), z - f.vz * t, f.ry * t, f.rx * t, 0); }
@@ -1870,15 +1936,15 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const fmt = n => Math.round(n).toLocaleString('es-CO');
 const dayKey = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-const VERSION = '1.4.0', SKEY = 'runscooter.v1';
+const VERSION = '1.5.0', SKEY = 'runscooter.v1';
 const MREW = [100, 200, 350, 550, 800], MXP = [150, 300, 500, 800, 1200], DAILY = [100, 150, 200, 's1', 300, 400, 's3'];
 
 const SV = {
   S: null,
   def() {
-    return { v: 1, coins: 0, stars: 0, xp: 0, best: 0, bestDist: 0, veh: 'scooter', owned: { scooter: 1 }, cos: { casco: 'h0', ropa: 'r0', pintura: 'p0', estela: 't0', mascota: 'm0' }, ownedCos: { h0: 1, r0: 1, p0: 1, t0: 1, m0: 1 },
+    return { v: 1, coins: 0, stars: 0, xp: 0, best: 0, bestDist: 0, veh: 'scooter', owned: { scooter: 1 }, cos: { casco: 'h0', ropa: 'r0', pintura: 'p0', estela: 't0', mascota: 'm0', personaje: 'c0' }, ownedCos: { h0: 1, r0: 1, p0: 1, t0: 1, m0: 1, c0: 1, c1: 1 }, ach: {},
       up: { magnet: 0, turbo: 0, x2: 0, gift: 0 }, clues: 0, readClues: 0, mis: [], misLvl: {}, misDone: 0, daily: { last: '', streak: 0 }, ch: { day: '', best: 0, rew: '' }, boostTip: 0, rank: 0,
-      set: { sfx: 1, music: 1, vib: 1, q: 'auto', fps: 0, lh: 0 }, tut: 1, runs: [], tot: { runs: 0, dist: 0, coins: 0, time: 0 }, created: Date.now() };
+      set: { sfx: 1, music: 1, vib: 1, q: 'auto', fps: 0, lh: 0 }, tut: 1, runs: [], tot: { runs: 0, dist: 0, coins: 0, time: 0, deliv: 0 }, created: Date.now() };
   },
   merge(a, b) {
     if (!b || typeof b !== 'object' || Array.isArray(b)) return a;
@@ -1906,15 +1972,22 @@ function newMis(S, ex) { const pool = MIS.filter(m => !ex.includes(m.k)); const 
 const misDef = k => MIS.find(m => m.k === k);
 const misVal = (k, g) => k === 'coins' ? g.coinsRun : k === 'dist' ? g.p.s : k === 'jumps' ? g.jumps : k === 'ducks' ? g.ducks : k === 'gifts' ? g.gifts : k === 'powers' ? g.powers : k === 'tricks' ? g.tricks : k === 'score' ? g.score : k === 'clean' ? Math.max(g.cleanBest, g.cleanS) : k === 'trucks' ? g.trucks : k === 'deliv' ? g.deliv : k === 'dstreak' ? g.dBest : g.edition + 1;
 const misText = m => misDef(m.k).t.replace('{n}', fmt(misDef(m.k).n[m.lvl]));
-const cosCfg = S => { const h = COSI[S.cos.casco], r = COSI[S.cos.ropa], p = COSI[S.cos.pintura]; return { helmet: h.c, he: !!h.e, shirt: r.a, pants: r.b, se: !!r.e, paint: p.c, pe: !!p.e, pet: S.cos.mascota || 'm0' }; };
-const priceTxt = it => it.st ? '✦ ' + it.st : '◉ ' + fmt(it.p || 0);
+const cosCfg = S => { const h = COSI[S.cos.casco], r = COSI[S.cos.ropa], p = COSI[S.cos.pintura]; return { helmet: h.c, he: !!h.e, shirt: r.a, pants: r.b, se: !!r.e, paint: p.c, pe: !!p.e, pet: S.cos.mascota || 'm0', skin: (COSI[S.cos.personaje] || COSI.c0).skin, hair: (COSI[S.cos.personaje] || COSI.c0).hair, hc: (COSI[S.cos.personaje] || COSI.c0).hc }; };
+const priceTxt = it => it.ach ? '🏆 Logro: ' + (ACH.find(a => a[0] === it.ach) || ['', ''])[1] : it.st ? '✦ ' + it.st : '◉ ' + fmt(it.p || 0);
+function checkAch(g) {
+  const S = SV.S, got = [];
+  for (const a of ACH) { if (S.ach[a[0]]) continue; let ok = false; try { ok = !!a[4](S, g); } catch (e) { ok = false; } if (!ok) continue;
+    S.ach[a[0]] = dayKey(); S.stars += a[3]; got.push(a); if (a[5]) S.ownedCos[a[5]] = 1; UI.toast('🏆 LOGRO: ' + a[1] + ' · +✦ ' + a[3] + (a[5] ? ' · ¡' + COSI[a[5]].name + ' desbloqueado!' : ''), 'g'); }
+  if (got.length) { SV.save(); if (typeof AU !== 'undefined') AU.sfx('rank'); }
+  return got;
+}
 
 const UI = {
   cur: 'sCover', gtab: 'veh', rtab: 'city', preview: null, toastN: 0,
   show(id) {
     for (const s of document.querySelectorAll('.scr')) s.classList.toggle('on', s.id === id);
     this.cur = id;
-    if (id === 'sCover') this.cover(); else if (id === 'sGarage') this.garage(); else if (id === 'sRank') this.rank(); else if (id === 'sStory') this.story(); else if (id === 'sMis') this.missions(); else if (id === 'sSet') this.settings();
+    if (id === 'sCover') this.cover(); else if (id === 'sGarage') this.garage(); else if (id === 'sRank') this.rank(); else if (id === 'sStory') this.story(); else if (id === 'sMis') this.missions(); else if (id === 'sAch') this.ach(); else if (id === 'sSet') this.settings();
     const el = $(id); if (el) el.scrollTop = 0;
   },
   hideScreens() { for (const s of document.querySelectorAll('.scr')) s.classList.remove('on'); this.cur = ''; },
@@ -1943,11 +2016,11 @@ const UI = {
         return `<button class="card${sel ? ' sel' : ''}" data-act="veh" data-arg="${v.id}">${sel ? '<span class="tag">EN USO</span>' : ''}<span class="nm">${esc(v.name)}</span><span class="ds">${esc(v.desc)}</span>${st('Vel', v.spd)}${st('Salto', v.jmp)}${st('Manejo', v.hnd)}<span class="ds"><b>★ ${esc(v.perk)}</b></span><span class="pr">${own ? (sel ? '✔ Seleccionado' : 'Toca para usar') : '◉ ' + fmt(v.price)}</span></button>`;
       }).join('') + '</div>';
     } else if (this.gtab === 'cos') {
-      const N = { casco: 'Casco', ropa: 'Ropa', pintura: 'Pintura del vehículo', estela: 'Estela', mascota: 'Mascota (atrapa monedas del carril vecino)' };
+      const N = { personaje: 'Personaje', casco: 'Casco', ropa: 'Ropa', pintura: 'Pintura del vehículo', estela: 'Estela', mascota: 'Mascota (atrapa monedas del carril vecino)' };
       for (const cat in COS) {
         h += `<div class="cat">${N[cat]}</div><div class="cards">` + COS[cat].map(c => {
           const own = S.ownedCos[c.id], sel = S.cos[cat] === c.id;
-          const sw = cat === 'ropa' ? `linear-gradient(90deg,${c.a} 50%,${c.b} 50%)` : cat === 'estela' || !c.c ? '#111' : c.c;
+          const sw = cat === 'personaje' ? `linear-gradient(90deg,${c.skin} 60%,${c.hc} 60%)` : cat === 'ropa' ? `linear-gradient(90deg,${c.a} 50%,${c.b} 50%)` : cat === 'estela' || !c.c ? '#111' : c.c;
           return `<button class="card${sel ? ' sel' : ''}" data-act="cos" data-arg="${c.id}">${sel ? '<span class="tag">PUESTO</span>' : ''}<span class="sw" style="background:${sw}"></span><span class="nm" style="font-size:18px">${esc(c.name)}</span><span class="pr">${own ? (sel ? '✔ Puesto' : 'Toca para usar') : priceTxt(c)}</span></button>`;
         }).join('') + '</div>';
       }
@@ -1984,6 +2057,11 @@ const UI = {
   read(i) {
     const p = STORY[i]; if (!p) return; $('rdN').textContent = 'PÁGINA ' + (i + 1) + ' / ' + STORY.length; $('rdT').textContent = p[0]; $('rdX').textContent = p[1];
     SV.S.readClues = Math.max(SV.S.readClues, i + 1); SV.save(); this.ov('oRead', 1);
+  },
+  ach() {
+    const S = SV.S, n = ACH.filter(a => S.ach[a[0]]).length;
+    $('achN').textContent = n + ' / ' + ACH.length;
+    $('achBody').innerHTML = ACH.map((a, i) => { const ok = S.ach[a[0]]; return `<div class="ach${ok ? ' ok' : ''}" style="--r:${((i * 37) % 9 - 4) * 0.7}deg"><b>${ok ? '★' : '?'}</b><span class="nm">${esc(a[1])}</span><span class="ds">${esc(a[2])}</span><span class="rw">✦ ${a[3]}${a[5] ? ' + ' + esc(COSI[a[5]].name) : ''}</span></div>`; }).join('');
   },
   missions() {
     const S = SV.S;
@@ -2164,6 +2242,7 @@ function endRun() {
   const rk0 = rankOf(S.xp), xp = Math.floor(g.score / 25); S.xp += xp; const rk1 = rankOf(S.xp);
   const rec = g.score > S.best, recD = g.p.s > S.bestDist;
   S.coins += g.coinsRun; S.stars += g.starsRun; S.best = Math.max(S.best, Math.floor(g.score)); S.bestDist = Math.max(S.bestDist, Math.floor(g.p.s));
+  S.tot.deliv = (S.tot.deliv || 0) + g.deliv;
   S.tot.runs++; S.tot.dist += Math.floor(g.p.s); S.tot.coins += g.coinsRun; S.tot.time += Math.round(g.t);
   let extra = '';
   if (g.ch) {
@@ -2181,6 +2260,7 @@ function endRun() {
   $('oStats').innerHTML = `<div class="kv"><span>Puntos</span><b>${fmt(g.score)}</b><span>Distancia</span><b>${fmt(g.p.s)} m</b><span>Monedas</span><b>◉ ${fmt(g.coinsRun)}</b><span>Edición alcanzada</span><b>Nº ${g.edition + 1}</b><span>Entregas · mejor racha</span><b>✉ ${g.deliv} · ×${g.dBest}</b><span>Trucos · Furgones</span><b>${g.tricks} · ${g.trucks}</b><span>XP ganada</span><b>+${fmt(xp)}</b><span>Mejor</span><b>${fmt(S.best)}</b></div>`;
   const tip = TIPS[Math.floor(Math.random() * TIPS.length)];
   extra += (g.clues ? `<p><b>📰 ${g.clues} página(s) nueva(s).</b> Léelas en Historia.</p>` : '') + `<p style="font-family:var(--fs);font-style:italic">Te tumbó ${esc(g.cause || 'el destino')}. Consejo: ${esc(tip)}</p>`;
+  const ach = checkAch(g); if (ach.length) extra += '<p><b>🏆 Logros nuevos:</b> ' + ach.map(a => esc(a[1])).join(', ') + '</p>';
   $('oExtra').innerHTML = extra; UI.ov('oOver', 1);
 }
 function claimDaily() {
@@ -2188,7 +2268,7 @@ function claimDaily() {
   S.daily.streak = S.daily.last === y ? S.daily.streak + 1 : 1; S.daily.last = today;
   const r = DAILY[(S.daily.streak - 1) % 7];
   if (typeof r === 'string') S.stars += +r.slice(1); else S.coins += r;
-  SV.save(); UI.ov('oDaily', 0); AU.init(); AU.sfx('gift'); UI.toast('🎁 Regalo diario: ' + (typeof r === 'string' ? '✦ ' + r.slice(1) : '◉ ' + r), 'm'); UI.cover();
+  checkAch(null); SV.save(); UI.ov('oDaily', 0); AU.init(); AU.sfx('gift'); UI.toast('🎁 Regalo diario: ' + (typeof r === 'string' ? '✦ ' + r.slice(1) : '◉ ' + r), 'm'); UI.cover();
 }
 function askDaily() {
   const S = SV.S; if (S.daily.last === dayKey()) return;
@@ -2220,14 +2300,15 @@ function act(a, arg, el) {
     case 'veh': {
       const v = VEHI[arg]; if (!v) break;
       if (S.owned[arg]) { S.veh = arg; UI.preview = null; SV.save(); refreshPlayer(); UI.garage(); }
-      else { UI.preview = arg; refreshPlayer(arg); UI.garage(); if (S.coins >= v.price) confirmBox(`¿Comprar ${v.name} por ◉ ${fmt(v.price)}?`, () => { S.coins -= v.price; S.owned[arg] = 1; S.veh = arg; UI.preview = null; SV.save(); AU.sfx('buy'); refreshPlayer(); UI.garage(); }); else UI.toast(`Te faltan ◉ ${fmt(v.price - S.coins)} para ${v.name}`); }
+      else { UI.preview = arg; refreshPlayer(arg); UI.garage(); if (S.coins >= v.price) confirmBox(`¿Comprar ${v.name} por ◉ ${fmt(v.price)}?`, () => { S.coins -= v.price; S.owned[arg] = 1; S.veh = arg; UI.preview = null; checkAch(null); SV.save(); AU.sfx('buy'); refreshPlayer(); UI.garage(); }); else UI.toast(`Te faltan ◉ ${fmt(v.price - S.coins)} para ${v.name}`); }
       break;
     }
     case 'cos': {
       const c = COSI[arg]; if (!c) break;
       const equip = () => { S.cos[c.cat] = c.id; SV.save(); refreshPlayer(UI.preview); UI.garage(); };
       if (S.ownedCos[arg]) equip();
-      else if (c.st ? S.stars >= c.st : S.coins >= (c.p || 0)) confirmBox(`¿Comprar «${c.name}» por ${priceTxt(c)}?`, () => { if (c.st) S.stars -= c.st; else S.coins -= c.p || 0; S.ownedCos[c.id] = 1; AU.sfx('buy'); equip(); });
+      else if (c.ach) UI.toast('Se desbloquea con el logro: ' + priceTxt(c).replace('🏆 Logro: ', ''));
+      else if (c.st ? S.stars >= c.st : S.coins >= (c.p || 0)) confirmBox(`¿Comprar «${c.name}» por ${priceTxt(c)}?`, () => { if (c.st) S.stars -= c.st; else S.coins -= c.p || 0; S.ownedCos[c.id] = 1; AU.sfx('buy'); checkAch(null); equip(); });
       else UI.toast('No te alcanza: ' + priceTxt(c));
       break;
     }
@@ -2293,7 +2374,7 @@ function tick(dt) {
   if (mode === 'menu' && UI.cur === 'sGarage') { g = GAR; view = 'garage'; }
   else if (mode !== 'menu') { g = G; view = 'play'; }
   if (!g) return;
-  if (mode === 'menu' && (UI.cur === 'sRank' || UI.cur === 'sStory' || UI.cur === 'sMis' || UI.cur === 'sSet')) return;
+  if (mode === 'menu' && (UI.cur === 'sRank' || UI.cur === 'sStory' || UI.cur === 'sMis' || UI.cur === 'sAch' || UI.cur === 'sSet')) return;
   if (mode === 'play' || (mode === 'menu' && view === 'menu')) {
     acc += dt; let n = 0;
     while (acc >= DT && n < 14) {

@@ -3,15 +3,15 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const fmt = n => Math.round(n).toLocaleString('es-CO');
 const dayKey = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-const VERSION = '1.4.0', SKEY = 'runscooter.v1';
+const VERSION = '1.5.0', SKEY = 'runscooter.v1';
 const MREW = [100, 200, 350, 550, 800], MXP = [150, 300, 500, 800, 1200], DAILY = [100, 150, 200, 's1', 300, 400, 's3'];
 
 const SV = {
   S: null,
   def() {
-    return { v: 1, coins: 0, stars: 0, xp: 0, best: 0, bestDist: 0, veh: 'scooter', owned: { scooter: 1 }, cos: { casco: 'h0', ropa: 'r0', pintura: 'p0', estela: 't0', mascota: 'm0' }, ownedCos: { h0: 1, r0: 1, p0: 1, t0: 1, m0: 1 },
+    return { v: 1, coins: 0, stars: 0, xp: 0, best: 0, bestDist: 0, veh: 'scooter', owned: { scooter: 1 }, cos: { casco: 'h0', ropa: 'r0', pintura: 'p0', estela: 't0', mascota: 'm0', personaje: 'c0' }, ownedCos: { h0: 1, r0: 1, p0: 1, t0: 1, m0: 1, c0: 1, c1: 1 }, ach: {},
       up: { magnet: 0, turbo: 0, x2: 0, gift: 0 }, clues: 0, readClues: 0, mis: [], misLvl: {}, misDone: 0, daily: { last: '', streak: 0 }, ch: { day: '', best: 0, rew: '' }, boostTip: 0, rank: 0,
-      set: { sfx: 1, music: 1, vib: 1, q: 'auto', fps: 0, lh: 0 }, tut: 1, runs: [], tot: { runs: 0, dist: 0, coins: 0, time: 0 }, created: Date.now() };
+      set: { sfx: 1, music: 1, vib: 1, q: 'auto', fps: 0, lh: 0 }, tut: 1, runs: [], tot: { runs: 0, dist: 0, coins: 0, time: 0, deliv: 0 }, created: Date.now() };
   },
   merge(a, b) {
     if (!b || typeof b !== 'object' || Array.isArray(b)) return a;
@@ -39,15 +39,22 @@ function newMis(S, ex) { const pool = MIS.filter(m => !ex.includes(m.k)); const 
 const misDef = k => MIS.find(m => m.k === k);
 const misVal = (k, g) => k === 'coins' ? g.coinsRun : k === 'dist' ? g.p.s : k === 'jumps' ? g.jumps : k === 'ducks' ? g.ducks : k === 'gifts' ? g.gifts : k === 'powers' ? g.powers : k === 'tricks' ? g.tricks : k === 'score' ? g.score : k === 'clean' ? Math.max(g.cleanBest, g.cleanS) : k === 'trucks' ? g.trucks : k === 'deliv' ? g.deliv : k === 'dstreak' ? g.dBest : g.edition + 1;
 const misText = m => misDef(m.k).t.replace('{n}', fmt(misDef(m.k).n[m.lvl]));
-const cosCfg = S => { const h = COSI[S.cos.casco], r = COSI[S.cos.ropa], p = COSI[S.cos.pintura]; return { helmet: h.c, he: !!h.e, shirt: r.a, pants: r.b, se: !!r.e, paint: p.c, pe: !!p.e, pet: S.cos.mascota || 'm0' }; };
-const priceTxt = it => it.st ? '✦ ' + it.st : '◉ ' + fmt(it.p || 0);
+const cosCfg = S => { const h = COSI[S.cos.casco], r = COSI[S.cos.ropa], p = COSI[S.cos.pintura]; return { helmet: h.c, he: !!h.e, shirt: r.a, pants: r.b, se: !!r.e, paint: p.c, pe: !!p.e, pet: S.cos.mascota || 'm0', skin: (COSI[S.cos.personaje] || COSI.c0).skin, hair: (COSI[S.cos.personaje] || COSI.c0).hair, hc: (COSI[S.cos.personaje] || COSI.c0).hc }; };
+const priceTxt = it => it.ach ? '🏆 Logro: ' + (ACH.find(a => a[0] === it.ach) || ['', ''])[1] : it.st ? '✦ ' + it.st : '◉ ' + fmt(it.p || 0);
+function checkAch(g) {
+  const S = SV.S, got = [];
+  for (const a of ACH) { if (S.ach[a[0]]) continue; let ok = false; try { ok = !!a[4](S, g); } catch (e) { ok = false; } if (!ok) continue;
+    S.ach[a[0]] = dayKey(); S.stars += a[3]; got.push(a); if (a[5]) S.ownedCos[a[5]] = 1; UI.toast('🏆 LOGRO: ' + a[1] + ' · +✦ ' + a[3] + (a[5] ? ' · ¡' + COSI[a[5]].name + ' desbloqueado!' : ''), 'g'); }
+  if (got.length) { SV.save(); if (typeof AU !== 'undefined') AU.sfx('rank'); }
+  return got;
+}
 
 const UI = {
   cur: 'sCover', gtab: 'veh', rtab: 'city', preview: null, toastN: 0,
   show(id) {
     for (const s of document.querySelectorAll('.scr')) s.classList.toggle('on', s.id === id);
     this.cur = id;
-    if (id === 'sCover') this.cover(); else if (id === 'sGarage') this.garage(); else if (id === 'sRank') this.rank(); else if (id === 'sStory') this.story(); else if (id === 'sMis') this.missions(); else if (id === 'sSet') this.settings();
+    if (id === 'sCover') this.cover(); else if (id === 'sGarage') this.garage(); else if (id === 'sRank') this.rank(); else if (id === 'sStory') this.story(); else if (id === 'sMis') this.missions(); else if (id === 'sAch') this.ach(); else if (id === 'sSet') this.settings();
     const el = $(id); if (el) el.scrollTop = 0;
   },
   hideScreens() { for (const s of document.querySelectorAll('.scr')) s.classList.remove('on'); this.cur = ''; },
@@ -76,11 +83,11 @@ const UI = {
         return `<button class="card${sel ? ' sel' : ''}" data-act="veh" data-arg="${v.id}">${sel ? '<span class="tag">EN USO</span>' : ''}<span class="nm">${esc(v.name)}</span><span class="ds">${esc(v.desc)}</span>${st('Vel', v.spd)}${st('Salto', v.jmp)}${st('Manejo', v.hnd)}<span class="ds"><b>★ ${esc(v.perk)}</b></span><span class="pr">${own ? (sel ? '✔ Seleccionado' : 'Toca para usar') : '◉ ' + fmt(v.price)}</span></button>`;
       }).join('') + '</div>';
     } else if (this.gtab === 'cos') {
-      const N = { casco: 'Casco', ropa: 'Ropa', pintura: 'Pintura del vehículo', estela: 'Estela', mascota: 'Mascota (atrapa monedas del carril vecino)' };
+      const N = { personaje: 'Personaje', casco: 'Casco', ropa: 'Ropa', pintura: 'Pintura del vehículo', estela: 'Estela', mascota: 'Mascota (atrapa monedas del carril vecino)' };
       for (const cat in COS) {
         h += `<div class="cat">${N[cat]}</div><div class="cards">` + COS[cat].map(c => {
           const own = S.ownedCos[c.id], sel = S.cos[cat] === c.id;
-          const sw = cat === 'ropa' ? `linear-gradient(90deg,${c.a} 50%,${c.b} 50%)` : cat === 'estela' || !c.c ? '#111' : c.c;
+          const sw = cat === 'personaje' ? `linear-gradient(90deg,${c.skin} 60%,${c.hc} 60%)` : cat === 'ropa' ? `linear-gradient(90deg,${c.a} 50%,${c.b} 50%)` : cat === 'estela' || !c.c ? '#111' : c.c;
           return `<button class="card${sel ? ' sel' : ''}" data-act="cos" data-arg="${c.id}">${sel ? '<span class="tag">PUESTO</span>' : ''}<span class="sw" style="background:${sw}"></span><span class="nm" style="font-size:18px">${esc(c.name)}</span><span class="pr">${own ? (sel ? '✔ Puesto' : 'Toca para usar') : priceTxt(c)}</span></button>`;
         }).join('') + '</div>';
       }
@@ -117,6 +124,11 @@ const UI = {
   read(i) {
     const p = STORY[i]; if (!p) return; $('rdN').textContent = 'PÁGINA ' + (i + 1) + ' / ' + STORY.length; $('rdT').textContent = p[0]; $('rdX').textContent = p[1];
     SV.S.readClues = Math.max(SV.S.readClues, i + 1); SV.save(); this.ov('oRead', 1);
+  },
+  ach() {
+    const S = SV.S, n = ACH.filter(a => S.ach[a[0]]).length;
+    $('achN').textContent = n + ' / ' + ACH.length;
+    $('achBody').innerHTML = ACH.map((a, i) => { const ok = S.ach[a[0]]; return `<div class="ach${ok ? ' ok' : ''}" style="--r:${((i * 37) % 9 - 4) * 0.7}deg"><b>${ok ? '★' : '?'}</b><span class="nm">${esc(a[1])}</span><span class="ds">${esc(a[2])}</span><span class="rw">✦ ${a[3]}${a[5] ? ' + ' + esc(COSI[a[5]].name) : ''}</span></div>`; }).join('');
   },
   missions() {
     const S = SV.S;

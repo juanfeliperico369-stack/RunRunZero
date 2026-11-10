@@ -16,7 +16,7 @@ const rep = { ui: [], play: {}, sim: {} };
 if (await page.locator('#oDaily.on').count()) { await page.click('[data-act=daily]'); rep.ui.push('regalo diario ✔'); }
 if (shots) await page.screenshot({ path: shots + '/portada.png' });
 // recorrido de pantallas
-for (const [scr, extra] of [['sGarage', ['[data-act=gtab][data-arg=cos]', '[data-act=gtab][data-arg=up]', '[data-act=gtab][data-arg=veh]', '[data-act=veh][data-arg=bike]', '[data-act=cfNo]']], ['sRank', ['[data-act=rtab][data-arg=me]', '[data-act=rtab][data-arg=city]']], ['sStory', []], ['sMis', []], ['sSet', ['[data-act=set][data-arg=fps]', '[data-act=qual][data-arg=baja]', '[data-act=qual][data-arg=auto]', '[data-act=set][data-arg=fps]']]]) {
+for (const [scr, extra] of [['sGarage', ['[data-act=gtab][data-arg=cos]', '[data-act=gtab][data-arg=up]', '[data-act=gtab][data-arg=veh]', '[data-act=veh][data-arg=bike]', '[data-act=cfNo]']], ['sRank', ['[data-act=rtab][data-arg=me]', '[data-act=rtab][data-arg=city]']], ['sStory', []], ['sMis', []], ['sAch', []], ['sSet', ['[data-act=set][data-arg=fps]', '[data-act=qual][data-arg=baja]', '[data-act=qual][data-arg=auto]', '[data-act=set][data-arg=fps]']]]) {
   await page.evaluate(s => window.__RS.act('go', s), scr); await page.waitForTimeout(250);
   for (const sel of extra) { const l = page.locator(sel); if (await l.count() && await l.first().isVisible()) { await l.first().click(); await page.waitForTimeout(120); } }
   rep.ui.push(scr + ' ✔');

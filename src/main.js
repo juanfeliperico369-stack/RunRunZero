@@ -104,6 +104,7 @@ function endRun() {
   const rk0 = rankOf(S.xp), xp = Math.floor(g.score / 25); S.xp += xp; const rk1 = rankOf(S.xp);
   const rec = g.score > S.best, recD = g.p.s > S.bestDist;
   S.coins += g.coinsRun; S.stars += g.starsRun; S.best = Math.max(S.best, Math.floor(g.score)); S.bestDist = Math.max(S.bestDist, Math.floor(g.p.s));
+  S.tot.deliv = (S.tot.deliv || 0) + g.deliv;
   S.tot.runs++; S.tot.dist += Math.floor(g.p.s); S.tot.coins += g.coinsRun; S.tot.time += Math.round(g.t);
   let extra = '';
   if (g.ch) {
@@ -121,6 +122,7 @@ function endRun() {
   $('oStats').innerHTML = `<div class="kv"><span>Puntos</span><b>${fmt(g.score)}</b><span>Distancia</span><b>${fmt(g.p.s)} m</b><span>Monedas</span><b>◉ ${fmt(g.coinsRun)}</b><span>Edición alcanzada</span><b>Nº ${g.edition + 1}</b><span>Entregas · mejor racha</span><b>✉ ${g.deliv} · ×${g.dBest}</b><span>Trucos · Furgones</span><b>${g.tricks} · ${g.trucks}</b><span>XP ganada</span><b>+${fmt(xp)}</b><span>Mejor</span><b>${fmt(S.best)}</b></div>`;
   const tip = TIPS[Math.floor(Math.random() * TIPS.length)];
   extra += (g.clues ? `<p><b>📰 ${g.clues} página(s) nueva(s).</b> Léelas en Historia.</p>` : '') + `<p style="font-family:var(--fs);font-style:italic">Te tumbó ${esc(g.cause || 'el destino')}. Consejo: ${esc(tip)}</p>`;
+  const ach = checkAch(g); if (ach.length) extra += '<p><b>🏆 Logros nuevos:</b> ' + ach.map(a => esc(a[1])).join(', ') + '</p>';
   $('oExtra').innerHTML = extra; UI.ov('oOver', 1);
 }
 function claimDaily() {
@@ -128,7 +130,7 @@ function claimDaily() {
   S.daily.streak = S.daily.last === y ? S.daily.streak + 1 : 1; S.daily.last = today;
   const r = DAILY[(S.daily.streak - 1) % 7];
   if (typeof r === 'string') S.stars += +r.slice(1); else S.coins += r;
-  SV.save(); UI.ov('oDaily', 0); AU.init(); AU.sfx('gift'); UI.toast('🎁 Regalo diario: ' + (typeof r === 'string' ? '✦ ' + r.slice(1) : '◉ ' + r), 'm'); UI.cover();
+  checkAch(null); SV.save(); UI.ov('oDaily', 0); AU.init(); AU.sfx('gift'); UI.toast('🎁 Regalo diario: ' + (typeof r === 'string' ? '✦ ' + r.slice(1) : '◉ ' + r), 'm'); UI.cover();
 }
 function askDaily() {
   const S = SV.S; if (S.daily.last === dayKey()) return;
@@ -160,14 +162,15 @@ function act(a, arg, el) {
     case 'veh': {
       const v = VEHI[arg]; if (!v) break;
       if (S.owned[arg]) { S.veh = arg; UI.preview = null; SV.save(); refreshPlayer(); UI.garage(); }
-      else { UI.preview = arg; refreshPlayer(arg); UI.garage(); if (S.coins >= v.price) confirmBox(`¿Comprar ${v.name} por ◉ ${fmt(v.price)}?`, () => { S.coins -= v.price; S.owned[arg] = 1; S.veh = arg; UI.preview = null; SV.save(); AU.sfx('buy'); refreshPlayer(); UI.garage(); }); else UI.toast(`Te faltan ◉ ${fmt(v.price - S.coins)} para ${v.name}`); }
+      else { UI.preview = arg; refreshPlayer(arg); UI.garage(); if (S.coins >= v.price) confirmBox(`¿Comprar ${v.name} por ◉ ${fmt(v.price)}?`, () => { S.coins -= v.price; S.owned[arg] = 1; S.veh = arg; UI.preview = null; checkAch(null); SV.save(); AU.sfx('buy'); refreshPlayer(); UI.garage(); }); else UI.toast(`Te faltan ◉ ${fmt(v.price - S.coins)} para ${v.name}`); }
       break;
     }
     case 'cos': {
       const c = COSI[arg]; if (!c) break;
       const equip = () => { S.cos[c.cat] = c.id; SV.save(); refreshPlayer(UI.preview); UI.garage(); };
       if (S.ownedCos[arg]) equip();
-      else if (c.st ? S.stars >= c.st : S.coins >= (c.p || 0)) confirmBox(`¿Comprar «${c.name}» por ${priceTxt(c)}?`, () => { if (c.st) S.stars -= c.st; else S.coins -= c.p || 0; S.ownedCos[c.id] = 1; AU.sfx('buy'); equip(); });
+      else if (c.ach) UI.toast('Se desbloquea con el logro: ' + priceTxt(c).replace('🏆 Logro: ', ''));
+      else if (c.st ? S.stars >= c.st : S.coins >= (c.p || 0)) confirmBox(`¿Comprar «${c.name}» por ${priceTxt(c)}?`, () => { if (c.st) S.stars -= c.st; else S.coins -= c.p || 0; S.ownedCos[c.id] = 1; AU.sfx('buy'); checkAch(null); equip(); });
       else UI.toast('No te alcanza: ' + priceTxt(c));
       break;
     }
@@ -233,7 +236,7 @@ function tick(dt) {
   if (mode === 'menu' && UI.cur === 'sGarage') { g = GAR; view = 'garage'; }
   else if (mode !== 'menu') { g = G; view = 'play'; }
   if (!g) return;
-  if (mode === 'menu' && (UI.cur === 'sRank' || UI.cur === 'sStory' || UI.cur === 'sMis' || UI.cur === 'sSet')) return;
+  if (mode === 'menu' && (UI.cur === 'sRank' || UI.cur === 'sStory' || UI.cur === 'sMis' || UI.cur === 'sAch' || UI.cur === 'sSet')) return;
   if (mode === 'play' || (mode === 'menu' && view === 'menu')) {
     acc += dt; let n = 0;
     while (acc >= DT && n < 14) {

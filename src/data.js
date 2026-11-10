@@ -32,6 +32,11 @@ const COS = {
     { id: 't0', name: 'Ninguna', p: 0 }, { id: 't1', name: 'Polvo', p: 600 }, { id: 't2', name: 'Confeti EMSAY', p: 1500 },
     { id: 't3', name: 'Línea neón', st: 8 }, { id: 't4', name: 'Estrellas ✦', st: 12 }
   ],
+  personaje: [
+    { id: 'c0', name: 'Repartidor', skin: '#c98e62', hair: 'corto', hc: '#2b2112', p: 0 }, { id: 'c1', name: 'Repartidora', skin: '#a8754e', hair: 'coleta', hc: '#1b1410', p: 0 },
+    { id: 'c2', name: 'Kevin', skin: '#6b4428', hair: 'afro', hc: '#141010', p: 800 }, { id: 'c3', name: 'Lu', skin: '#f0c9a8', hair: 'coleta', hc: '#c0391c', p: 800 },
+    { id: 'c4', name: 'La Patinadora', skin: '#c98e62', hair: 'moño', hc: '#a42cff', ach: 'a8' }, { id: 'c5', name: 'Don Ramiro', skin: '#d9a47e', hair: 'canoso', hc: '#e6e6e6', ach: 'a14' }
+  ],
   mascota: [
     { id: 'm0', name: 'Sin mascota', p: 0 }, { id: 'm1', name: 'Perro Bache', c: '#c9935e', p: 2500 },
     { id: 'm2', name: 'Gata Tinta', c: '#3a3a46', p: 3500 }, { id: 'm3', name: 'Loro Domingo', c: '#2dbd5a', st: 10 }
@@ -39,6 +44,19 @@ const COS = {
 };
 const COSI = {}; for (const k in COS) for (const c of COS[k]) COSI[c.id] = Object.assign({ cat: k }, c);
 
+/* Logros: [id, nombre, descripción, estrellas, condición(S, g), cosmético que regala] */
+const ACH = [
+  ['a1', 'Primera entrega', 'Entrega tu primera revista', 1, S => S.tot.deliv >= 1], ['a2', 'Cartero del barrio', 'Entrega 100 revistas en total', 2, S => S.tot.deliv >= 100],
+  ['a3', 'Racha de oro', 'Encadena 10 entregas seguidas', 2, (S, g) => g && g.dBest >= 10], ['a4', 'Medio camino', 'Recorre 2.000 m en una partida', 1, (S, g) => g && g.p.s >= 2000],
+  ['a5', 'Sin fin', 'Recorre 5.000 m en una partida', 3, (S, g) => g && g.p.s >= 5000], ['a6', 'Maratón', 'Suma 42.195 m en total', 2, S => S.tot.dist >= 42195],
+  ['a7', 'Bolsillo lleno', 'Junta 10.000 monedas en total', 2, S => S.tot.coins >= 10000], ['a8', 'Acróbata', 'Haz 25 trucos en una partida', 2, (S, g) => g && g.tricks >= 25, 'c4'],
+  ['a9', 'Rey del furgón', 'Sube a 15 furgones en una partida', 1, (S, g) => g && g.trucks >= 15], ['a10', 'Bajo la lluvia', 'Llega a una edición con lluvia', 1, (S, g) => g && g.rainSeen],
+  ['a11', 'Topo urbano', 'Atraviesa un túnel', 1, (S, g) => g && g.tunSeen], ['a12', 'Coleccionista', 'Ten los 9 vehículos', 3, S => VEH.every(v => S.owned[v.id])],
+  ['a13', 'Con estilo', 'Ten 15 cosméticos', 2, S => Object.keys(S.ownedCos).length >= 15], ['a14', 'Lector de EMSAY', 'Recupera las 12 páginas', 3, S => S.clues >= 12, 'c5'],
+  ['a15', 'Madrugador', 'Racha de 7 días de regalo', 2, S => S.daily.streak >= 7], ['a16', 'Retador', 'Supera un Reto del día', 1, S => !!S.ch.rew],
+  ['a17', 'Leyenda', 'Llega al rango Leyenda', 3, S => rankOf(S.xp) >= 9], ['a18', 'Poder total', 'Usa 8 poderes en una partida', 1, (S, g) => g && g.powers >= 8],
+  ['a19', 'Mejor amigo', 'Consigue una mascota', 1, S => Object.keys(S.ownedCos).some(k => /^m[1-9]/.test(k))], ['a20', 'Velocista', 'Toca ⚡ 150 veces en una partida', 1, (S, g) => g && (g.boosts || 0) >= 150]
+];
 const UPG = [
   { id: 'magnet', name: 'Imán', base: 8, per: 2, icon: '∩' },
   { id: 'turbo', name: 'Turbo', base: 4.5, per: 1, icon: '⚡' },

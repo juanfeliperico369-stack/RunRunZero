@@ -8,6 +8,8 @@ const RN = {
   init() {
     const mk = b => R.mesh(b), mo = this.mo;
     for (const k of ['road', 'tree', 'pine', 'bush', 'lamp', 'bench', 'hill', 'billFrame', 'gateFrame', 'rock', 'cone', 'barrier', 'pothole', 'puddle', 'cart', 'kiosk', 'coin', 'gift', 'clue', 'magnet', 'shield', 'turbo', 'x2', 'cube', 'shadow', 'ink', 'flowers', 'wing', 'bfly', 'bird', 'bwing', 'rabbit', 'palm', 'parasol', 'sea', 'mount', 'fence', 'coffee', 'rail', 'boat', 'buzon', 'flag', 'door', 'rarm', 'mag', 'tunnel', 'portal']) mo[k] = mk(MOD[k]());
+    mo.runB = [0, 1, 2, 3].map(c => mk(MOD.npcRun(c, 0))); mo.skB = [0, 1, 2, 3].map(c => mk(MOD.npcRun(c, 1))); mo.runL = mk(MOD.npcLeg(0)); mo.skL = mk(MOD.npcLeg(1));
+    mo.kite = [0, 1, 2].map(v => mk(MOD.kite(v))); mo.balloon = [0, 1].map(v => mk(MOD.balloon(v)));
     mo.house = [0, 1, 2].map(v => mk(MOD.house(v))); mo.resi = [0, 1, 2].map(v => mk(MOD.resi(v))); this.proj = [];
     mo.bld = []; for (let v = 0; v < 3; v++) mo.bld.push([mk(MOD.bld(v, 2)), mk(MOD.bld(v, 3))]);
     mo.bill = []; mo.gate = []; for (let i = 0; i < 10; i++) { mo.bill.push(mk(MOD.billPanel(i))); mo.gate.push(mk(MOD.gatePanel(i))); }
@@ -130,6 +132,11 @@ const RN = {
         vx: -sd * (k === 'bird' ? 4 + Math.random() * 3 : k === 'rabbit' ? 2.6 + Math.random() : 0.7 + Math.random() * 1.3), vs: k === 'bird' ? (Math.random() - 0.5) * 6 : (Math.random() - 0.5) * 1.2,
         vy: 0, t: 0, ph: Math.random() * 6.28, col: hex(k === 'fly' ? '#d8ff5a' : k === 'seed' ? '#ffffff' : BF[Math.floor(Math.random() * BF.length)]) });
     }
+    // cielo festivo: cometas y globos aerostáticos (días sin lluvia)
+    const SK = this.sky || (this.sky = []);
+    if (!night && (this.rk || 0) < 0.3 && SK.length < 4 && Math.random() < dt * 0.35) { const b = Math.random() < 0.3, sd = Math.random() < 0.5 ? -1 : 1; SK.push({ b, s: P.s + 110 + Math.random() * 70, x: sd * (b ? 30 + Math.random() * 30 : 12 + Math.random() * 22), y: b ? 22 + Math.random() * 14 : 11 + Math.random() * 8, v: Math.floor(Math.random() * (b ? 2 : 3)), ph: Math.random() * 6 }); }
+    for (let i = SK.length - 1; i >= 0; i--) { const k = SK[i], z = -(k.s - P.s); if (z > 30) { SK.splice(i, 1); continue; } if (z < -200) continue;
+      if (k.b) { k.y += dt * 0.3; M4.trs(M, k.x, k.y, z, time * 0.1, 0, 0); R.draw(mo.balloon[k.v], M); } else { M4.trs(M, k.x + Math.sin(time * 0.8 + k.ph) * 1.2, k.y + Math.sin(time * 1.3 + k.ph), z, 0.4 * Math.sin(k.ph), 0, Math.sin(time * 1.1 + k.ph) * 0.35, 1.4); R.draw(mo.kite[k.v], M); } }
     for (let i = L.length - 1; i >= 0; i--) {
       const c = L[i]; c.t += dt; c.x += c.vx * dt; c.s += c.vs * dt; c.y += c.vy * dt;
       if (c.s < P.s - 8 || Math.abs(c.x) > 16 || c.t > 35 || c.y > 16) { L.splice(i, 1); continue; }
@@ -198,6 +205,12 @@ const RN = {
       const z = zs(o.s); if (z < FAR || z > 14) continue;
       let m;
       if (o.t === 'branch') { if (!o.vis) continue; m = this.branch(o.vis); M4.trs(M, 0, 0, z); R.draw(m, M); continue; }
+      if (o.t === 'rider' && o.nk && !o.fly && o.alive) {
+        const sk = o.nk === 2, ph = time * (sk ? 5 : 10) + o.R, B0 = this.B, A0 = this.A;
+        M4.trs(M, o.x, 0, z, 0, 0, 0); R.draw((sk ? mo.skB : mo.runB)[o.col || 0], M);
+        for (const sx of [-1, 1]) { const a = Math.sin(ph) * sx; M4.trs(A0, sx * 0.1, 0.95, 0, 0, sk ? 0.2 + 0.15 * a : 0.75 * a, sk ? sx * (0.12 + 0.18 * Math.max(0, a)) : 0); M4.mul(B0, M, A0); R.draw(sk ? mo.skL : mo.runL, B0); }
+        continue;
+      }
       if (o.t === 'truck') m = mo.truck[o.col || 0]; else if (o.t === 'rider') m = mo.npc[o.col || 0]; else m = mo[o.t];
       if (!m) continue;
       if (o.fly) { const f = o.fly; f.t += dt; const t = f.t; M4.trs(M, o.x + f.vx * t, Math.max(0, f.vy * t - GRAV * 0.5 * t * t), z - f.vz * t, f.ry * t, f.rx * t, 0); }

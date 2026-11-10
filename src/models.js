@@ -226,11 +226,16 @@ const MOD = {
   },
   /* ---- repartidor (origen en la cadera) ---- */
   rider(cos) {
-    const sh = hex(cos.shirt), pa = hex(cos.pants), he = hex(cos.helmet), se = cos.se ? 1 : 0, hE = cos.he ? 1 : 0;
+    const sh = hex(cos.shirt), pa = hex(cos.pants), he = hex(cos.helmet), se = cos.se ? 1 : 0, hE = cos.he ? 1 : 0, SKIN = hex(cos.skin || '#c98e62'), hc = hex(cos.hc || '#2b2112');
     const t = new MB();
     t.box(0, 0.06, 0, 0.36, 0.16, 0.22, pa); t.box(0, 0.36, 0, 0.4, 0.5, 0.24, sh, se); t.box(0, 0.62, 0, 0.13, 0.08, 0.13, SKIN);
     t.ico(0, 0.82, 0, 0.165, SKIN); for (const x of [-0.055, 0.055]) t.box(x, 0.84, -0.155, 0.04, 0.035, 0.02, DK);
     t.hemi(0, 0.86, 0, 0.19, 10, 3, he, hE); t.box(0, 0.88, -0.18, 0.3, 0.035, 0.1, he, hE);
+    const hr = cos.hair || 'corto';
+    if (hr === 'afro') t.ico(0, 0.8, 0.03, 0.205, hc, 0, 0.95); else t.box(0, 0.79, 0.12, 0.27, 0.13, 0.08, hc);
+    if (hr === 'coleta') { t.box(0, 0.66, 0.2, 0.08, 0.28, 0.07, hc); t.box(0, 0.79, 0.19, 0.09, 0.04, 0.05, hex('#ff2fb3')); }
+    if (hr === 'moño') { t.ico(0, 0.97, 0.15, 0.09, hc); t.box(0, 0.7, 0.16, 0.22, 0.1, 0.05, hc); }
+    if (hr === 'canoso') { for (const x of [-0.16, 0.16]) t.box(x, 0.82, 0.01, 0.04, 0.1, 0.18, hc); t.box(0, 0.775, -0.165, 0.13, 0.03, 0.03, hc); }
     t.box(0, 0.38, 0.2, 0.36, 0.4, 0.18, hex('#0e6378')); t.box(0, 0.5, 0.295, 0.36, 0.08, 0.01, hex('#e8e4c4'), 0.5);
     for (const x of [-0.13, 0.13]) t.box(x, 0.4, -0.125, 0.04, 0.46, 0.02, DK);
     const th = new MB(); th.box(0, -0.21, 0, 0.155, 0.44, 0.165, pa);
@@ -304,6 +309,21 @@ const MOD = {
     m.box(-0.08, 1.4, -0.15, 0.04, 0.035, 0.02, DK); m.box(0.08, 1.4, -0.15, 0.04, 0.035, 0.02, DK); m.box(0, 1.31, -0.155, 0.1, 0.025, 0.02, hex('#c0191c')); m.at(-0.22, 1.18, 0, 0, 0, -0.2, 1, 1, 1, q => q.box(0, -0.24, 0, 0.09, 0.48, 0.1, c)); return m; },
   rarm() { const m = new MB(); m.box(0, 0.22, 0, 0.09, 0.44, 0.1, hex('#a8754e')); m.box(0, 0.48, 0, 0.11, 0.11, 0.06, hex('#a8754e')); return m; },
   mag() { const m = new MB(); m.at(0, 0, 0, 0, 0, Math.PI / 2, 1, 1, 1, q => { q.cyl(0, -0.16, 0, 0.06, 0.32, 8, hex('#e8e4c4')); q.cyl(0, -0.05, 0, 0.065, 0.1, 8, hex('#0e6378'), 0.4); }); return m; },
+  npcRun(col, sk) {
+    const m = new MB(), c = hex(['#ff5a2a', '#2dffb3', '#a42cff', '#ffc23a'][col]), s = hex(['#a8754e', '#6b4428', '#f0c9a8', '#c98e62'][col]), sh = hex('#1b4459');
+    m.box(0, 0.93, 0, 0.34, 0.16, 0.22, sh);
+    m.at(0, 1.0, 0, 0, sk ? -0.7 : -0.15, 0, 1, 1, 1, q => { q.box(0, 0.28, 0, 0.38, 0.52, 0.24, c); q.ico(0, 0.7, 0, 0.15, s); q.hemi(0, 0.74, 0, 0.165, 8, 2, sk ? c : hex('#2b2112')); q.box(0, 0.74, -0.08, 0.32, 0.04, 0.2, sk ? DK : c);
+      for (const sx of [-1, 1]) q.at(sx * 0.24, 0.5, 0, 0, sk ? 0.4 : 0.9 * sx, 0, 1, 1, 1, a => a.box(0, -0.22, 0, 0.1, 0.46, 0.11, s)); });
+    return m;
+  },
+  npcLeg(sk) { const m = new MB(); m.box(0, -0.44, 0, 0.14, 0.88, 0.15, hex('#1b4459')); m.box(0, -0.9, -0.05, 0.14, 0.09, 0.25, WH);
+    if (sk) { m.box(0, -0.99, 0, 0.04, 0.05, 0.32, GR); for (const z of [-0.12, -0.04, 0.04, 0.12]) wheelX(m, 0, -1.0, z, 0.04, 0.03, hex('#39c8ff'), 6); } return m; },
+  kite(v) { const m = new MB(), a = hex(['#ff2fb3', '#ffc23a', '#39c8ff'][v]), b = hex(['#ffc23a', '#c0191c', '#2dffb3'][v]);
+    m.tri([0, 1.1, 0], [0.75, 0, 0], [0, 0, 0], a, 0.4); m.tri([0, 1.1, 0], [-0.75, 0, 0], [0, 0, 0], b, 0.4); m.tri([0, -1.4, 0], [0.75, 0, 0], [0, 0, 0], b, 0.4); m.tri([0, -1.4, 0], [-0.75, 0, 0], [0, 0, 0], a, 0.4);
+    for (let i = 0; i < 6; i++) m.at(Math.sin(i) * 0.15, -1.6 - i * 0.45, 0, 0, 0, 0.6 * (i % 2 ? 1 : -1), 1, 1, 1, q => q.box(0, 0, 0, 0.26, 0.08, 0.02, i % 2 ? a : b, 0.4)); return m; },
+  balloon(v) { const m = new MB(), a = hex(['#c0191c', '#0e6378'][v]), b = hex(['#ffc23a', '#e8e4c4'][v]);
+    m.ico(0, 6, 0, 3.4, a, 0.2, 1.15); m.cyl(0, 3.4, 0, 2.6, 1.0, 10, b, 0.2, 3.1, false); m.cyl(0, 2.2, 0, 1.2, 1.2, 8, b, 0.2, 2.6, false);
+    for (const sx of [-0.4, 0.4]) for (const sz of [-0.4, 0.4]) m.box(sx, 1.5, sz, 0.03, 1.4, 0.03, DK); m.box(0, 0.4, 0, 1.0, 0.7, 1.0, hex('#8a5a32')); return m; },
   npc(col) {
     const m = new MB(), c = hex(['#ff5a2a', '#2dffb3', '#a42cff', '#ffc23a'][col]), w = hex('#2a2a30'), sk = hex('#a8754e');
     for (const z of [0.52, -0.52]) wheelX(m, 0, 0.34, z, 0.34, 0.04, w, 12);

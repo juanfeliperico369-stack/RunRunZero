@@ -20,6 +20,9 @@ Funciona **sin internet**, en un solo `index.html`, sin librerías externas (mot
 - **Clima**: algunas ediciones llueven (gotas, relámpagos, truenos y más charcos). **Túneles** iluminados en las ediciones urbanas.
 - **Mascotas** (perro, gata, loro) que corren a tu lado y atrapan monedas del carril vecino.
 - **Compartir por WhatsApp** el puntaje al terminar; **modo zurdo** para el botón de impulso.
+- **Logros**: 20 medallas con estrellas; dos desbloquean personajes (La Patinadora y Don Ramiro).
+- **Personajes**: repartidores y repartidoras con distintos tonos de piel y peinados.
+- Corredores y patinadoras animados en la ciclovía; cometas y globos aerostáticos en el cielo.
 - **Reto del día**: la misma ruta para todos cada día; llegar a 1500 m da ✦ 2.
 - Si te tambaleas, la **Tinta Gris** te persigue: otro golpe y te atrapa.
 - Cada 1000 m cambia la **edición** (paleta y escenario). Las **páginas perdidas** (12) cuentan la historia de Don Ramiro.

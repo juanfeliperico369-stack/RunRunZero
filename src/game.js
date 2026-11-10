@@ -121,7 +121,7 @@ function genRow(g) {
     if (!ok.length) kind = 'single';
     else {
       const l = ok[Math.floor(r() * ok.length)];
-      addOb(g, 'rider', l, s, { col: Math.floor(r() * 4) }); st[l] = 'block';
+      addOb(g, 'rider', l, s, { col: Math.floor(r() * 4), nk: Math.floor(r() * 3) }); st[l] = 'block';
       if (d > 0.3 && r() < 0.6) { const l2 = (l + 1 + Math.floor(r() * 2)) % 3; place(pickW(r, JP), l2); }
     }
   }
@@ -363,7 +363,8 @@ function step(g, dt, inp) {
   }
   // puntuación por distancia
   const ds = P.s - s0; g.score += ds * mul; g.cleanS += ds;
-  const ed = Math.floor(P.s / 1000); if (ed > g.edition) { g.edition = ed; ev(g, 'zone', ed); }
+  const ed = Math.floor(P.s / 1000); if (ed > g.edition) { g.edition = ed; if (RAINY(ed)) g.rainSeen = 1; ev(g, 'zone', ed); }
+  if (!g.tunSeen && g.tuns.length && g.tuns.some(t => P.s > t[0] + 5 && P.s < t[1])) g.tunSeen = 1;
   // limpieza y generación
   if ((g._cl = (g._cl || 0) + 1) % 30 === 0) {
     const cut = P.s - 18;
