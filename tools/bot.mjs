@@ -24,7 +24,7 @@ for (const [scr, extra] of [['sGarage', ['[data-act=gtab][data-arg=cos]', '[data
   await page.evaluate(() => window.__RS.act('go', 'sCover')); await page.waitForTimeout(120);
 }
 // partida real con render + IA
-await page.click('[data-act=play]'); await page.evaluate(() => { window.__RS.autoplay = true; });
+await page.click('[data-act=play][data-arg=ch]'); await page.evaluate(() => { window.__RS.autoplay = true; });
 const t0 = Date.now(); let shot = false, maxDraws = 0;
 while (Date.now() - t0 < PLAY * 1000) {
   await page.waitForTimeout(500);

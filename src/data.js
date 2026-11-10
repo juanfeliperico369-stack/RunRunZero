@@ -1,7 +1,8 @@
 /* ===== DATOS · vehículos, ediciones (zonas), historia, misiones, rangos ===== */
 const VEH = [
   { id: 'scooter', name: 'Scooter', price: 0, spd: 1.0, jmp: 1.0, hnd: 1.0, perk: 'Equilibrio: el tambaleo dura 2,2 s (no 3 s)', desc: 'El clásico de empuje del repartidor. Estable y noble.' },
-  { id: 'quad', name: 'Patines quad', price: 1500, spd: 0.97, jmp: 1.0, hnd: 1.32, perk: 'Doble salto en el aire', desc: 'Cuatro ruedas por pie: el más ágil entre carriles.' },
+  { id: 'quad', name: 'Patines quad', price: 1500, spd: 0.97, jmp: 1.0, hnd: 1.32, perk: 'Doble salto en el aire', desc: 'Dos ruedas adelante y dos atrás: el más ágil entre carriles.' },
+  { id: 'inline', name: 'Patines en línea', price: 4000, spd: 1.06, jmp: 1.02, hnd: 1.18, perk: 'Rueda en hilera: los charcos no te tumban', desc: 'Cuatro ruedas en fila: el más veloz sobre el asfalto.' },
   { id: 'skate', name: 'Skate', price: 3000, spd: 0.99, jmp: 1.17, hnd: 1.06, perk: 'Ollie alto y trucos ×2', desc: 'Tabla, lija y actitud. Cada salto es un truco.' },
   { id: 'bike', name: 'Bicicleta', price: 5000, spd: 1.08, jmp: 0.93, hnd: 0.94, perk: '+15 % de puntos', desc: 'La reina de la ciclovía, con canasta de revistas.' },
   { id: 'escooter', name: 'Monopatín eléctrico', price: 8000, spd: 1.04, jmp: 0.96, hnd: 1.0, perk: 'Poderes +35 % de duración', desc: 'Batería llena: imán, turbo y x2 duran más.' }
@@ -112,5 +113,8 @@ const TIPS = [
   'El casco te salva de un choque fuerte. El turbo atraviesa todo.',
   'Cada 1000 m cambia la edición: la revista pasa de página.',
   'Las páginas perdidas cuentan la historia de Don Ramiro.',
-  'Sube de rango para ganar multiplicador de puntos permanente.'
+  'Sube de rango para ganar multiplicador de puntos permanente.',
+  'Con patines en línea los charcos no te hacen tambalear.',
+  'Si te tambaleas, la Tinta Gris te persigue: un golpe más y te atrapa.',
+  'El Reto del día es igual para todos: misma ciclovía, mismo orden de obstáculos.'
 ];

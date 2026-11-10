@@ -1,6 +1,6 @@
 /* ===== ARRANQUE, BUCLE Y FLUJO DE PARTIDA ===== */
 const Q = [];
-let G = null, DEMO = null, GAR = null, mode = 'menu', acc = 0, last = 0, now = 0, count = 0, reviveT = 0, overShown = false, autoplay = false, fpsA = [], qChecked = false, misT = 0, confirmFn = null;
+let lastCh = false, G = null, DEMO = null, GAR = null, mode = 'menu', acc = 0, last = 0, now = 0, count = 0, reviveT = 0, overShown = false, autoplay = false, fpsA = [], qChecked = false, misT = 0, confirmFn = null;
 const ERR = [];
 window.addEventListener('error', e => { ERR.push(String(e.message || e)); });
 window.addEventListener('unhandledrejection', e => { ERR.push('promesa: ' + String(e.reason && e.reason.message || e.reason)); });
@@ -16,14 +16,15 @@ function newDemo() { DEMO = newGame({ seed: (Math.random() * 1e9) | 0, veh: SV.S
 function newGarage() { GAR = newGame({ seed: 7, veh: SV.S.veh, demo: true }); GAR.obs = []; GAR.coins = []; GAR.items = []; GAR.scen = GAR.scen.filter(s => Math.abs(s.x) > 9); }
 function refreshPlayer(vid) { RN.setPlayer(cosCfg(SV.S), vid || SV.S.veh); }
 
-function startRun() {
-  const S = SV.S; AU.init(); AU.music(true);
+const daySeed = () => { let h = 2166136261; for (const c of 'RS' + dayKey()) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
+function startRun(ch) {
+  const S = SV.S; AU.init(); AU.music(true); if (ch === undefined) ch = lastCh; lastCh = !!ch;
   UI.ov('oOver', 0); UI.ov('oRevive', 0); UI.ov('oPause', 0); UI.hideScreens(); UI.preview = null;
   refreshPlayer();
-  G = newGame({ seed: (Math.random() * 4294967295) >>> 0, veh: S.veh, up: S.up, mult: 1 + 0.25 * rankOf(S.xp), cluesLeft: STORY.length - S.clues, tut: S.tut === 1 });
+  G = newGame({ seed: ch ? daySeed() : (Math.random() * 4294967295) >>> 0, veh: S.veh, up: S.up, mult: 1 + 0.25 * rankOf(S.xp), cluesLeft: STORY.length - S.clues, tut: S.tut === 1 });
   Q.length = 0; acc = 0; overShown = false; reviveT = 0; RN.parts.length = 0; UI.hud = { s: -1, c: -1, d: -1, m: '', pk: '' };
   $('hud').hidden = false; $('hBanner').innerHTML = ''; UI.tut(-1); $('hCnt').hidden = true;
-  UI.banner(0); AU.zone = 0; mode = 'play'; fpsA = []; qChecked = false;
+  G.ch = !!ch; UI.banner(0); AU.zone = 0; mode = 'play'; if (ch) UI.toast('★ RETO DEL DÍA · misma ruta para todos hoy', 'g'); fpsA = []; qChecked = false;
 }
 function toMenu() {
   mode = 'menu'; G = null; $('hud').hidden = true; UI.ov('oOver', 0); UI.ov('oRevive', 0); UI.ov('oPause', 0);
@@ -101,8 +102,14 @@ function endRun() {
   S.coins += g.coinsRun; S.stars += g.starsRun; S.best = Math.max(S.best, Math.floor(g.score)); S.bestDist = Math.max(S.bestDist, Math.floor(g.p.s));
   S.tot.runs++; S.tot.dist += Math.floor(g.p.s); S.tot.coins += g.coinsRun; S.tot.time += Math.round(g.t);
   let extra = '';
+  if (g.ch) {
+    const d = dayKey(); if (S.ch.day !== d) { S.ch.day = d; S.ch.best = 0; }
+    const nb = g.p.s > S.ch.best; S.ch.best = Math.max(S.ch.best, Math.floor(g.p.s));
+    if (g.p.s >= 1500 && S.ch.rew !== d) { S.ch.rew = d; S.stars += 2; extra += '<div class="badge">★ RETO SUPERADO: +✦ 2</div>'; }
+    extra += `<p><b>Reto del día:</b> ${nb ? '¡nuevo mejor! ' : ''}${fmt(S.ch.best)} m · meta 1.500 m</p>`;
+  }
   if (rk1 > rk0) { S.coins += 250 * rk1; S.stars += 1 + Math.floor(rk1 / 3); extra += `<div class="badge">¡NUEVO RANGO: ${esc(RANKS[rk1])}!</div><p>Premio: ◉ ${250 * rk1} · ✦ ${1 + Math.floor(rk1 / 3)} · puntos ×${(1 + 0.25 * rk1).toFixed(2)}</p>`; AU.sfx('rank'); }
-  S.runs.push({ d: new Date().toISOString(), seed: g.seed, veh: g.veh.id, dist: Math.floor(g.p.s), score: Math.floor(g.score), coins: g.coinsRun, stars: g.starsRun, clues: g.clues, gifts: g.gifts, jumps: g.jumps, ducks: g.ducks, tricks: g.tricks, powers: g.powers, trucks: g.trucks, ed: g.edition + 1, rev: g.revives, time: Math.round(g.t), cause: g.cause });
+  S.runs.push({ d: new Date().toISOString(), seed: g.seed, veh: g.veh.id, dist: Math.floor(g.p.s), score: Math.floor(g.score), coins: g.coinsRun, stars: g.starsRun, clues: g.clues, gifts: g.gifts, jumps: g.jumps, ducks: g.ducks, tricks: g.tricks, powers: g.powers, trucks: g.trucks, ch: g.ch ? 1 : 0, ed: g.edition + 1, rev: g.revives, time: Math.round(g.t), cause: g.cause });
   if (S.runs.length > 200) S.runs.splice(0, S.runs.length - 200);
   SV.save();
   $('oDate').textContent = new Date().toLocaleDateString('es-CO');
@@ -131,7 +138,7 @@ function confirmBox(txt, fn) { $('cfT').textContent = txt; confirmFn = fn; UI.ov
 function act(a, arg, el) {
   const S = SV.S; AU.init(); if (a !== 'play') AU.sfx('click');
   switch (a) {
-    case 'play': startRun(); break;
+    case 'play': startRun(arg === 'ch' ? true : arg === 'n' ? false : undefined); break;
     case 'go':
       if (mode === 'over') { UI.ov('oOver', 0); mode = 'menu'; G = null; newDemo(); }
       UI.show(arg); if (arg === 'sGarage') { newGarage(); refreshPlayer(); } else { UI.preview = null; refreshPlayer(); }
@@ -195,7 +202,7 @@ window.addEventListener('keydown', e => {
   const k = e.key, m = { ArrowLeft: 'L', a: 'L', A: 'L', ArrowRight: 'R', d: 'R', D: 'R', ArrowUp: 'U', w: 'U', W: 'U', ' ': 'U', ArrowDown: 'D', s: 'D', S: 'D' }[k];
   if (m && (mode === 'play')) { e.preventDefault(); if (!e.repeat) key(m); return; }
   if ((k === 'Escape' || k === 'p' || k === 'P') && (mode === 'play' || mode === 'pause')) { e.preventDefault(); pause(mode === 'play'); }
-  if (k === 'Enter' && mode === 'menu' && UI.cur === 'sCover') startRun();
+  if (k === 'Enter' && mode === 'menu' && UI.cur === 'sCover') startRun(false);
 });
 document.addEventListener('click', e => { const b = e.target.closest('[data-act]'); if (!b) return; act(b.dataset.act, b.dataset.arg, e.target); });
 document.addEventListener('visibilitychange', () => { if (document.hidden) { if (mode === 'play') pause(true); if (AU.ctx) AU.ctx.suspend().catch(() => {}); } else if (AU.ctx) AU.ctx.resume().catch(() => {}); });

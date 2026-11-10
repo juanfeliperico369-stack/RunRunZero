@@ -1,6 +1,6 @@
 # Run Scooter · la ciclovía sin fin
 
-Corredor sin fin en 3D (estilo arcade) por una ciclovía: scooter, patines quad, skate, bicicleta y monopatín eléctrico.
+Corredor sin fin en 3D (estilo arcade) por una ciclovía: scooter, patines quad (2+2), patines en línea (4 en fila), skate, bicicleta y monopatín eléctrico.
 Estética de la revista **EMSAY** (portada teal y crema, páginas amarilla, gris, roja, marino con naranja y mostaza) y la edición neón de **Doc Element**.
 Funciona **sin internet**, en un solo `index.html`, sin librerías externas (motor WebGL propio y audio sintetizado).
 
@@ -12,6 +12,8 @@ Funciona **sin internet**, en un solo `index.html`, sin librerías externas (mot
 - Esquiva baches, rocas, vallas, ramas bajas (solo agachado), carritos, puestos de revistas, furgones EMSAY (sube por la rampa amarilla) y otros ciclistas.
 - Dos golpes leves en menos de 3 s (conos, charcos o roces laterales) te tumban.
 - Poderes: imán, turbo (atraviesa todo), ×2 puntos y casco (te salva de un choque).
+- **Reto del día**: la misma ruta para todos cada día; llegar a 1500 m da ✦ 2.
+- Si te tambaleas, la **Tinta Gris** te persigue: otro golpe y te atrapa.
 - Cada 1000 m cambia la **edición** (paleta y escenario). Las **páginas perdidas** (12) cuentan la historia de Don Ramiro.
 
 ## Fórmulas

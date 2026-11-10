@@ -55,7 +55,7 @@ function newGame(o) {
 }
 
 function addOb(g, t, lane, s, extra) {
-  const T = OT[t]; const o = { t, T, lane, x: (lane - 1) * LW, s, R: s, hd: T.hd, hw: T.hw, y0: T.y0, y1: T.y1, alive: 1, hitT: -9, passed: 0, fly: null, seen: 0 };
+  const T = OT[t]; const o = { pat: g._kind, t, T, lane, x: (lane - 1) * LW, s, R: s, hd: T.hd, hw: T.hw, y0: T.y0, y1: T.y1, alive: 1, hitT: -9, passed: 0, fly: null, seen: 0 };
   if (extra) Object.assign(o, extra);
   g.obs.push(o); g.lf[lane] = Math.max(g.lf[lane], s + o.hd); return o;
 }
@@ -93,6 +93,7 @@ function genRow(g) {
     ['trucks', s > 260 ? 0.9 + 0.7 * d : 0], ['jramp', s > 200 ? 0.55 : 0], ['rider', s > 420 ? 0.45 + 0.9 * d : 0],
     ['slalom', 0.55], ['breather', Math.max(0.15, 0.75 - 0.6 * d)]
   ]);
+  g._kind = kind;
   const rl = () => Math.floor(r() * 3);
   const anyType = () => pickW(r, JUMPS.concat(BLOCKS, [['branch', 1.3]]));
   const place = (t, l) => {
@@ -216,7 +217,7 @@ function smash(g, o) {
 function die(g, o) {
   const P = g.p;
   if (P.shield) { P.shield = 0; P.inv = 1.2; if (o) smash(g, o); ev(g, 'shield'); return; }
-  P.alive = false; P.deadT = 0; P.vy = 5; P.air = true; g.cause = o ? o.T.name : 'una caída';
+  P.alive = false; P.deadT = 0; P.vy = 5; P.air = true; g.cause = o ? o.T.name : 'una caída'; g.causePat = o ? o.pat + (o.hitT === g.t && P.stumble > 0 ? '+tamb' : '') : '';
   g.cleanBest = Math.max(g.cleanBest, g.cleanS); ev(g, 'crash', o);
 }
 function stumble(g, o, bounce) {
@@ -294,7 +295,7 @@ function step(g, dt, inp) {
     const frontal = o.T.moving || (s0 + PHD <= os0 + 0.06) || o.T.ground;
     if (o.T.ramp) { stumble(g, o, true); continue; }
     if (frontal) {
-      if (o.T.minor) { stumble(g, o, false); if (o.t === 'cone') smash(g, o); }
+      if (o.T.minor) { if (o.t === 'puddle' && V.id === 'inline') { ev(g, 'splash', o); continue; } stumble(g, o, false); if (o.t === 'cone') smash(g, o); }
       else die(g, o);
     } else stumble(g, o, moving);
     if (!P.alive) return;
@@ -351,7 +352,7 @@ function pickup(g, it) {
 function aiLane(g, l, h) {
   const P = g.p; let best = null;
   for (const o of g.obs) {
-    if (!o.alive || o.fly || o.lane !== l) continue;
+    if (!o.alive || o.fly || o.lane !== l || (o.t === 'puddle' && g.veh.id === 'inline')) continue;
     const front = o.s - o.hd - (P.s + PHD), back = o.s + o.hd - (P.s - PHD);
     if (back < 0 || front > h) continue;
     let need = o.T.need;
@@ -367,7 +368,7 @@ function aiThink(g, skill = 1) {
   const cost = info.map((f, l) => {
     let c = Math.abs(l - P.lane) * 0.7;
     if (f) {
-      if (f.need === 'block') c += f.front < 0.5 ? 200 : 60 + Math.max(0, 40 - f.front);
+      if (f.need === 'block') c += f.front < 0.5 ? 200 : f.front < P.v * 0.75 + 3 ? 60 + Math.max(0, 40 - f.front) : 5;
       else if (f.need === 'ramp') c += f.front < 0 && P.lane !== l ? 200 : -0.3;
       else c += f.need === 'jump' ? (f.o.T.minor ? 3 : 2) : 2.4;
       if (l !== P.lane && f.need !== 'ramp' && f.front < P.v * 0.42) c += 40;
@@ -404,5 +405,5 @@ function simulate(o) {
     if (P.y < -0.01 || P.y > 12) { errs.push('altura fuera de rango ' + P.y); break; }
     if (o.revive && !P.alive && g.revives < 1) { revive(g); }
   }
-  return { seed: o.seed, veh: g.veh.id, dist: Math.round(g.p.s), t: +g.t.toFixed(1), score: Math.round(g.score), coins: g.coinsRun, cause: g.p.alive ? 'tiempo' : g.cause, bad: g.bad, rows: g.rows, jumps: g.jumps, ducks: g.ducks, tricks: g.tricks, trucks: g.trucks, gifts: g.gifts, clues: g.clues, powers: g.powers, errs };
+  return { seed: o.seed, veh: g.veh.id, dist: Math.round(g.p.s), t: +g.t.toFixed(1), score: Math.round(g.score), coins: g.coinsRun, cause: g.p.alive ? 'tiempo' : g.cause, pat: g.causePat || '', bad: g.bad, rows: g.rows, jumps: g.jumps, ducks: g.ducks, tricks: g.tricks, trucks: g.trucks, gifts: g.gifts, clues: g.clues, powers: g.powers, errs };
 }
