@@ -55,6 +55,7 @@ const ACH = [
   ['a13', 'Con estilo', 'Ten 15 cosméticos', 2, S => Object.keys(S.ownedCos).length >= 15], ['a14', 'Lector de EMSAY', 'Recupera las 12 páginas', 3, S => S.clues >= 12, 'c5'],
   ['a15', 'Madrugador', 'Racha de 7 días de regalo', 2, S => S.daily.streak >= 7], ['a16', 'Retador', 'Supera un Reto del día', 1, S => !!S.ch.rew],
   ['a17', 'Leyenda', 'Llega al rango Leyenda', 3, S => rankOf(S.xp) >= 9], ['a18', 'Poder total', 'Usa 8 poderes en una partida', 1, (S, g) => g && g.powers >= 8],
+  ['a21', 'Deletreo', 'Completa la palabra EMSAY', 2, S => S.word && S.word.done >= 1], ['a22', 'Planeador', 'Vuela con el paraguas', 1, (S, g) => g && g.glides >= 1],
   ['a19', 'Mejor amigo', 'Consigue una mascota', 1, S => Object.keys(S.ownedCos).some(k => /^m[1-9]/.test(k))], ['a20', 'Velocista', 'Toca ⚡ 150 veces en una partida', 1, (S, g) => g && (g.boosts || 0) >= 150]
 ];
 const UPG = [

@@ -21,7 +21,7 @@ function startRun(ch) {
   const S = SV.S; AU.init(); AU.music(true); if (ch === undefined) ch = lastCh; lastCh = !!ch;
   UI.ov('oOver', 0); UI.ov('oRevive', 0); UI.ov('oPause', 0); UI.hideScreens(); UI.preview = null;
   refreshPlayer();
-  G = newGame({ seed: ch ? daySeed() : (Math.random() * 4294967295) >>> 0, veh: S.veh, up: S.up, mult: 1 + 0.25 * rankOf(S.xp), cluesLeft: STORY.length - S.clues, tut: S.tut === 1, pet: S.cos.mascota && S.cos.mascota !== 'm0' });
+  G = newGame({ seed: ch ? daySeed() : (Math.random() * 4294967295) >>> 0, veh: S.veh, up: S.up, mult: 1 + 0.25 * rankOf(S.xp), cluesLeft: STORY.length - S.clues, letters: (S.word.day !== dayKey() ? (S.word = { day: dayKey(), got: '', done: S.word.done || 0, doneDay: S.word.doneDay || '' }, 'EMSAY') : S.word.doneDay === dayKey() ? '' : 'EMSAY'.slice(S.word.got.length)), tut: S.tut === 1, pet: S.cos.mascota && S.cos.mascota !== 'm0' });
   Q.length = 0; acc = 0; overShown = false; reviveT = 0; RN.parts.length = 0; UI.hud = { s: -1, c: -1, d: -1, m: '', pk: '' };
   $('hud').hidden = false; $('hBanner').innerHTML = ''; UI.tut(-1); $('hCnt').hidden = true;
   if (S.boostTip < 3) { S.boostTip++; setTimeout(() => { if (mode === 'play') UI.toast('Toca ⚡ IMPULSO seguido para acelerar: más velocidad, más puntos', 'g'); }, 2600); }
@@ -57,7 +57,7 @@ function events(g) {
       case 'jump': case 'jump2': case 'land': case 'duck': case 'lane': case 'smash': case 'trick': case 'pEnd': case 'shield': AU.sfx(e.k); break;
       case 'stumble': AU.sfx('stumble'); vib(40); break;
       case 'crash': AU.sfx('crash'); vib([60, 40, 90]); break;
-      case 'power': AU.sfx('power'); UI.toast({ magnet: '∩ IMÁN', turbo: '⚡ TURBO', x2: '×2 PUNTOS', shield: '⛑ CASCO PROTECTOR' }[e.a] || 'PODER', 'g'); break;
+      case 'power': AU.sfx('power'); UI.toast({ magnet: '∩ IMÁN', turbo: '⚡ TURBO', x2: '×2 PUNTOS', shield: '⛑ CASCO PROTECTOR', glide: '☂ PARAGUAS PLANEADOR: ¡a volar!' }[e.a] || 'PODER', 'g'); break;
       case 'zone': UI.banner(e.a); AU.sfx('zone'); AU.zone = e.a; break;
       case 'clue': {
         AU.sfx('clue'); if (S.clues < STORY.length) { S.clues++; UI.toast('📰 PÁGINA ' + S.clues + ' RECUPERADA: ' + STORY[S.clues - 1][0], 'c'); }
@@ -80,6 +80,11 @@ function events(g) {
       case 'revive': AU.sfx('revive'); break;
       case 'boost': AU.pumpLv = e.a; AU.sfx('pump'); break;
       case 'deliver': AU.sfx('deliver'); vib(15); UI.pop('✉ ¡ENTREGA! +' + fmt(e.a.pts) + (g.dStreak > 1 ? ' · racha ×' + g.dStreak : '')); if (g.deliv === 1 && !S.delTip) { S.delTip = 1; UI.toast('Ve por el carril del borde al pasar un buzón o casita: lanzas la revista', 'c'); } break;
+      case 'letter': {
+        const W = S.word; if (W.day !== dayKey()) { W.day = dayKey(); W.got = ''; } W.got += e.a; AU.sfx('clue'); UI.pop('🔤 LETRA ' + e.a + ' · ' + 'EMSAY'.split('').map((c, i) => i < W.got.length ? c : '_').join(' '));
+        if (W.got === 'EMSAY') { W.doneDay = dayKey(); W.done = (W.done || 0) + 1; S.stars += 2; g.coinsRun += 500; UI.toast('🔤 ¡EMSAY COMPLETO! +✦ 2 · +◉ 500', 'g'); AU.sfx('rank'); }
+        SV.save(); break;
+      }
       case 'dmiss': AU.sfx('dmiss'); UI.pop('✉ Entrega perdida', 'miss'); break;
     }
   }

@@ -3,7 +3,7 @@ const PC = (i, sh = 1) => [i / 4, sh, 0];           // color de paleta (índice 
 const DK = hex('#1c1c22'), GR = hex('#8a8f96'), WH = hex('#f4f1e6'), SKIN = hex('#c98e62');
 const AR = (x, y, w, h) => { const p = 1; return [(x + p) / 1024, (y + p) / 1024, (x + w - p) / 1024, (y + h - p) / 1024]; };
 const BILL = i => AR((i % 2) * 512, Math.floor(i / 2) * 192, 512, 192);
-const ATR = { shadow: AR(32, 960, 64, 64), bike: AR(96, 960, 64, 64), arrow: AR(160, 960, 64, 64), x2: AR(224, 960, 64, 64), cover: AR(288, 960, 48, 64), star: AR(336, 960, 64, 64), eye: AR(400, 960, 64, 64) };
+const ATR = { L: { E: AR(464, 960, 64, 64), M: AR(528, 960, 64, 64), S: AR(592, 960, 64, 64), A: AR(656, 960, 64, 64), Y: AR(720, 960, 64, 64) }, shadow: AR(32, 960, 64, 64), bike: AR(96, 960, 64, 64), arrow: AR(160, 960, 64, 64), x2: AR(224, 960, 64, 64), cover: AR(288, 960, 48, 64), star: AR(336, 960, 64, 64), eye: AR(400, 960, 64, 64) };
 
 function makeAtlas() {
   const c = document.createElement('canvas'); c.width = 1024; c.height = 1024;
@@ -56,6 +56,7 @@ function makeAtlas() {
   x.fillStyle = '#c0191c'; x.fillRect(294, 1004, 36, 4); x.fillRect(294, 1012, 26, 3);
   x.fillStyle = '#ffc23a'; x.beginPath(); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4 - Math.PI / 2, r = i % 2 ? 10 : 30; x.lineTo(368 + Math.cos(a) * r, 992 + Math.sin(a) * r); } x.closePath(); x.fill();
   x.strokeStyle = '#fff'; x.lineWidth = 5; x.beginPath(); x.arc(432, 992, 26, 0, 7); x.stroke(); x.fillStyle = '#c0191c'; x.beginPath(); x.arc(432, 992, 10, 0, 7); x.fill();
+  'EMSAY'.split('').forEach((ch, i) => { const cx = 496 + i * 64; x.fillStyle = '#ffc23a'; x.beginPath(); x.arc(cx, 992, 30, 0, 7); x.fill(); x.lineWidth = 4; x.strokeStyle = '#111'; x.stroke(); x.fillStyle = '#1d4e79'; x.font = '46px ' + TT; x.fillText(ch, cx, 995); });
   return c;
 }
 
@@ -290,6 +291,12 @@ const MOD = {
     return m;
   },
   petTail(k, col) { const m = new MB(), c = hex(col); if (k === 'm3') { m.tri([0, 0, -0.08], [0.32, 0.02, 0.04], [0, 0, 0.12], c); } else m.at(0, 0, 0, 0, -0.9, 0, 1, 1, 1, q => q.box(0, 0.14, 0, 0.05, 0.28, 0.05, c)); return m; },
+  gatepost() { const m = new MB(), y = hex('#ffc23a'); for (const sx of [-1, 1]) { for (let j = 0; j < 6; j++) m.box(sx * 0.98, 0.22 + j * 0.44, 0, 0.16, 0.44, 0.16, j % 2 ? DK : y); } m.box(0, 2.72, 0, 2.2, 0.16, 0.18, DK); m.box(0.9, 2.86, 0, 0.14, 0.12, 0.14, hex('#ff2a2a'), 1); return m; },
+  gatebar() { const m = new MB(); for (let i = 0; i < 5; i++) m.box(-0.76 + i * 0.38, 0, 0, 0.38, 0.16, 0.12, i % 2 ? WH : hex('#c0191c'), i % 2 ? 0.3 : 0); return m; },
+  bollard() { const m = new MB(); for (const x of [-0.6, 0, 0.6]) { m.cyl(x, 0, 0, 0.11, 0.75, 8, GR); m.cyl(x, 0.5, 0, 0.115, 0.1, 8, WH, 1, 0.115, false); m.cyl(x, 0.75, 0, 0.11, 0.06, 8, DK, 0, 0.06); } return m; },
+  umbrella() { const m = new MB(), a = hex('#0e6378'), b = hex('#e8e4c4'); for (let i = 0; i < 8; i++) { const a0 = i / 8 * 6.283, a1 = (i + 1) / 8 * 6.283; m.tri([0, 0.5, 0], [Math.cos(a0) * 1.05, 0, Math.sin(a0) * 1.05], [Math.cos(a1) * 1.05, 0, Math.sin(a1) * 1.05], i % 2 ? a : b, 0.25); }
+    m.box(0, -0.45, 0, 0.035, 1.0, 0.035, DK); m.box(0.05, -0.95, 0, 0.12, 0.035, 0.035, DK); m.box(0, 0.55, 0, 0.05, 0.12, 0.05, hex('#ffc23a'), 1); return m; },
+  letter(ch) { const m = new MB(), u = ATR.L[ch]; m.quad([-0.36, -0.36, -0.02], [0.36, -0.36, -0.02], [0.36, 0.36, -0.02], [-0.36, 0.36, -0.02], WH, 1, u); m.quad([0.36, -0.36, 0.02], [-0.36, -0.36, 0.02], [-0.36, 0.36, 0.02], [0.36, 0.36, 0.02], WH, 1, u); return m; },
   /* ---- entregas: buzón, casitas, puerta, vecino, revista ---- */
   buzon() { const m = new MB(), t = hex('#0e6378'); m.box(0, 0.55, 0, 0.09, 1.1, 0.09, GR); m.box(0, 1.24, 0, 0.36, 0.34, 0.52, t); m.at(0, 1.4, 0, 0, Math.PI / 2, 0, 1, 1, 1, q => q.cyl(0, -0.26, 0, 0.18, 0.52, 8, t, 0, 0.18, false));
     m.box(-0.182, 1.26, 0, 0.01, 0.06, 0.3, DK); m.quad([0.182, 1.1, 0.2], [0.182, 1.1, -0.2], [0.182, 1.38, -0.2], [0.182, 1.38, 0.2], WH, 0.3, ATR.cover); m.box(0, 1.08, 0, 0.38, 0.05, 0.54, hex('#e8e4c4')); return m; },

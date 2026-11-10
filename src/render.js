@@ -15,7 +15,8 @@ const RN = {
     mo.bill = []; mo.gate = []; for (let i = 0; i < 10; i++) { mo.bill.push(mk(MOD.billPanel(i))); mo.gate.push(mk(MOD.gatePanel(i))); }
     mo.truck = [0, 1, 2].map(c => mk(MOD.truck(c))); mo.npc = [0, 1, 2, 3].map(c => mk(MOD.npc(c)));
     mo.ramp = mk(MOD.ramp(2.4, 6, '#ffc23a')); mo.jramp = mk(MOD.ramp(1.1, 4, '#ff5a2a'));
-    mo.halo = { magnet: mk(MOD.halo('#ff5a2a')), turbo: mk(MOD.halo('#ffc23a')), x2: mk(MOD.halo('#ff2fb3')), shield: mk(MOD.halo('#39c8ff')), gift: mk(MOD.halo('#ff2fb3')), clue: mk(MOD.halo('#2dffb3')) };
+    mo.halo = { magnet: mk(MOD.halo('#ff5a2a')), turbo: mk(MOD.halo('#ffc23a')), x2: mk(MOD.halo('#ff2fb3')), shield: mk(MOD.halo('#39c8ff')), gift: mk(MOD.halo('#ff2fb3')), clue: mk(MOD.halo('#2dffb3')), glide: mk(MOD.halo('#2dffb3')), letter: mk(MOD.halo('#ffc23a')) };
+    for (const k of ['gatepost', 'gatebar', 'bollard', 'umbrella']) mo[k] = mk(MOD[k]()); mo.glide = mo.umbrella; mo.letter = {}; for (const ch of 'EMSAY') mo.letter[ch] = mk(MOD.letter(ch));
   },
   branch(v) { const k = v.side + ':' + v.lanes.join(''); return this.branches[k] || (this.branches[k] = R.mesh(MOD.branch(v.side, v.lanes))); },
   setPlayer(cos, vid) {
@@ -43,8 +44,9 @@ const RN = {
     else if (mode === 'menu') { c.ex = P.x * 0.6 + 1.6; c.ey = 1.85 + P.y * 0.5; c.ez = 4.4 + k * 1.6; c.cx = P.x * 0.6; c.cy = 1.0 + P.y * 0.4; c.cz = -8; c.fov = 1.0 + k * 0.15; }
     else {
       this.camY = lerp(this.camY, P.y, Math.min(1, dt * 6));
-      c.ex = P.x * 0.72; c.ey = lerp(3.15, 3.75, k) + this.camY * 0.62; c.ez = lerp(5.9, 7.3, k);
-      c.cx = P.x * 0.86; c.cy = 1.1 + this.camY * 0.5; c.cz = -10;
+      const hf = clamp((this.camY - 2.4) / 2, 0, 1);
+      c.ex = P.x * 0.72; c.ey = lerp(3.15, 3.75, k) + this.camY * lerp(0.62, 0.92, hf); c.ez = lerp(5.9, 7.3, k);
+      c.cx = P.x * 0.86; c.cy = 1.1 + this.camY * lerp(0.5, 0.86, hf); c.cz = -10;
       c.fov = (lerp(58, 66, k) + clamp(P.v - 14, 0, 30) * 0.28 + (P.turbo > 0 ? 6 : 0)) * Math.PI / 180;
     }
     if (mode !== 'garage') { this.slS = lerp(this.slS || 0, this.sl || 0, Math.min(1, dt * 4)); c.cy += this.slS * 10; }
@@ -116,8 +118,10 @@ const RN = {
     }
     // torso y brazos
     M4.trs(A, 0, 0, 0, 0, -lean, 0); M4.mul(D, C, A); R.draw(pl.t, D);
+    if (P.glide > 0) arms = [[2.95, 0.12], [2.95, -0.12]];
     if (this.throwT > 0) { this.throwT = Math.max(0, this.throwT - dt); const k = Math.sin((1 - this.throwT / 0.32) * Math.PI), i = this.throwSide > 0 ? 1 : 0; arms = arms.slice(); arms[i] = [2.3 * k - lean * 0.6, this.throwSide * 0.9 * k]; }
     for (let i = 0; i < 2; i++) { const ar = arms[i], sx = i ? 0.255 : -0.255; M4.trs(A, sx, 0.58, 0, 0, ar[0] + (id === 'skate' || id === 'long' ? 0 : lean * 0.6), ar[1]); M4.mul(M, D, A); R.draw(pl.ar, M); }
+    if (P.glide > 0) { M4.trs(A, 0, 2.25, 0.05, time * 0.6, Math.sin(time * 2) * 0.08, Math.sin(time * 1.7) * 0.1, 1.35); M4.mul(M, B, A); R.draw(this.mo.umbrella, M); }
   },
   /* fauna silvestre: mariposas, pájaros, conejos, luciérnagas y semillas (solo decoración) */
   wild(g, mode, time, dt) {
@@ -205,6 +209,7 @@ const RN = {
       const z = zs(o.s); if (z < FAR || z > 14) continue;
       let m;
       if (o.t === 'branch') { if (!o.vis) continue; m = this.branch(o.vis); M4.trs(M, 0, 0, z); R.draw(m, M); continue; }
+      if (o.t === 'gate' && !o.fly) { M4.trs(M, o.x, 0, z); R.draw(mo.gatepost, M); M4.trs(M, o.x, gateY(o, g.t), z); R.draw(mo.gatebar, M); continue; }
       if (o.t === 'rider' && o.nk && !o.fly && o.alive) {
         const sk = o.nk === 2, ph = time * (sk ? 5 : 10) + o.R, B0 = this.B, A0 = this.A;
         M4.trs(M, o.x, 0, z, 0, 0, 0); R.draw((sk ? mo.skB : mo.runB)[o.col || 0], M);
@@ -245,7 +250,7 @@ const RN = {
     for (const it of g.items) {
       if (!it.alive) continue; const z = zs(it.s); if (z < -140 || z > 8) continue;
       const y = it.y + Math.sin(time * 3 + it.s) * 0.12;
-      M4.trs(M, it.x, y, z, time * 2); R.draw(mo[it.k], M);
+      M4.trs(M, it.x, y, z, time * 2, 0, 0, it.k === 'glide' ? 0.55 : 1); R.draw(it.k === 'letter' ? mo.letter[it.ch] || mo.clue : mo[it.k], M);
       M4.trs(M, it.x, y, z, 0, 0, time * 1.5); R.draw(mo.halo[it.k], M);
     }
     this.drawPlayer(g, time, dt);

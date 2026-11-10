@@ -187,6 +187,7 @@ button:focus-visible{outline:3px solid var(--amb);outline-offset:2px}
 #rain.on{opacity:1}@keyframes rainf{to{background-position:-34px 170px,-30px 230px}}
 #flash{position:absolute;inset:0;background:#f4f8ff;opacity:0;pointer-events:none}#flash.go{animation:flash .55s ease-out}@keyframes flash{0%{opacity:.7}100%{opacity:0}}
 .lh #hud .boost{right:auto;left:14px}
+.word{display:flex;gap:3px;margin-top:6px}.word i{font-style:normal;font-family:var(--fd);font-size:17px;width:22px;height:24px;display:flex;align-items:center;justify-content:center;border:2px solid #111;background:rgba(17,17,17,.55);color:rgba(255,255,255,.45)}.word i.on{background:var(--amb);color:#1d4e79;box-shadow:2px 2px 0 #111}
 .slope{display:inline-block;margin-top:6px;font-family:var(--fd);font-size:17px;padding:1px 8px;border:2px solid #111;box-shadow:2px 2px 0 #111}
 .slope.up{background:var(--paper);color:#111}.slope.dn{background:var(--red);color:#fff}
 #bPause{pointer-events:auto;width:48px;height:48px;background:var(--paper);color:#111;border:3px solid #111;font-size:18px;box-shadow:3px 3px 0 #111}
@@ -235,7 +236,7 @@ button:focus-visible{outline:3px solid var(--amb);outline-offset:2px}
 <div id="ui">
   <div id="rain"></div><div id="flash"></div>
   <div id="hud" hidden>
-    <div class="hl"><div id="hScore" class="hs">0</div><div class="hc"><span class="coin"></span><b id="hCoins">0</b></div><br><div class="hc dl" id="hDel" hidden></div><div id="hDist" class="hd">0 M</div><div id="hSlope" class="slope" hidden></div></div>
+    <div class="hl"><div id="hScore" class="hs">0</div><div class="hc"><span class="coin"></span><b id="hCoins">0</b></div><br><div class="hc dl" id="hDel" hidden></div><div id="hDist" class="hd">0 M</div><div id="hSlope" class="slope" hidden></div><div id="hWord" class="word"></div></div>
     <div class="hr"><button id="bPause" data-act="pause" aria-label="Pausa">❚❚</button><div id="hMult" class="hm">×1</div><div id="hPow"></div></div>
     <button id="bBoost" class="boost" aria-label="Impulso: toca seguido para acelerar"><i><b id="bbF"></b></i><span>⚡</span><small>IMPULSO</small></button>
     <div id="hPop"></div>
@@ -665,6 +666,7 @@ const ACH = [
   ['a13', 'Con estilo', 'Ten 15 cosméticos', 2, S => Object.keys(S.ownedCos).length >= 15], ['a14', 'Lector de EMSAY', 'Recupera las 12 páginas', 3, S => S.clues >= 12, 'c5'],
   ['a15', 'Madrugador', 'Racha de 7 días de regalo', 2, S => S.daily.streak >= 7], ['a16', 'Retador', 'Supera un Reto del día', 1, S => !!S.ch.rew],
   ['a17', 'Leyenda', 'Llega al rango Leyenda', 3, S => rankOf(S.xp) >= 9], ['a18', 'Poder total', 'Usa 8 poderes en una partida', 1, (S, g) => g && g.powers >= 8],
+  ['a21', 'Deletreo', 'Completa la palabra EMSAY', 2, S => S.word && S.word.done >= 1], ['a22', 'Planeador', 'Vuela con el paraguas', 1, (S, g) => g && g.glides >= 1],
   ['a19', 'Mejor amigo', 'Consigue una mascota', 1, S => Object.keys(S.ownedCos).some(k => /^m[1-9]/.test(k))], ['a20', 'Velocista', 'Toca ⚡ 150 veces en una partida', 1, (S, g) => g && (g.boosts || 0) >= 150]
 ];
 const UPG = [
@@ -786,9 +788,13 @@ const OT = {
   truck: { hw: 0.92, hd: 7, y0: 0, y1: 2.4, fatal: 1, land: 1, need: 'block', name: 'un furgón EMSAY' },
   ramp: { hw: 0.92, hd: 3, y0: 0, y1: 2.4, ramp: 1, need: 'ramp', name: 'una rampa' },
   jramp: { hw: 0.92, hd: 2, y0: 0, y1: 1.1, ramp: 1, need: 'ramp', name: 'una rampa' },
-  rider: { hw: 0.5, hd: 0.85, y0: 0, y1: 1.8, fatal: 1, need: 'block', moving: 1, name: 'otro ciclista' }
+  rider: { hw: 0.5, hd: 0.85, y0: 0, y1: 1.8, fatal: 1, need: 'block', moving: 1, name: 'otro ciclista' },
+  gate: { hw: 0.95, hd: 0.15, y0: 1, y1: 1.2, minor: 1, need: 'gate', name: 'una talanquera' },
+  bollard: { hw: 0.82, hd: 0.15, y0: 0, y1: 0.75, fatal: 1, need: 'jump', name: 'unos bolardos' }
 };
-const JUMPS = [['rock', 3], ['barrier', 2], ['pothole', 2.2], ['cone', 1.4], ['puddle', 1]];
+/* talanquera: barra que sube y baja (de pie si está alta, agachado a media altura, saltando si está baja) */
+const gateY = (o, t) => 0.95 + 1.45 * (0.5 + 0.5 * Math.sin(t * 1.7 + (o.ph || 0)));
+const JUMPS = [['rock', 3], ['barrier', 2], ['pothole', 2.2], ['cone', 1.4], ['puddle', 1], ['bollard', 1.5]];
 const JUMPS_R = JUMPS.map(j => j[0] === 'puddle' ? ['puddle', 3.5] : j);
 /* clima: algunas ediciones llueven (mismo resultado en lógica y render) */
 const RAINY = ed => ed > 0 && (Math.imul(ed + 7, 2654435761) >>> 0) % 4 === 1;
@@ -828,11 +834,11 @@ function newGame(o) {
   const g = {
     seed: o.seed >>> 0, rng: rngOf(o.seed), srng: rngOf((o.seed >>> 0) * 7 + 3), veh: v, demo: !!o.demo, ai: !!o.ai, t: 0,
     p: { s: 0, x: 0, lane: 1, from: 1, y: 0, vy: 0, gv: 0, v: 0, air: false, airT: 0, crouch: 0, fastFall: 0, jumps: 0, stumble: 0, slow: 1, inv: 0, alive: true, deadT: 0,
-      magnet: 0, turbo: 0, x2: 0, shield: 0, boost: 0, sl: 0, trickHit: 0, phase: 0, onTruck: null, lastLand: 0 },
+      magnet: 0, turbo: 0, x2: 0, glide: 0, shield: 0, boost: 0, sl: 0, trickHit: 0, phase: 0, onTruck: null, lastLand: 0 },
     obs: [], coins: [], items: [], scen: [], ev: [], lf: [0, 0, 0],
     genS: 42, scenS: -30, nextGate: 1000, dels: [], deliv: 0, dStreak: 0, dBest: 0, nextDel: 150, tuns: [], pet: !!o.pet, petSide: 1, edition: 0, score: 0, coinsRun: 0, starsRun: 0, clues: 0, gifts: 0, jumps: 0, ducks: 0, tricks: 0, powers: 0, trucks: 0,
     cleanS: 0, cleanBest: 0, revives: 0, cause: '', mult: o.mult || 1, bad: 0, rows: 0,
-    dur: { magnet: (8 + 2 * (up.magnet || 0)) * bat, turbo: (4.5 + (up.turbo || 0)) * bat, x2: (10 + 3 * (up.x2 || 0)) * bat },
+    dur: { magnet: (8 + 2 * (up.magnet || 0)) * bat, turbo: (4.5 + (up.turbo || 0)) * bat, x2: (10 + 3 * (up.x2 || 0)) * bat, glide: 6 * bat }, letters: o.letters || '', nextLetter: 260, glides: 0,
     luck: up.gift || 0, nextGift: 380, nextClue: 320, cluesLeft: o.cluesLeft || 0, tut: o.tut ? 0 : -1, tutWait: null, ts: 1
   };
   genAhead(g);
@@ -881,10 +887,10 @@ function genRow(g) {
   ]);
   g._kind = kind;
   const rl = () => Math.floor(r() * 3);
-  const anyType = () => pickW(r, JP.concat(BLOCKS, [['branch', 1.3]]));
+  const anyType = () => pickW(r, JP.concat(BLOCKS, [['branch', 1.3], ['gate', d > 0.08 ? 1.1 : 0]]));
   const place = (t, l) => {
     if (t === 'branch') { addOb(g, 'branch', l, s, { vis: { side: l === 0 ? -1 : 1, lanes: [l] } }); st[l] = 'duck'; }
-    else { addOb(g, t, l, s); st[l] = OT[t].need; }
+    else { addOb(g, t, l, s, t === 'gate' ? { ph: r() * 6.28 } : null); st[l] = OT[t].need; }
   };
   if (kind === 'rider') {
     const ok = [0, 1, 2].filter(l => g.lf[l] < s - 26);
@@ -941,10 +947,11 @@ function genRow(g) {
   const mid = s + len + gap * 0.5, ls = [0, 1, 2].sort(() => r() - 0.5), freeL = ls.find(l => spotOk(g, l, mid, 1));
   if (freeL !== undefined) {
     let it = null;
-    if (g.cluesLeft > 0 && mid >= g.nextClue) { it = 'clue'; g.nextClue = mid + 1100 + r() * 700; g.cluesLeft--; }
+    if (g.letters && mid >= g.nextLetter) { it = 'letter'; g.nextLetter = mid + 550 + r() * 350; }
+    else if (g.cluesLeft > 0 && mid >= g.nextClue) { it = 'clue'; g.nextClue = mid + 1100 + r() * 700; g.cluesLeft--; }
     else if (mid >= g.nextGift) { it = 'gift'; g.nextGift = mid + 480 + r() * 420; }
-    else if (s > 160 && r() < 0.05) it = pickW(r, [['magnet', 3], ['turbo', 1.6], ['x2', 2.2], ['shield', 1.8]]);
-    if (it) g.items.push({ k: it, lane: freeL, x: (freeL - 1) * LW, s: mid, y: 1.0, alive: 1 });
+    else if (s > 160 && r() < 0.05) it = pickW(r, [['magnet', 3], ['turbo', 1.6], ['x2', 2.2], ['shield', 1.8], ['glide', 2.3]]);
+    if (it) g.items.push({ k: it, lane: freeL, x: (freeL - 1) * LW, s: mid, y: 1.0, alive: 1, ch: it === 'letter' ? g.letters[0] : null });
   }
   const dz = Math.floor(mid / 1000) % ZONES.length;
   if (mid >= g.nextDel && DELK[dz] >= 0) {
@@ -1047,7 +1054,7 @@ function step(g, dt, inp) {
   }
   if (inp) input(g, inp);
   P.inv = Math.max(0, P.inv - dt); P.stumble = Math.max(0, P.stumble - dt); P.crouch = Math.max(0, P.crouch - dt);
-  for (const k of ['magnet', 'turbo', 'x2']) if (P[k] > 0) { P[k] -= dt; if (P[k] <= 0) { P[k] = 0; if (k === 'turbo') P.inv = Math.max(P.inv, 1.5); ev(g, 'pEnd', k); } }
+  for (const k of ['magnet', 'turbo', 'x2', 'glide']) if (P[k] > 0) { P[k] -= dt; if (P[k] <= 0) { P[k] = 0; if (k === 'turbo') P.inv = Math.max(P.inv, 1.5); if (k === 'glide') { P.inv = Math.max(P.inv, 1.4); P.vy = 0; P.airT = 0; P.trickHit = 1; } ev(g, 'pEnd', k); } }
   // velocidad: v = (14 + 21·(1 − e^(−s/2600)))·vehículo  → de 14 a 35 m/s
   const base = vEst(g, P.s); P.slow = Math.min(1, P.slow + dt * 0.35);
   P.boost = Math.max(0, P.boost - dt * 0.24); P.sl = HILLD(P.s);
@@ -1060,7 +1067,8 @@ function step(g, dt, inp) {
   P.x += Math.abs(dx) <= lat ? dx : Math.sign(dx) * lat;
   // vertical
   const gnd = groundAt(g, P.x, P.s, P.y), gO = g._gO; P.gy = gnd;
-  if (P.air) {
+  if (P.glide > 0) { P.air = true; P.vy = 0; P.airT = 0; P.y += (6.2 - P.y) * Math.min(1, dt * 3); }
+  else if (P.air) {
     P.vy -= GRAV * dt; P.y += P.vy * dt; P.airT += dt;
     if (P.y <= gnd && P.vy <= 0) {
       P.y = gnd; P.vy = 0; P.air = false; P.gv = 0;
@@ -1078,10 +1086,12 @@ function step(g, dt, inp) {
   for (const o of g.obs) {
     if (!o.alive || o.fly) continue;
     if (o.T.moving) o.s = o.R - 0.3 * Math.min(70, o.R - P.s);
+    if (o.t === 'gate') { const gy = gateY(o, g.t); o.y0 = gy - 0.08; o.y1 = gy + 0.08; }
     const os0 = o.s - o.hd, os1 = o.s + o.hd;
     if (o.t === 'branch' && !o.passed && P.s - PHD > os1) { o.passed = 1; if (Math.abs(P.x - o.x) < o.hw && P.crouch > 0) { g.ducks++; ev(g, 'duckOk'); } }
     if (g.tut >= 0 && o.tut !== undefined && !o.tdone && os0 - P.s - PHD <= (TUT[o.tut].need === 'lane' ? P.v * 0.6 : P.v * 0.21 + 0.4) && os0 > P.s) { o.tdone = 1; g.tutWait = { need: TUT[o.tut].need, o }; ev(g, 'tut', o.tut); }
     if (zB < os0 || zA > os1) continue;
+    if (P.glide > 0 && P.y > 2.9) continue;
     if (Math.abs(P.x - o.x) >= o.hw + PHW) continue;
     if (g.t - o.hitT < 0.6) continue;
     const top = o.T.ramp ? clamp((P.s - os0) / (os1 - os0), 0, 1) * o.y1 : o.y1;
@@ -1147,9 +1157,12 @@ function step(g, dt, inp) {
   genAhead(g);
 }
 
+function airCoins(g) { const P = g.p, L = P.v * g.dur.glide * 1.05; let lane = P.lane; for (let d = 14, i = 0; d < L; d += 3, i++) { if (i % 9 === 8) lane = clamp(lane + (g.rng() < 0.5 ? -1 : 1), 0, 2); g.coins.push({ lane, x: (lane - 1) * LW, s: P.s + d, y: 6.9, alive: 1, mag: 0 }); } }
 function pickup(g, it) {
   const P = g.p, r = g.rng;
   if (it.k === 'magnet' || it.k === 'turbo' || it.k === 'x2') { P[it.k] = g.dur[it.k]; g.powers++; ev(g, 'power', it.k); }
+  else if (it.k === 'glide') { P.glide = g.dur.glide; P.inv = Math.max(P.inv, 0.6); P.air = true; P.crouch = 0; g.powers++; g.glides++; airCoins(g); ev(g, 'power', 'glide'); }
+  else if (it.k === 'letter') { const ch = g.letters[0]; if (ch) { g.letters = g.letters.slice(1); ev(g, 'letter', ch); } }
   else if (it.k === 'shield') { P.shield = 1; g.powers++; ev(g, 'power', 'shield'); }
   else if (it.k === 'clue') { g.clues++; ev(g, 'clue'); }
   else if (it.k === 'gift') {
@@ -1174,6 +1187,7 @@ function aiLane(g, l, h) {
     const front = o.s - o.hd - (P.s + PHD), back = o.s + o.hd - (P.s - PHD);
     if (back < 0 || front > h) continue;
     let need = o.T.need;
+    if (o.t === 'gate') { const gy = gateY(o, g.t + Math.max(0, front) / Math.max(P.v, 1) + 0.06); need = gy >= 1.92 ? 'free' : gy >= 1.14 ? 'duck' : 'jump'; if (need === 'free') continue; }
     if (need !== 'duck' && need !== 'ramp' && P.y >= o.y1 - 0.05) continue;
     if (need === 'ramp' && P.y >= o.y1 - 0.05) continue;
     if (!best || front < best.front) best = { o, front, need };
@@ -1213,7 +1227,7 @@ function aiThink(g, skill = 1) {
 
 /* Simulación rápida sin render (bot de pruebas) */
 function simulate(o) {
-  const g = newGame({ seed: o.seed, veh: o.veh || 'scooter', ai: true, up: o.up, mult: 1, cluesLeft: 12, pet: o.pet });
+  const g = newGame({ seed: o.seed, veh: o.veh || 'scooter', ai: true, up: o.up, mult: 1, cluesLeft: 12, pet: o.pet, letters: 'EMSAY' });
   const maxT = o.maxT || 240; let n = 0, inp = null, errs = [];
   while (g.p.alive && g.t < maxT) {
     if (n % 3 === 0) inp = aiThink(g, o.skill == null ? 1 : o.skill); else inp = null;
@@ -1235,7 +1249,7 @@ const PC = (i, sh = 1) => [i / 4, sh, 0];           // color de paleta (índice 
 const DK = hex('#1c1c22'), GR = hex('#8a8f96'), WH = hex('#f4f1e6'), SKIN = hex('#c98e62');
 const AR = (x, y, w, h) => { const p = 1; return [(x + p) / 1024, (y + p) / 1024, (x + w - p) / 1024, (y + h - p) / 1024]; };
 const BILL = i => AR((i % 2) * 512, Math.floor(i / 2) * 192, 512, 192);
-const ATR = { shadow: AR(32, 960, 64, 64), bike: AR(96, 960, 64, 64), arrow: AR(160, 960, 64, 64), x2: AR(224, 960, 64, 64), cover: AR(288, 960, 48, 64), star: AR(336, 960, 64, 64), eye: AR(400, 960, 64, 64) };
+const ATR = { L: { E: AR(464, 960, 64, 64), M: AR(528, 960, 64, 64), S: AR(592, 960, 64, 64), A: AR(656, 960, 64, 64), Y: AR(720, 960, 64, 64) }, shadow: AR(32, 960, 64, 64), bike: AR(96, 960, 64, 64), arrow: AR(160, 960, 64, 64), x2: AR(224, 960, 64, 64), cover: AR(288, 960, 48, 64), star: AR(336, 960, 64, 64), eye: AR(400, 960, 64, 64) };
 
 function makeAtlas() {
   const c = document.createElement('canvas'); c.width = 1024; c.height = 1024;
@@ -1288,6 +1302,7 @@ function makeAtlas() {
   x.fillStyle = '#c0191c'; x.fillRect(294, 1004, 36, 4); x.fillRect(294, 1012, 26, 3);
   x.fillStyle = '#ffc23a'; x.beginPath(); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4 - Math.PI / 2, r = i % 2 ? 10 : 30; x.lineTo(368 + Math.cos(a) * r, 992 + Math.sin(a) * r); } x.closePath(); x.fill();
   x.strokeStyle = '#fff'; x.lineWidth = 5; x.beginPath(); x.arc(432, 992, 26, 0, 7); x.stroke(); x.fillStyle = '#c0191c'; x.beginPath(); x.arc(432, 992, 10, 0, 7); x.fill();
+  'EMSAY'.split('').forEach((ch, i) => { const cx = 496 + i * 64; x.fillStyle = '#ffc23a'; x.beginPath(); x.arc(cx, 992, 30, 0, 7); x.fill(); x.lineWidth = 4; x.strokeStyle = '#111'; x.stroke(); x.fillStyle = '#1d4e79'; x.font = '46px ' + TT; x.fillText(ch, cx, 995); });
   return c;
 }
 
@@ -1522,6 +1537,12 @@ const MOD = {
     return m;
   },
   petTail(k, col) { const m = new MB(), c = hex(col); if (k === 'm3') { m.tri([0, 0, -0.08], [0.32, 0.02, 0.04], [0, 0, 0.12], c); } else m.at(0, 0, 0, 0, -0.9, 0, 1, 1, 1, q => q.box(0, 0.14, 0, 0.05, 0.28, 0.05, c)); return m; },
+  gatepost() { const m = new MB(), y = hex('#ffc23a'); for (const sx of [-1, 1]) { for (let j = 0; j < 6; j++) m.box(sx * 0.98, 0.22 + j * 0.44, 0, 0.16, 0.44, 0.16, j % 2 ? DK : y); } m.box(0, 2.72, 0, 2.2, 0.16, 0.18, DK); m.box(0.9, 2.86, 0, 0.14, 0.12, 0.14, hex('#ff2a2a'), 1); return m; },
+  gatebar() { const m = new MB(); for (let i = 0; i < 5; i++) m.box(-0.76 + i * 0.38, 0, 0, 0.38, 0.16, 0.12, i % 2 ? WH : hex('#c0191c'), i % 2 ? 0.3 : 0); return m; },
+  bollard() { const m = new MB(); for (const x of [-0.6, 0, 0.6]) { m.cyl(x, 0, 0, 0.11, 0.75, 8, GR); m.cyl(x, 0.5, 0, 0.115, 0.1, 8, WH, 1, 0.115, false); m.cyl(x, 0.75, 0, 0.11, 0.06, 8, DK, 0, 0.06); } return m; },
+  umbrella() { const m = new MB(), a = hex('#0e6378'), b = hex('#e8e4c4'); for (let i = 0; i < 8; i++) { const a0 = i / 8 * 6.283, a1 = (i + 1) / 8 * 6.283; m.tri([0, 0.5, 0], [Math.cos(a0) * 1.05, 0, Math.sin(a0) * 1.05], [Math.cos(a1) * 1.05, 0, Math.sin(a1) * 1.05], i % 2 ? a : b, 0.25); }
+    m.box(0, -0.45, 0, 0.035, 1.0, 0.035, DK); m.box(0.05, -0.95, 0, 0.12, 0.035, 0.035, DK); m.box(0, 0.55, 0, 0.05, 0.12, 0.05, hex('#ffc23a'), 1); return m; },
+  letter(ch) { const m = new MB(), u = ATR.L[ch]; m.quad([-0.36, -0.36, -0.02], [0.36, -0.36, -0.02], [0.36, 0.36, -0.02], [-0.36, 0.36, -0.02], WH, 1, u); m.quad([0.36, -0.36, 0.02], [-0.36, -0.36, 0.02], [-0.36, 0.36, 0.02], [0.36, 0.36, 0.02], WH, 1, u); return m; },
   /* ---- entregas: buzón, casitas, puerta, vecino, revista ---- */
   buzon() { const m = new MB(), t = hex('#0e6378'); m.box(0, 0.55, 0, 0.09, 1.1, 0.09, GR); m.box(0, 1.24, 0, 0.36, 0.34, 0.52, t); m.at(0, 1.4, 0, 0, Math.PI / 2, 0, 1, 1, 1, q => q.cyl(0, -0.26, 0, 0.18, 0.52, 8, t, 0, 0.18, false));
     m.box(-0.182, 1.26, 0, 0.01, 0.06, 0.3, DK); m.quad([0.182, 1.1, 0.2], [0.182, 1.1, -0.2], [0.182, 1.38, -0.2], [0.182, 1.38, 0.2], WH, 0.3, ATR.cover); m.box(0, 1.08, 0, 0.38, 0.05, 0.54, hex('#e8e4c4')); return m; },
@@ -1584,7 +1605,8 @@ const RN = {
     mo.bill = []; mo.gate = []; for (let i = 0; i < 10; i++) { mo.bill.push(mk(MOD.billPanel(i))); mo.gate.push(mk(MOD.gatePanel(i))); }
     mo.truck = [0, 1, 2].map(c => mk(MOD.truck(c))); mo.npc = [0, 1, 2, 3].map(c => mk(MOD.npc(c)));
     mo.ramp = mk(MOD.ramp(2.4, 6, '#ffc23a')); mo.jramp = mk(MOD.ramp(1.1, 4, '#ff5a2a'));
-    mo.halo = { magnet: mk(MOD.halo('#ff5a2a')), turbo: mk(MOD.halo('#ffc23a')), x2: mk(MOD.halo('#ff2fb3')), shield: mk(MOD.halo('#39c8ff')), gift: mk(MOD.halo('#ff2fb3')), clue: mk(MOD.halo('#2dffb3')) };
+    mo.halo = { magnet: mk(MOD.halo('#ff5a2a')), turbo: mk(MOD.halo('#ffc23a')), x2: mk(MOD.halo('#ff2fb3')), shield: mk(MOD.halo('#39c8ff')), gift: mk(MOD.halo('#ff2fb3')), clue: mk(MOD.halo('#2dffb3')), glide: mk(MOD.halo('#2dffb3')), letter: mk(MOD.halo('#ffc23a')) };
+    for (const k of ['gatepost', 'gatebar', 'bollard', 'umbrella']) mo[k] = mk(MOD[k]()); mo.glide = mo.umbrella; mo.letter = {}; for (const ch of 'EMSAY') mo.letter[ch] = mk(MOD.letter(ch));
   },
   branch(v) { const k = v.side + ':' + v.lanes.join(''); return this.branches[k] || (this.branches[k] = R.mesh(MOD.branch(v.side, v.lanes))); },
   setPlayer(cos, vid) {
@@ -1612,8 +1634,9 @@ const RN = {
     else if (mode === 'menu') { c.ex = P.x * 0.6 + 1.6; c.ey = 1.85 + P.y * 0.5; c.ez = 4.4 + k * 1.6; c.cx = P.x * 0.6; c.cy = 1.0 + P.y * 0.4; c.cz = -8; c.fov = 1.0 + k * 0.15; }
     else {
       this.camY = lerp(this.camY, P.y, Math.min(1, dt * 6));
-      c.ex = P.x * 0.72; c.ey = lerp(3.15, 3.75, k) + this.camY * 0.62; c.ez = lerp(5.9, 7.3, k);
-      c.cx = P.x * 0.86; c.cy = 1.1 + this.camY * 0.5; c.cz = -10;
+      const hf = clamp((this.camY - 2.4) / 2, 0, 1);
+      c.ex = P.x * 0.72; c.ey = lerp(3.15, 3.75, k) + this.camY * lerp(0.62, 0.92, hf); c.ez = lerp(5.9, 7.3, k);
+      c.cx = P.x * 0.86; c.cy = 1.1 + this.camY * lerp(0.5, 0.86, hf); c.cz = -10;
       c.fov = (lerp(58, 66, k) + clamp(P.v - 14, 0, 30) * 0.28 + (P.turbo > 0 ? 6 : 0)) * Math.PI / 180;
     }
     if (mode !== 'garage') { this.slS = lerp(this.slS || 0, this.sl || 0, Math.min(1, dt * 4)); c.cy += this.slS * 10; }
@@ -1685,8 +1708,10 @@ const RN = {
     }
     // torso y brazos
     M4.trs(A, 0, 0, 0, 0, -lean, 0); M4.mul(D, C, A); R.draw(pl.t, D);
+    if (P.glide > 0) arms = [[2.95, 0.12], [2.95, -0.12]];
     if (this.throwT > 0) { this.throwT = Math.max(0, this.throwT - dt); const k = Math.sin((1 - this.throwT / 0.32) * Math.PI), i = this.throwSide > 0 ? 1 : 0; arms = arms.slice(); arms[i] = [2.3 * k - lean * 0.6, this.throwSide * 0.9 * k]; }
     for (let i = 0; i < 2; i++) { const ar = arms[i], sx = i ? 0.255 : -0.255; M4.trs(A, sx, 0.58, 0, 0, ar[0] + (id === 'skate' || id === 'long' ? 0 : lean * 0.6), ar[1]); M4.mul(M, D, A); R.draw(pl.ar, M); }
+    if (P.glide > 0) { M4.trs(A, 0, 2.25, 0.05, time * 0.6, Math.sin(time * 2) * 0.08, Math.sin(time * 1.7) * 0.1, 1.35); M4.mul(M, B, A); R.draw(this.mo.umbrella, M); }
   },
   /* fauna silvestre: mariposas, pájaros, conejos, luciérnagas y semillas (solo decoración) */
   wild(g, mode, time, dt) {
@@ -1774,6 +1799,7 @@ const RN = {
       const z = zs(o.s); if (z < FAR || z > 14) continue;
       let m;
       if (o.t === 'branch') { if (!o.vis) continue; m = this.branch(o.vis); M4.trs(M, 0, 0, z); R.draw(m, M); continue; }
+      if (o.t === 'gate' && !o.fly) { M4.trs(M, o.x, 0, z); R.draw(mo.gatepost, M); M4.trs(M, o.x, gateY(o, g.t), z); R.draw(mo.gatebar, M); continue; }
       if (o.t === 'rider' && o.nk && !o.fly && o.alive) {
         const sk = o.nk === 2, ph = time * (sk ? 5 : 10) + o.R, B0 = this.B, A0 = this.A;
         M4.trs(M, o.x, 0, z, 0, 0, 0); R.draw((sk ? mo.skB : mo.runB)[o.col || 0], M);
@@ -1814,7 +1840,7 @@ const RN = {
     for (const it of g.items) {
       if (!it.alive) continue; const z = zs(it.s); if (z < -140 || z > 8) continue;
       const y = it.y + Math.sin(time * 3 + it.s) * 0.12;
-      M4.trs(M, it.x, y, z, time * 2); R.draw(mo[it.k], M);
+      M4.trs(M, it.x, y, z, time * 2, 0, 0, it.k === 'glide' ? 0.55 : 1); R.draw(it.k === 'letter' ? mo.letter[it.ch] || mo.clue : mo[it.k], M);
       M4.trs(M, it.x, y, z, 0, 0, time * 1.5); R.draw(mo.halo[it.k], M);
     }
     this.drawPlayer(g, time, dt);
@@ -1936,14 +1962,14 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const fmt = n => Math.round(n).toLocaleString('es-CO');
 const dayKey = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-const VERSION = '1.5.0', SKEY = 'runscooter.v1';
+const VERSION = '1.6.0', SKEY = 'runscooter.v1';
 const MREW = [100, 200, 350, 550, 800], MXP = [150, 300, 500, 800, 1200], DAILY = [100, 150, 200, 's1', 300, 400, 's3'];
 
 const SV = {
   S: null,
   def() {
     return { v: 1, coins: 0, stars: 0, xp: 0, best: 0, bestDist: 0, veh: 'scooter', owned: { scooter: 1 }, cos: { casco: 'h0', ropa: 'r0', pintura: 'p0', estela: 't0', mascota: 'm0', personaje: 'c0' }, ownedCos: { h0: 1, r0: 1, p0: 1, t0: 1, m0: 1, c0: 1, c1: 1 }, ach: {},
-      up: { magnet: 0, turbo: 0, x2: 0, gift: 0 }, clues: 0, readClues: 0, mis: [], misLvl: {}, misDone: 0, daily: { last: '', streak: 0 }, ch: { day: '', best: 0, rew: '' }, boostTip: 0, rank: 0,
+      up: { magnet: 0, turbo: 0, x2: 0, gift: 0 }, clues: 0, readClues: 0, mis: [], misLvl: {}, misDone: 0, daily: { last: '', streak: 0 }, ch: { day: '', best: 0, rew: '' }, word: { day: '', got: '', done: 0, doneDay: '' }, boostTip: 0, rank: 0,
       set: { sfx: 1, music: 1, vib: 1, q: 'auto', fps: 0, lh: 0 }, tut: 1, runs: [], tot: { runs: 0, dist: 0, coins: 0, time: 0, deliv: 0 }, created: Date.now() };
   },
   merge(a, b) {
@@ -1999,7 +2025,8 @@ const UI = {
   wallet() { const S = SV.S; return `<span>◉ <b>${fmt(S.coins)}</b></span><span>✦ <b>${fmt(S.stars)}</b></span>`; },
   cover() {
     const S = SV.S, rk = rankOf(S.xp);
-    $('cStats').innerHTML = `<span class="chip">◉ <b>${fmt(S.coins)}</b></span><span class="chip">✦ <b>${S.stars}</b></span><span class="chip">MEJOR <b>${fmt(S.best)}</b></span><span class="chip">${esc(RANKS[rk])}</span>`;
+    const wg = S.word.day === dayKey() ? S.word.got : '';
+    $('cStats').innerHTML = `<span class="chip">🔤 <b>${'EMSAY'.split('').map((c, i) => i < wg.length ? c : '_').join(' ')}</b></span><span class="chip">◉ <b>${fmt(S.coins)}</b></span><span class="chip">✦ <b>${S.stars}</b></span><span class="chip">MEJOR <b>${fmt(S.best)}</b></span><span class="chip">${esc(RANKS[rk])}</span>`;
     $('cEd').textContent = 'Nº ' + Math.max(1, Math.floor(S.bestDist / 1000) + 1);
     $('dCh').hidden = S.ch.day === dayKey();
     $('dStory').hidden = S.readClues >= S.clues; $('dMis').hidden = !S.mis.some(m => (misDef(m.k).run ? m.best : m.prog) >= misDef(m.k).n[m.lvl] * 0.8);
@@ -2087,13 +2114,14 @@ const UI = {
     const H = this.hud, P = g.p, sc = Math.floor(g.score), c = g.coinsRun, d = Math.floor(P.s);
     if (sc !== H.s) { H.s = sc; $('hScore').textContent = fmt(sc); }
     if (c !== H.c) { H.c = c; $('hCoins').textContent = fmt(c); }
+    const wd = SV.S.word, wg = wd.day === dayKey() ? wd.got : ''; if (wg !== H.w) { H.w = wg; $('hWord').innerHTML = 'EMSAY'.split('').map((ch, i) => `<i class="${i < wg.length ? 'on' : ''}">${ch}</i>`).join(''); }
     const dl = g.deliv + ':' + g.dStreak; if (dl !== H.dl) { H.dl = dl; const el = $('hDel'); el.hidden = !g.deliv; el.innerHTML = `✉ <b>${g.deliv}</b>${g.dStreak > 1 ? ' <small>racha ×' + g.dStreak + '</small>' : ''}`; }
     if (d !== H.d) { H.d = d; $('hDist').textContent = fmt(d) + ' M · ED. ' + (g.edition + 1); }
     const b = Math.round(P.boost * 20); if (b !== H.b) { H.b = b; $('bbF').style.height = (b * 5) + '%'; }
     const sl = Math.round(P.sl * 100); if (sl !== H.sl) { H.sl = sl; const el = $('hSlope'); el.hidden = Math.abs(sl) < 3; el.className = 'slope ' + (sl > 0 ? 'up' : 'dn'); el.textContent = (sl > 0 ? '▲ SUBIDA ' : '▼ BAJADA ') + Math.abs(sl) + ' %'; }
     const m = '×' + (g.mult * (P.x2 > 0 ? 2 : 1) * (g.veh.id === 'bike' ? 1.15 : 1) * (1 + 0.5 * P.boost)).toFixed(2).replace(/\.?0+$/, '');
     if (m !== H.m) { H.m = m; $('hMult').textContent = m; }
-    const pw = [['magnet', 'IMÁN', '#ff5a2a'], ['turbo', 'TURBO', '#ffc23a'], ['x2', '×2', '#ff2fb3']].filter(p => P[p[0]] > 0);
+    const pw = [['magnet', 'IMÁN', '#ff5a2a'], ['turbo', 'TURBO', '#ffc23a'], ['x2', '×2', '#ff2fb3'], ['glide', 'PARAGUAS', '#2dffb3']].filter(p => P[p[0]] > 0);
     const pk = pw.map(p => p[0]).join() + (P.shield ? 'S' : '');
     if (pk !== H.pk) { H.pk = pk; $('hPow').innerHTML = pw.map(p => `<div class="pw" style="--c:${p[2]}"><span>${p[1]}</span><i><b id="pb-${p[0]}"></b></i></div>`).join('') + (P.shield ? '<div class="pw" style="--c:#39c8ff"><span>CASCO ✔</span></div>' : ''); }
     for (const p of pw) { const el = $('pb-' + p[0]); if (el) el.style.width = (P[p[0]] / g.dur[p[0]] * 100).toFixed(1) + '%'; }
@@ -2159,7 +2187,7 @@ function startRun(ch) {
   const S = SV.S; AU.init(); AU.music(true); if (ch === undefined) ch = lastCh; lastCh = !!ch;
   UI.ov('oOver', 0); UI.ov('oRevive', 0); UI.ov('oPause', 0); UI.hideScreens(); UI.preview = null;
   refreshPlayer();
-  G = newGame({ seed: ch ? daySeed() : (Math.random() * 4294967295) >>> 0, veh: S.veh, up: S.up, mult: 1 + 0.25 * rankOf(S.xp), cluesLeft: STORY.length - S.clues, tut: S.tut === 1, pet: S.cos.mascota && S.cos.mascota !== 'm0' });
+  G = newGame({ seed: ch ? daySeed() : (Math.random() * 4294967295) >>> 0, veh: S.veh, up: S.up, mult: 1 + 0.25 * rankOf(S.xp), cluesLeft: STORY.length - S.clues, letters: (S.word.day !== dayKey() ? (S.word = { day: dayKey(), got: '', done: S.word.done || 0, doneDay: S.word.doneDay || '' }, 'EMSAY') : S.word.doneDay === dayKey() ? '' : 'EMSAY'.slice(S.word.got.length)), tut: S.tut === 1, pet: S.cos.mascota && S.cos.mascota !== 'm0' });
   Q.length = 0; acc = 0; overShown = false; reviveT = 0; RN.parts.length = 0; UI.hud = { s: -1, c: -1, d: -1, m: '', pk: '' };
   $('hud').hidden = false; $('hBanner').innerHTML = ''; UI.tut(-1); $('hCnt').hidden = true;
   if (S.boostTip < 3) { S.boostTip++; setTimeout(() => { if (mode === 'play') UI.toast('Toca ⚡ IMPULSO seguido para acelerar: más velocidad, más puntos', 'g'); }, 2600); }
@@ -2195,7 +2223,7 @@ function events(g) {
       case 'jump': case 'jump2': case 'land': case 'duck': case 'lane': case 'smash': case 'trick': case 'pEnd': case 'shield': AU.sfx(e.k); break;
       case 'stumble': AU.sfx('stumble'); vib(40); break;
       case 'crash': AU.sfx('crash'); vib([60, 40, 90]); break;
-      case 'power': AU.sfx('power'); UI.toast({ magnet: '∩ IMÁN', turbo: '⚡ TURBO', x2: '×2 PUNTOS', shield: '⛑ CASCO PROTECTOR' }[e.a] || 'PODER', 'g'); break;
+      case 'power': AU.sfx('power'); UI.toast({ magnet: '∩ IMÁN', turbo: '⚡ TURBO', x2: '×2 PUNTOS', shield: '⛑ CASCO PROTECTOR', glide: '☂ PARAGUAS PLANEADOR: ¡a volar!' }[e.a] || 'PODER', 'g'); break;
       case 'zone': UI.banner(e.a); AU.sfx('zone'); AU.zone = e.a; break;
       case 'clue': {
         AU.sfx('clue'); if (S.clues < STORY.length) { S.clues++; UI.toast('📰 PÁGINA ' + S.clues + ' RECUPERADA: ' + STORY[S.clues - 1][0], 'c'); }
@@ -2218,6 +2246,11 @@ function events(g) {
       case 'revive': AU.sfx('revive'); break;
       case 'boost': AU.pumpLv = e.a; AU.sfx('pump'); break;
       case 'deliver': AU.sfx('deliver'); vib(15); UI.pop('✉ ¡ENTREGA! +' + fmt(e.a.pts) + (g.dStreak > 1 ? ' · racha ×' + g.dStreak : '')); if (g.deliv === 1 && !S.delTip) { S.delTip = 1; UI.toast('Ve por el carril del borde al pasar un buzón o casita: lanzas la revista', 'c'); } break;
+      case 'letter': {
+        const W = S.word; if (W.day !== dayKey()) { W.day = dayKey(); W.got = ''; } W.got += e.a; AU.sfx('clue'); UI.pop('🔤 LETRA ' + e.a + ' · ' + 'EMSAY'.split('').map((c, i) => i < W.got.length ? c : '_').join(' '));
+        if (W.got === 'EMSAY') { W.doneDay = dayKey(); W.done = (W.done || 0) + 1; S.stars += 2; g.coinsRun += 500; UI.toast('🔤 ¡EMSAY COMPLETO! +✦ 2 · +◉ 500', 'g'); AU.sfx('rank'); }
+        SV.save(); break;
+      }
       case 'dmiss': AU.sfx('dmiss'); UI.pop('✉ Entrega perdida', 'miss'); break;
     }
   }

@@ -23,6 +23,9 @@ Funciona **sin internet**, en un solo `index.html`, sin librerías externas (mot
 - **Logros**: 20 medallas con estrellas; dos desbloquean personajes (La Patinadora y Don Ramiro).
 - **Personajes**: repartidores y repartidoras con distintos tonos de piel y peinados.
 - Corredores y patinadoras animados en la ciclovía; cometas y globos aerostáticos en el cielo.
+- **Caza de letras E-M-S-A-Y**: junta las 5 letras en el día y gana ✦ 2 y ◉ 500.
+- **Paraguas planeador**: poder que te eleva sobre todo y te lleva por una fila de monedas en el aire.
+- **Talanquera** (barra que sube y baja: pasa de pie, agachado o saltando según su altura) y **bolardos**.
 - **Reto del día**: la misma ruta para todos cada día; llegar a 1500 m da ✦ 2.
 - Si te tambaleas, la **Tinta Gris** te persigue: otro golpe y te atrapa.
 - Cada 1000 m cambia la **edición** (paleta y escenario). Las **páginas perdidas** (12) cuentan la historia de Don Ramiro.
