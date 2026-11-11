@@ -115,6 +115,20 @@ const ZRAW = [
 /* orden de las ediciones: la revista alterna sus páginas con los nuevos escenarios */
 const ZORD = [0, 1, 7, 2, 9, 3, 8, 4, 10, 5, 6];
 const ZONES = ZORD.map(i => ZRAW[i]);
+/* nombre corto de la zona para letreros de esquina */
+const zShort = Z => { const p = Z.name.split(' · '); return p.length > 1 && /^(SESIÓN|EDICIÓN)/.test(p[0]) ? p[1] : p[0]; };
+/* zona libre: retos para ganar habilidad */
+const DRILL = [
+  { k: 'jumps', n: 10, t: 'Salta {n} veces' },
+  { k: 'pads', n: 4, t: 'Pisa {n} impulsores' },
+  { k: 'grindM', n: 25, t: 'Desliza {n} m en barandas' },
+  { k: 'tricks', n: 5, t: 'Haz {n} trucos en el aire' },
+  { k: 'combo', n: 1.8, abs: 1, t: 'Sube el estilo a ×{n}' },
+  { k: 'jumps', n: 25, t: 'Salta {n} veces' },
+  { k: 'parkTr', n: 12, t: 'Haz {n} trucos en el parque' },
+  { k: 'cleanS', n: 500, abs: 1, t: 'Rueda {n} m sin caerte' },
+  { k: 'grindM', n: 70, t: 'Desliza {n} m en barandas' }
+];
 
 /* Misiones (3 activas) — run:1 = dentro de una sola partida */
 const MIS = [

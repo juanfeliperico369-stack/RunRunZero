@@ -26,6 +26,9 @@ EMSAY, la editorial del momento, necesita repartir sus revistas, periódicos, co
 - Banda sonora rock y electrónica generada por código.
 - Portada estilo revista con todos los botones en la misma pantalla; el título se ajusta solo al ancho del celular.
 - **Obstáculos con lógica de calle** según la zona: alcantarillas destapadas, grietas, reductores de velocidad, canecas, bicis parqueadas, contenedores de escombros, arena de obra y andamios (agáchate). Sin talanqueras.
+- **Esquinas con desvíos** (como caminos que se abren en un cruce): a la izquierda y a la derecha salen calles hacia otras zonas de Orbe, con letrero de madera que dice a dónde va cada una y cuántos carriles tiene. Quédate en el carril de la orilla izquierda o derecha para doblar o sigue recto por el centro. Al doblar entras a una calle de 2 carriles o a un callejón de 1 carril con jardineras, cambias de zona y despistas a la policía y a los rivales.
+- **Zona libre** (botón en la portada): parques seguidos con rampas, barandas e impulsores, sin policía, rivales ni entregas y sin caídas fatales. Retos encadenados (saltos, impulsores, barandas, trucos, estilo) que suben tu **habilidad**.
+- Botones de juego minimalistas y más pequeños (FRENO e IMPULSO con aro de carga).
 - **Perfiles de mentores** con retrato, barrio, frase, historia, vehículo favorito y favor pendiente.
 - Iluminación con brillo especular, contorno, oclusión ambiental y viento en los árboles; sombras bajo obstáculos y gente; aterrizajes con peso y polvo al frenar.
 - HUD rediseñado: aliento horizontal a la izquierda, botones FRENO/IMPULSO nuevos con aro de carga.

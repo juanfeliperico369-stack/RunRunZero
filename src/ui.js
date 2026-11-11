@@ -3,7 +3,7 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const fmt = n => Math.round(n).toLocaleString('es-CO');
 const dayKey = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-const VERSION = '2.4.0', SKEY = 'runscooter.v1';
+const VERSION = '2.5.0', SKEY = 'runscooter.v1';
 const MREW = [100, 200, 350, 550, 800], MXP = [150, 300, 500, 800, 1200], DAILY = [100, 150, 200, 's1', 300, 400, 's3'];
 
 const SV = {
@@ -226,6 +226,12 @@ const UI = {
     if (c !== H.c) { H.c = c; $('hCoins').textContent = fmt(c); }
     const wd = SV.S.word, wg = wd.day === dayKey() ? wd.got : ''; if (wg !== H.w) { H.w = wg; $('hWord').innerHTML = 'EMSAY'.split('').map((ch, i) => `<i class="${i < wg.length ? 'on' : ''}">${ch}</i>`).join(''); }
     const dl = g.deliv + ':' + g.dStreak; if (dl !== H.dl) { H.dl = dl; const el = $('hDel'); el.hidden = !g.deliv; el.innerHTML = `✉ <b>${g.deliv}</b>${g.dStreak > 1 ? ' <small>racha ×' + g.dStreak + '</small>' : ''}`; }
+    const CN = g.corners.find(c => !c.done && c.s - P.s < 150 && c.s - P.s > -2), sel = P.lane === 0 ? 'l' : P.lane === 3 ? 'r' : 's', ck = CN ? CN.s + sel : '';
+    if (ck !== H.ck) { H.ck = ck; const el = $('hCorner'); el.hidden = !CN;
+      if (CN) { const nm = b => b.n === 1 ? 'callejón · 1 carril' : 'calle · 2 carriles';
+        el.innerHTML = `<div class="cb l${sel === 'l' ? ' on' : ''}"><b>${esc(zShort(ZONES[CN.L.z]))}</b><small>${nm(CN.L)}</small></div><div class="cb s${sel === 's' ? ' on' : ''}"><b>SIGUE</b><small>${esc(zShort(ZONES[CN.z]))}</small></div><div class="cb r${sel === 'r' ? ' on' : ''}"><b>${esc(zShort(ZONES[CN.R.z]))}</b><small>${nm(CN.R)}</small></div>`; } }
+    if (g.free) { const dk = g.drI + ':' + Math.floor(g.drCur * 10); if (dk !== H.dk) { H.dk = dk; const D = DRILL[g.drI % DRILL.length], el = $('hDrill'); el.hidden = false; el.style.setProperty('--p', (g.drP * 100).toFixed(0) + '%');
+      el.innerHTML = `🎯 RETO ${g.drI + 1} · ${esc(drillTxt(D, g.drNeed))} <small>${D.k === 'combo' ? '×' + g.combo.toFixed(1) : fmtN(Math.min(g.drCur, g.drNeed))}/${D.k === 'combo' ? g.drNeed.toFixed(1) : fmtN(g.drNeed)}</small>`; } }
     if (d !== H.d) { H.d = d; $('hDist').textContent = fmt(d) + ' M · ED. ' + (g.edition + 1); }
     const b = Math.round(P.boost * 40); if (b !== H.b) { H.b = b; $('bbF').style.setProperty('--o', (113 * (1 - b / 40)).toFixed(1)); }
     const sl = Math.round(P.sl * 100); if (sl !== H.sl) { H.sl = sl; const el = $('hSlope'); el.hidden = Math.abs(sl) < 3; el.className = 'slope ' + (sl > 0 ? 'up' : 'dn'); el.textContent = (sl > 0 ? '▲ SUBIDA ' : '▼ BAJADA ') + Math.abs(sl) + ' %'; }
@@ -259,7 +265,7 @@ const UI = {
     $('hStum').hidden = !(P.stumble > 0 && P.alive);
   },
   pop(txt, cls = '') { const el = $('hPop'); el.className = ''; void el.offsetWidth; el.className = 'pop ' + cls; el.textContent = txt; },
-  banner(ed) { const z = ZONES[ed % ZONES.length]; $('hBanner').innerHTML = `<div class="banner"><div class="sp">Edición ${ed + 1}${RAINY(ed) ? ' · ☂ lluvia' : ''}</div><div class="mega">${esc(z.name)}</div></div>`; },
+  banner(ed, zi) { const z = ZONES[zi == null ? ed % ZONES.length : zi]; setTimeout(() => { this.bsub = ''; }, 0); $('hBanner').innerHTML = `<div class="banner"><div class="sp">Edición ${ed + 1}${RAINY(ed) ? ' · ☂ lluvia' : ''}${this.bsub ? ' · ' + this.bsub : ''}</div><div class="mega">${esc(z.name)}</div></div>`; },
   tut(i) { const T = TUT[i]; const el = $('hTut'); if (i < 0 || !T) { el.hidden = true; return; } el.innerHTML = `<b>${T.msg}</b><small>${esc(T.pc)}</small>`; el.hidden = false; }
 };
 

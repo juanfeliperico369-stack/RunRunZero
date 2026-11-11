@@ -1,6 +1,6 @@
 /* ===== ARRANQUE, BUCLE Y FLUJO DE PARTIDA ===== */
 const Q = [];
-let lastCh = false, G = null, DEMO = null, GAR = null, mode = 'menu', acc = 0, last = 0, now = 0, count = 0, reviveT = 0, overShown = false, autoplay = false, fpsA = [], qChecked = false, misT = 0, confirmFn = null;
+let lastCh = false, lastFree = false, G = null, DEMO = null, GAR = null, mode = 'menu', acc = 0, last = 0, now = 0, count = 0, reviveT = 0, overShown = false, autoplay = false, fpsA = [], qChecked = false, misT = 0, confirmFn = null;
 const ERR = [];
 window.addEventListener('error', e => { ERR.push(String(e.message || e)); });
 window.addEventListener('unhandledrejection', e => { ERR.push('promesa: ' + String(e.reason && e.reason.message || e.reason)); });
@@ -17,18 +17,20 @@ function newGarage() { GAR = newGame({ seed: 7, veh: SV.S.veh, demo: true }); GA
 function refreshPlayer(vid) { RN.setPlayer(cosCfg(SV.S), vid || SV.S.veh); }
 
 const daySeed = () => { let h = 2166136261; for (const c of 'RS' + dayKey()) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
-function startRun(ch) {
-  const S = SV.S; AU.init(); AU.music(true); if (ch === undefined) ch = lastCh; lastCh = !!ch;
+function startRun(ch, free) {
+  const S = SV.S; AU.init(); AU.music(true); if (ch === undefined) { ch = lastCh; free = lastFree; } lastCh = !!ch; lastFree = !!free && !ch;
   UI.ov('oOver', 0); UI.ov('oRevive', 0); UI.ov('oPause', 0); UI.hideScreens(); UI.preview = null;
   refreshPlayer();
-  G = newGame({ seed: ch ? daySeed() : (Math.random() * 4294967295) >>> 0, veh: S.veh, up: S.up, mult: 1 + 0.25 * rankOf(S.xp), cluesLeft: STORY.length - S.clues, letters: (S.word.day !== dayKey() ? (S.word = { day: dayKey(), got: '', done: S.word.done || 0, doneDay: S.word.doneDay || '' }, 'EMSAY') : S.word.doneDay === dayKey() ? '' : 'EMSAY'.slice(S.word.got.length)), tut: S.tut === 1, pet: S.cos.mascota && S.cos.mascota !== 'm0', fit: S.fit, inj: S.inj, perks: perksOf(S), skill: S.skill, rivLv: rankOf(S.xp), evt: evToday().id, vup: S.vup[S.veh] });
+  const NO = ({ seed: ch ? daySeed() : (Math.random() * 4294967295) >>> 0, veh: S.veh, up: S.up, mult: 1 + 0.25 * rankOf(S.xp), cluesLeft: STORY.length - S.clues, letters: (S.word.day !== dayKey() ? (S.word = { day: dayKey(), got: '', done: S.word.done || 0, doneDay: S.word.doneDay || '' }, 'EMSAY') : S.word.doneDay === dayKey() ? '' : 'EMSAY'.slice(S.word.got.length)), tut: S.tut === 1, pet: S.cos.mascota && S.cos.mascota !== 'm0', fit: S.fit, inj: S.inj, perks: perksOf(S), skill: S.skill, rivLv: rankOf(S.xp), evt: evToday().id, vup: S.vup[S.veh] });
+  if (lastFree) Object.assign(NO, { free: 1, tut: false, letters: '', cluesLeft: 0 });
+  G = newGame(NO); $('pEnd').hidden = !lastFree; $('hDrill').hidden = true; $('hCorner').hidden = true;
   setTimeout(() => { if (mode === 'play') { const E = evToday(); UI.toast('📅 HOY: ' + E.name + ' · ' + E.desc, 'g'); } }, 900);
   if (ch) { G.race = 1; G.nextRiv = 260; }
   $('enL').textContent = ENL[G.veh.kind]; $('bBrake').classList.remove('hit');
   Q.length = 0; acc = 0; overShown = false; reviveT = 0; RN.parts.length = 0; UI.hud = { s: -1, c: -1, d: -1, m: '', pk: '', b: -1, sl: 99, dl: '', en: -1, top: '' };
   $('hud').hidden = false; $('hBanner').innerHTML = ''; UI.tut(-1); $('hCnt').hidden = true;
   if (S.boostTip < 3) { S.boostTip++; setTimeout(() => { if (mode === 'play') UI.toast('⚡ IMPULSO gasta ' + ENL[G.veh.kind].toLowerCase() + ' · ■ FRENO para semáforos, bajadas y animales', 'g'); }, 2600); }
-  G.ch = !!ch; UI.banner(0); AU.zone = 0; mode = 'play'; if (ch) UI.toast('★ CARRERA DEL DÍA · misma ruta para todos y rivales en pista', 'g'); fpsA = []; qChecked = false;
+  G.ch = !!ch; UI.banner(0, 0); AU.zone = 0; mode = 'play'; if (ch) UI.toast('★ CARRERA DEL DÍA · misma ruta para todos y rivales en pista', 'g'); if (lastFree) { $('hBanner').innerHTML = '<div class="banner"><div class="sp">Sin policía, rivales ni entregas</div><div class="mega">ZONA LIBRE</div></div>'; UI.toast('🛹 Cumple los retos para subir tu habilidad · en pausa terminas la sesión', 'g'); } fpsA = []; qChecked = false;
 }
 function toMenu() {
   mode = 'menu'; G = null; $('hud').hidden = true; UI.ov('oOver', 0); UI.ov('oRevive', 0); UI.ov('oPause', 0);
@@ -64,7 +66,11 @@ function events(g) {
       case 'stumble': AU.sfx('stumble'); vib(40); break;
       case 'crash': AU.sfx('crash'); vib([60, 40, 90]); break;
       case 'power': AU.sfx('power'); UI.toast({ magnet: '∩ IMÁN', turbo: '⚡ TURBO', x2: '×2 PUNTOS', shield: '⛑ CASCO PROTECTOR', glide: '☂ PARAGUAS PLANEADOR: ¡a volar!' }[e.a] || 'PODER', 'g'); break;
-      case 'zone': UI.banner(e.a); AU.sfx('zone'); AU.zone = e.a; break;
+      case 'zone': UI.banner(e.a.ed, e.a.z); AU.sfx('zone'); AU.zone = e.a.ed; break;
+      case 'turn': AU.sfx('near'); vib(25); UI.bsub = (e.a.dir < 0 ? '↰ ' : '↱ ') + (e.a.n === 1 ? 'callejón de 1 carril' : 'calle de 2 carriles'); break;
+      case 'rivShake': AU.sfx('rank'); UI.toast('🏁 Despistaste a ' + e.a.name + ' en la esquina', 'g'); break;
+      case 'drill': AU.sfx('rank'); vib(30); UI.toast('🎯 Reto ' + e.a.i + ' cumplido: ' + e.a.t + ' · +◉ 25', 'g'); break;
+      case 'fall': AU.sfx('stumble'); vib(40); UI.pop('¡Al piso! El estilo vuelve a ×1'); break;
       case 'clue': {
         AU.sfx('clue'); if (S.clues < STORY.length) { S.clues++; UI.toast('📰 PÁGINA ' + S.clues + ' RECUPERADA: ' + STORY[S.clues - 1][0], 'c'); }
         break;
@@ -136,7 +142,7 @@ function doRevive() {
 }
 function endRun() {
   const S = SV.S, g = G; UI.ov('oRevive', 0); mode = 'over'; $('hud').hidden = true;
-  checkMissions(g, true);
+  $('oT').innerHTML = 'Fin de la <span>edición</span>'; checkMissions(g, true);
   const rk0 = rankOf(S.xp), xp = Math.floor(g.score / 25 * (g.evt === 'maraton' ? 1.5 : 1)); S.xp += xp; const rk1 = rankOf(S.xp);
   const rec = g.score > S.best, recD = g.p.s > S.bestDist;
   S.coins += g.coinsRun; S.stars += g.starsRun; S.best = Math.max(S.best, Math.floor(g.score)); S.bestDist = Math.max(S.bestDist, Math.floor(g.p.s));
@@ -170,6 +176,17 @@ function endRun() {
   const ach = checkAch(g); if (ach.length) extra += '<p><b>🏆 Logros nuevos:</b> ' + ach.map(a => esc(a[1])).join(', ') + '</p>';
   $('oExtra').innerHTML = extra; UI.ov('oOver', 1);
 }
+function endFree() {
+  const S = SV.S, g = G; if (!g || !g.free) return; UI.ov('oPause', 0); mode = 'over'; $('hud').hidden = true;
+  const k0 = S.skill; S.skill = Math.min(100, S.skill + g.drills * 1.2 + (g.parkTr * 0.35 + g.grindM / 120) * (1 - S.skill / 115));
+  S.coins += g.coinsRun; S.stars += g.starsRun; S.cnt.grind += Math.floor(g.grindM); S.tot.coins += g.coinsRun; S.tot.time += Math.round(g.t); S.freeBest = Math.max(S.freeBest || 0, g.drills);
+  checkAch(null); SV.save();
+  $('oDate').textContent = new Date().toLocaleDateString('es-CO'); $('oT').innerHTML = 'Fin de la <span>zona libre</span>';
+  $('oBadge').innerHTML = g.drills ? `<span class="badge">🎯 ${g.drills} reto(s) cumplido(s)${g.drills >= (S.freeBest || 0) && g.drills > 0 ? ' · ¡tu mejor sesión!' : ''}</span>` : '';
+  $('oStats').innerHTML = `<div class="kv"><span>Recorrido</span><b>${fmt(g.p.s)} m</b><span>Trucos · en el parque</span><b>${g.tricks} · ${g.parkTr}</b><span>Barandas</span><b>${fmt(g.grindM)} m</b><span>Impulsores</span><b>${g.pads}</b><span>Caídas</span><b>${g.falls}</b><span>Monedas</span><b>◉ ${fmt(g.coinsRun)}</b></div>`;
+  $('oExtra').innerHTML = `<p><b>Habilidad</b> ${k0.toFixed(1)} → ${S.skill.toFixed(1)} · tu estilo máximo llega a ×${(2 + 0.03 * S.skill).toFixed(2).replace('.', ',')}</p><p style="font-family:var(--fs);font-style:italic">En la zona libre no hay policía, rivales ni entregas: solo tú, las rampas, las barandas y los impulsores.</p>`;
+  UI.ov('oOver', 1);
+}
 function claimDaily() {
   const S = SV.S, today = dayKey(), y = dayKey(new Date(Date.now() - 864e5));
   S.daily.streak = S.daily.last === y ? S.daily.streak + 1 : 1; S.daily.last = today;
@@ -189,7 +206,8 @@ function confirmBox(txt, fn) { $('cfT').textContent = txt; confirmFn = fn; UI.ov
 function act(a, arg, el) {
   const S = SV.S; AU.init(); if (a !== 'play') AU.sfx('click');
   switch (a) {
-    case 'play': startRun(arg === 'ch' ? true : arg === 'n' ? false : undefined); break;
+    case 'play': startRun(arg === 'ch' ? true : arg === 'n' || arg === 'free' ? false : undefined, arg === 'free'); break;
+    case 'endFree': endFree(); break;
     case 'go':
       if (mode === 'over') { UI.ov('oOver', 0); mode = 'menu'; G = null; newDemo(); }
       UI.show(arg); if (arg === 'sGarage') { newGarage(); refreshPlayer(); } else { UI.preview = null; refreshPlayer(); }

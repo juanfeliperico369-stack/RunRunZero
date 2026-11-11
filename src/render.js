@@ -10,7 +10,8 @@ const RN = {
     for (const k of ['road', 'tree', 'pine', 'bush', 'lamp', 'bench', 'hill', 'billFrame', 'gateFrame', 'rock', 'cone', 'barrier', 'pothole', 'puddle', 'kiosk', 'coin', 'gift', 'clue', 'magnet', 'shield', 'turbo', 'x2', 'cube', 'shadow', 'ink', 'flowers', 'wing', 'bfly', 'bird', 'bwing', 'rabbit', 'palm', 'parasol', 'sea', 'mount', 'fence', 'coffee', 'rail', 'boat', 'buzon', 'flag', 'door', 'rarm', 'mag', 'tunnel', 'portal']) mo[k] = mk(MOD[k]());
     mo.runB = [0, 1, 2, 3].map(c => mk(MOD.npcRun(c, 0))); mo.skB = [0, 1, 2, 3].map(c => mk(MOD.npcRun(c, 1))); mo.runL = mk(MOD.npcLeg(0)); mo.skL = mk(MOD.npcLeg(1));
     mo.kite = [0, 1, 2].map(v => mk(MOD.kite(v))); mo.balloon = [0, 1].map(v => mk(MOD.balloon(v)));
-    for (const k of ['tlight', 'wallseg', 'railseg', 'posterWall', 'bundle', 'envelope', 'paper', 'xroad', 'parkArch', 'quarter', 'policia', 'ducks', 'medseg', 'forkSign', 'chev', 'fountain', 'playground', 'pond', 'manhole', 'crack', 'bump', 'trash', 'pbike', 'container', 'sand', 'scaff']) mo[k] = mk(MOD[k]());
+    for (const k of ['tlight', 'wallseg', 'railseg', 'posterWall', 'bundle', 'envelope', 'paper', 'xroad', 'parkArch', 'quarter', 'policia', 'ducks', 'medseg', 'forkSign', 'chev', 'fountain', 'playground', 'pond', 'hedgeseg', 'bedseg', 'manhole', 'crack', 'bump', 'trash', 'pbike', 'container', 'sand', 'scaff']) mo[k] = mk(MOD[k]());
+    mo.signpost = [null, mk(MOD.signpost(1)), mk(MOD.signpost(2))];
     this.NEWO = new Set(['manhole', 'crack', 'bump', 'trash', 'pbike', 'container', 'sand', 'scaff']);
     mo.picnic = [0, 1, 2].map(v => mk(MOD.picnic(v))); mo.sitter = [0, 1, 2, 3].map(v => mk(MOD.sitter(v)));
     mo.shop = [0, 1, 2].map(v => mk(MOD.shop(v))); mo.stall = [0, 1, 2].map(v => mk(MOD.stall(v))); mo.person = [0, 1, 2, 3].map(v => mk(MOD.person(v))); mo.poster = [0, 1, 2, 3].map(v => mk(MOD.poster(v)));
@@ -35,9 +36,9 @@ const RN = {
     const pc = COSI[cos.pet]; if (pc && pc.c) { this.pl.pet = R.mesh(MOD.pet(cos.pet, pc.c)); this.pl.ptail = R.mesh(MOD.petTail(cos.pet, pc.c)); } this.petK = pc && pc.c ? cos.pet : null;
     this.vid = vid;
   },
-  zoneEnv(s) {
-    s = Math.max(0, s); const ed = Math.floor(s / 1000), u = s - ed * 1000, a = ZONES[ed % ZONES.length];
-    let b = a, t = 0; if (u > 930) { b = ZONES[(ed + 1) % ZONES.length]; t = (u - 930) / 70; t = t * t * (3 - 2 * t); }
+  zoneEnv(g, s) {
+    const Zi = zinfo(g, s), u = Math.max(0, s) - Zi.s0, a = ZONES[Zi.pz], b = ZONES[Zi.z];
+    let t = Zi.s0 > 0 && u < 70 ? u / 70 : 1; t = t * t * (3 - 2 * t);
     const E = this.env;
     lerp3(E.top, a.top, b.top, t); lerp3(E.hor, a.hor, b.hor, t); lerp3(E.sunC, a.sunC, b.sunC, t);
     for (let i = 0; i < 3; i++) E.sun[i] = lerp(a.sun[i], b.sun[i], t);
@@ -58,6 +59,7 @@ const RN = {
       c.fov = (lerp(58, 66, k) + clamp(P.v - 14, 0, 30) * 0.28 + (P.turbo > 0 ? 6 : 0)) * Math.PI / 180;
     }
     if (mode !== 'garage') { this.slS = lerp(this.slS || 0, this.sl || 0, Math.min(1, dt * 4)); c.cy += this.slS * 10; }
+    if (this.turnA) { const a = this.turnA, cs = Math.cos(a), sn = Math.sin(a), px = P.x; for (const [kx, kz] of [['ex', 'ez'], ['cx', 'cz']]) { const dx = c[kx] - px, dz = c[kz]; c[kx] = px + dx * cs + dz * sn; c[kz] = -dx * sn + dz * cs; } this.turnA *= Math.exp(-dt * 4.2); if (Math.abs(this.turnA) < 0.004 || mode !== 'play') this.turnA = 0; }
     c.ey -= (this.land || 0) * 0.22;
     if (this.shake > 0) { c.ex += (Math.random() - 0.5) * this.shake; c.ey += (Math.random() - 0.5) * this.shake; this.shake = Math.max(0, this.shake - dt * 2.5); }
     // horizonte en pantalla (para el degradado del cielo)
@@ -82,6 +84,7 @@ const RN = {
     else if (e.k === 'land') { this.land = Math.min(1, 0.35 + e.a); if (e.a > 0.35) this.emit(6, P.x, 0.1, P.s, hex('#cfc4a8'), 3, 0.1, 0.4, 1.5); }
     else if (e.k === 'sand' && Math.random() < 0.5) this.emit(3, P.x, 0.1, P.s, hex('#e8cf8f'), 2.5, 0.08, 0.4, 1.5);
     else if (e.k === 'bump') this.land = 0.5;
+    else if (e.k === 'turn') { this.turnA = e.a.dir * Math.PI / 2 * 0.85; this.shake = Math.max(this.shake || 0, 0.15); }
     else if (e.k === 'deliver') { const d = e.a; this.proj.push({ x0: P.x + d.side * 0.3, y0: P.y + 1.4, s0: P.s, x1: d.side * (d.obj === 'kiosko' ? 3.8 : 4.35), y1: d.obj === 'muro' ? 1.5 : 1.3, s1: d.s, t: 0, T: d.T, m: d.k === 'per' ? 'paper' : d.k === 'cor' ? 'envelope' : d.k === 'kio' ? 'bundle' : 'mag' }); this.throwT = 0.32; this.throwSide = d.side; }
     else if (e.k === 'grind' || e.k === 'grindOn') this.emit(6, P.x, P.y + 0.05, P.s, hex('#ffc23a'), 4, 0.06, 0.35, 2.5);
     else if (e.k === 'vault') this.emit(5, P.x, 0.4, P.s, hex('#cfc4a8'), 3, 0.09, 0.4, 2);
@@ -109,7 +112,7 @@ const RN = {
     let dead = 0, slide = 0; if (!P.alive) { dead = Math.min(1.5, P.deadT * 4); slide = Math.min(3.5, P.deadT * 6); }
     if (P.inv > 0 && P.alive && Math.floor(time * 14) % 2) return;
     const rx = pitch - dead * 0.2 + Math.atan(this.sl || 0) + (big ? -brk * 0.03 : 0);
-    if (flip) { M4.trs(B, P.x, P.y + 0.95, 0, spin, rx + flip, roll); M4.trs(A, 0, -0.95, 0); M4.mul(B, B, A); } else M4.trs(B, P.x, P.y, 0, spin, rx, roll);
+    if (flip) { M4.trs(B, P.x, P.y + 0.95, 0, spin + (this.turnA || 0), rx + flip, roll); M4.trs(A, 0, -0.95, 0); M4.mul(B, B, A); } else M4.trs(B, P.x, P.y, 0, spin + (this.turnA || 0), rx, roll);
     const sq = this.land || 0; if (sq > 0.01) { this.land = Math.max(0, sq - dt * 4.5); M4.trs(A, 0, 0, 0, 0, 0, 0, 1 + 0.1 * sq, 1 - 0.16 * sq, 1 + 0.1 * sq); M4.mul(B, B, A); }
     // vehículo
     const sk = id === 'quad' || id === 'inline';
@@ -155,7 +158,7 @@ const RN = {
   wild(g, mode, time, dt) {
     if (mode === 'garage') return;
     const P = g.p, M = this.M, A = this.A, B = this.B, mo = this.mo, L = this.crit || (this.crit = []);
-    const zi = Math.floor(Math.max(0, P.s) / 1000) % ZONES.length, night = ZONES[zi].stars > 0.5, urban = zi === 2;
+    const zi = zinfo(g, P.s).z, night = ZONES[zi].stars > 0.5, urban = zi === 2;
     if (L.length < (this.quality < 0.7 ? 6 : 13) && Math.random() < dt * 3.2) {
       const r = Math.random(), sd = Math.random() < 0.5 ? -1 : 1, s = P.s + 35 + Math.random() * 85;
       const k = night ? (r < 0.8 ? 'fly' : 'bird') : r < (urban ? 0.3 : 0.55) ? 'bfly' : r < 0.75 ? 'bird' : 'seed';
@@ -197,17 +200,17 @@ const RN = {
   },
   frame(g, mode, time, dt, cos) {
     const P = g.p; if (!R.gl) return;
-    this.zoneEnv(P.s);
+    this.zoneEnv(g, P.s);
     const E = this.env;
     // en modo calle (moto, auto, camión) la vía es asfalto con líneas amarillas
     if (g.street && mode !== 'garage') { lerp3(E.road[0], E.road[0], [0.2, 0.21, 0.24], 0.85); lerp3(E.road[3], E.road[3], [1, 1, 1], 0.7); lerp3(E.road[4], E.road[4], [1, 0.8, 0.15], 0.85); }
     // clima (lluvia) y túneles: oscurecen el ambiente
-    const ed = Math.floor(Math.max(0, P.s) / 1000), u = P.s - ed * 1000, rt = mode === 'garage' ? 0 : RAINY(ed) ? clamp(Math.min(u, 1000 - u) / 60, 0, 1) : 0;
+    const Zr = zinfo(g, P.s), ed = Zr.ed, u = P.s - Zr.s0, rt = mode === 'garage' ? 0 : RAINY(ed) ? clamp(Math.min(u, Zr.s1 - P.s) / 60, 0, 1) : 0;
     this.rk = lerp(this.rk || 0, rt, Math.min(1, dt * 2)); const rk = this.rk;
     if (rk > 0.01) { const gr = [0.42, 0.45, 0.5]; lerp3(E.top, E.top, gr, 0.55 * rk); lerp3(E.hor, E.hor, [0.55, 0.58, 0.62], 0.45 * rk); E.amb *= 1 - 0.2 * rk; E.sunI *= 1 - 0.5 * rk; E.fogR[1] *= 1 - 0.25 * rk; E.fogR[0] *= 1 - 0.4 * rk; E.sun[2] *= 1 - rk; E.emit = Math.max(E.emit, 0.45 * rk); }
     const inT = mode !== 'garage' && g.tuns && g.tuns.some(t => P.s > t[0] - 3 && P.s < t[1] + 2); this.tk = lerp(this.tk || 0, inT ? 1 : 0, Math.min(1, dt * 3)); const tk = this.tk;
     if (tk > 0.01) { E.amb *= 1 - 0.5 * tk; E.sunI *= 1 - 0.85 * tk; E.emit = Math.max(E.emit, 0.9 * tk); lerp3(E.hor, E.hor, [0.08, 0.08, 0.1], 0.5 * tk); E.fogR[1] *= 1 - 0.3 * tk; }
-    E.bend[0] = mode === 'garage' ? 0 : 0.0017 * Math.sin(P.s / 520) * Math.sin(P.s / 190 + 0.7);
+    E.bend[0] = mode === 'garage' ? 0 : 0.0017 * Math.sin(P.s / 520) * Math.sin(P.s / 190 + 0.7) * (1 - Math.min(1, Math.abs(this.turnA || 0)));
     E.bend[1] = mode === 'garage' ? 0 : -0.00032;
     const hOn = mode === 'garage' ? 0 : 1, TAU = Math.PI * 2; E.hill[0] = (P.s * 0.0105) % TAU; E.hill[1] = (P.s * 0.027 + 1.7) % TAU; E.hill[2] = P.s; E.hill[3] = hOn; E.h0 = HILL(P.s); this.sl = hOn ? HILLD(P.s) : 0;
     this.camera(g, mode, time, dt);
@@ -221,7 +224,7 @@ const RN = {
     for (const sc of g.scen) {
       if (sc.k === 'ped') { const zz = zs(sc.s + sc.mv * (g.t - sc.t0)); if (zz > FAR && zz < 12) peds.push(sc, zz); continue; }
       const z = zs(sc.s); if (z < FAR || z > 14) continue;
-      if (sc.nr && (g.xs.some(X => Math.abs(X.s - sc.s) < 9) || g.parks.some(p => sc.s > p[0] - 6 && sc.s < p[1] + 6) || g.shops.some(q => q.side === sc.side && Math.abs(q.s - sc.s) < 5) || g.dels.some(d => d.side === sc.side && Math.abs(d.s - sc.s) < 3.5))) continue;
+      if (sc.nr && (g.xs.some(X => Math.abs(X.s - sc.s) < 9) || g.corners.some(C => Math.abs(C.s - sc.s) < 9) || g.parks.some(p => sc.s > p[0] - 6 && sc.s < p[1] + 6) || g.shops.some(q => q.side === sc.side && Math.abs(q.s - sc.s) < 5) || g.dels.some(d => d.side === sc.side && Math.abs(d.s - sc.s) < 3.5))) continue;
       let m = null, kx = sc.sc, ky = sc.sc, ry = sc.ry, sh = [sc.sh, sc.sh, sc.sh];
       switch (sc.k) {
         case 'bld': m = mo.bld[sc.v][sc.pi - 2]; ky = sc.h; break;
@@ -256,6 +259,13 @@ const RN = {
       for (const c of crossCars(X, g.t, this.cars)) { M4.trs(M, c.x, 0, zs(c.s), c.dir > 0 ? -HP : HP); R.draw(c.moto ? mo.motoNpc[c.col] : mo.carNpc[c.col], M); }
       if (st !== 2) for (let row = 0; row < 2; row++) { const dir = row ? -1 : 1; M4.trs(M, -dir * 8.8, 0, zs(X.s + (row ? 2.2 : -2.2)), dir > 0 ? -HP : HP); R.draw(mo.carNpc[(X.id + row) % 4], M); }
     }
+    // esquinas: calles a izquierda y derecha hacia otras zonas, letreros de madera y flechas de giro
+    for (const C of g.corners) {
+      const z = zs(C.s); if (z < FAR - 10 || z > 40) continue;
+      M4.trs(M, 0, 0, z); R.draw(mo.xroad, M);
+      for (const sd of [-1, 1]) { const B = sd < 0 ? C.L : C.R, zz = zs(C.s - 8.5); M4.trs(M, sd * 4.7, 0, zz, sd < 0 ? 0 : Math.PI); R.draw(mo.signpost[B.n], M); M4.trs(M, sd * 4.7, 2.15, zz, 0, 0, 0, 0.3); R.draw(mo.gate[ZONES[B.z].bill], M); }
+      if (!C.done) { const pulse = 0.8 + 0.2 * Math.sin(time * 6), CC = this.CA || (this.CA = { d: hex('#ffc23a'), o: hex('#39c8ff') }); for (let q = C.s - 46; q < C.s - 4; q += 8) { const zq = zs(q); if (zq < FAR || zq > 12) continue; M4.trs(M, LX(0), 0, zq, 0.55, 0, 0, pulse); R.draw(mo.chev, M, ONE, CC.o, 1); M4.trs(M, LX(3), 0, zq, -0.55, 0, 0, pulse); R.draw(mo.chev, M, ONE, CC.d, 1); } }
+    }
     // bifurcaciones: separador con matas, letrero y la ruta de entregas marcada con flechas
     const CA = this.CA || (this.CA = { d: hex('#ffc23a'), o: hex('#39c8ff') });
     for (const f of g.forks) {
@@ -284,7 +294,7 @@ const RN = {
       if (o.t === 'branch') { if (!o.vis) continue; M4.trs(M, 0, 0, z); R.draw(this.branch(o.vis), M); continue; }
       if (o.t === 'gate' && !o.fly) { M4.trs(M, o.x, 0, z, 0, 0, 0, 0.8, 1, 1); R.draw(mo.gatepost, M); M4.trs(M, o.x, gateY(o, g.t), z, 0, 0, 0, 0.8, 1, 1); R.draw(mo.gatebar, M); continue; }
       if (o.t === 'pad') { if (!o.used) for (const dz of [-0.9, 0.9]) { M4.trs(M, o.x, 0, z + dz, 0, 0, 0, 0.9 + 0.1 * Math.sin(time * 9 + dz)); R.draw(mo.chev, M, ONE, this.CA.o, 1); } continue; }
-      if (o.t === 'wall' || o.t === 'rail' || o.t === 'median') { const sm = o.t === 'wall' ? mo.wallseg : o.t === 'median' ? mo.medseg : mo.railseg, a0 = o.s - o.hd, a1 = o.s + o.hd; for (let k = Math.max(0, Math.floor((P.s - 12 - a0) / 4)); a0 + 4 * k < a1 && a0 + 4 * k < P.s - FAR; k++) { M4.trs(M, o.x, 0, zs(a0 + 4 * k + 2)); R.draw(sm, M); } continue; }
+      if (o.t === 'wall' || o.t === 'rail' || o.t === 'median') { const sm = o.t === 'wall' ? (o.st ? (o.adj ? mo.hedgeseg : mo.bedseg) : mo.wallseg) : o.t === 'median' ? mo.medseg : mo.railseg, a0 = o.s - o.hd, a1 = o.s + o.hd; for (let k = Math.max(0, Math.floor((P.s - 12 - a0) / 4)); a0 + 4 * k < a1 && a0 + 4 * k < P.s - FAR; k++) { M4.trs(M, o.x, 0, zs(a0 + 4 * k + 2)); R.draw(sm, M); } continue; }
       if (o.T.moving && !o.fly) {
         const yaw = o.u < 0 ? Math.PI : 0;
         if (o.t === 'car') { M4.trs(M, o.x, 0, z, yaw, 0, 0, 0.95, 1, 1); R.draw(mo.carNpc[o.col], M); }

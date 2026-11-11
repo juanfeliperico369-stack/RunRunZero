@@ -38,7 +38,14 @@ const OT = {
 };
 /* cada barrio tiene obstáculos con lógica: ciudad (c), naturaleza (n) y playa (b) */
 const CAT = ZORD.map(i => ['c', 'c', 'c', 'c', 'c', 'n', 'c', 'b', 'n', 'n', 'c'][i]);
-const catAt = s => CAT[Math.floor(Math.max(0, s) / 1000) % ZONES.length];
+/* zonas: tabla por tramos; en cada esquina el jugador puede doblar y cambiar de zona */
+function zinfo(g, s) {
+  const zt = g.zt; s = Math.max(0, s);
+  while (zt[zt.length - 1].s <= s) { const l = zt[zt.length - 1]; zt.push({ s: l.s + 1000, z: (l.z + 1) % ZONES.length, ed: l.ed + 1 }); }
+  let i = zt.length - 2; while (i > 0 && zt[i].s > s) i--;
+  const a = zt[i]; return { z: a.z, ed: a.ed, s0: a.s, s1: zt[i + 1].s, pz: i > 0 ? zt[i - 1].z : a.z };
+}
+const catAt = (g, s) => CAT[zinfo(g, s).z];
 const POOL = {
   c: { e: [['pothole', 1.2], ['puddle', 1], ['cone', 1], ['barrier', 1], ['trash', 1.6], ['pbike', 1.2], ['container', 0.9], ['stall', 1.6], ['kiosk', 0.6], ['scaff', 1.1], ['manhole', 0.6]],
        m: [['pothole', 2], ['manhole', 1.5], ['crack', 1.3], ['bump', 1.4], ['cone', 1.2], ['barrier', 1.2], ['puddle', 0.8], ['bollard', 0.6]] },
@@ -75,7 +82,7 @@ const TUT = [
   { need: 'deliver', msg: 'TOCA EL BOTÓN ✉ PARA ENTREGAR', pc: 'Tecla E (derecha) · Q (izquierda)' }
 ];
 
-const vEst = (g, s) => (14 + 21 * (1 - Math.exp(-s / 2600))) * (g.vs || g.veh.spd);
+const vEst = (g, s) => (14 + 21 * (1 - Math.exp(-(g.free ? Math.min(s, 1400) : s) / 2600))) * (g.vs || g.veh.spd);
 /* ¿se puede pasar de un carril a otro? (las bifurcaciones y los tramos angostos lo impiden) */
 const forkAt = (g, s) => g.forks.find(f => s > f.a - 2 && s < f.b);
 const narAt = (g, s) => g.nars.find(n => s > n.a - 2 && s < n.b), parkAt = (g, s) => g.parks.some(p => s > p[0] && s < p[1]);
@@ -111,8 +118,9 @@ function newGame(o) {
     p: { s: 0, x: LX(2), lane: 2, from: 2, laneT: -9, y: 0, vy: 0, gv: 0, gy: 0, v: 0, air: false, airT: 0, crouch: 0, fastFall: 0, jumps: 0, stumble: 0, slow: 1, inv: 0, alive: true, deadT: 0,
       magnet: 0, turbo: 0, x2: 0, glide: 0, shield: v.id === 'auto' ? 1 : 0, boost: 0, sl: 0, trickHit: 0, phase: 0, brake: 0, en: 0, tapT: 9, over: 0, trN: 0, trT: 9, grind: 0, grT: 0, inPark: 0 },
     obs: [], coins: [], items: [], scen: [], ev: [], lf: [0, 0, 0, 0], resv: [0, 0, 0, 0], sideBusy: [0, 0],
+    zt: [{ s: 0, z: 0, ed: 0 }], corners: [], turns: 0, free: o.free ? 1 : 0, drI: 0, drB: 0, drills: 0, drP: 0, drCur: 0, drNeed: 1, falls: 0,
     xs: [], crs: [], nars: [], parks: [], shops: [], forks: [], fork: null, evt: o.evt || '', vs: v.spd * (1 + 0.02 * ((o.vup || {}).v || 0)), hk: v.hnd * (1 + 0.05 * ((o.vup || {}).h || 0)), pads: 0, forksN: 0, nar: null, park: null, pol: null, riv: null, _cars: [],
-    genS: 42, scenS: -30, nextGate: 1000, nextSeg: 520, segI: 0, nextCrit: 640, nextRiv: 850, nextKio: 420,
+    genS: 42, scenS: -30, nextGate: 1000, nextSeg: o.free ? 30 : 520, segI: 0, nextCrit: 640, nextRiv: o.free ? 1e12 : 850, nextKio: 420,
     dels: [], deliv: 0, perf: 0, dStreak: 0, dBest: 0, nextDel: 105, stolen: 0, tuns: [], pet: !!o.pet, petSide: 1, edition: 0, score: 0, coinsRun: 0, starsRun: 0, clues: 0, gifts: 0, jumps: 0, ducks: 0, tricks: 0, powers: 0, trucks: 0,
     cleanS: 0, cleanBest: 0, revives: 0, cause: '', hard: 0, mult: o.mult || 1, bad: 0, rows: 0, combo: 1, comboT: 0, comboCap: 2 + 0.03 * (o.skill || 0),
     near: 0, vaults: 0, grindM: 0, parkTr: 0, boosts: 0, crossN: 0, redRuns: 0, civic: 0, fines: 0, escapes: 0, dodges: 0, duels: 0, rivLost: 0, critOk: 0, overT: 0, rivLv: o.rivLv || 0,
@@ -166,8 +174,22 @@ function addNpc(g, lane, s, nk) {
 
 /* cruce con semáforo, tramo angosto o zona libre de trucos */
 function genSeg(g) {
-  const r = g.rng, s = g.genS, kinds = g.street ? ['cross', 'fork', 'narrow', 'cross'] : ['cross', 'fork', 'narrow', 'cross', 'park', 'fork'], k = kinds[g.segI % kinds.length];
+  const r = g.rng, s = g.genS;
+  if (g.free) { const a = s + 8, b = a + 420; g.park = [a, b]; g.parks.push(g.park); g.genS = a + 6; g.nextSeg = b + 14; g.segI++; return; }
+  const kinds = g.street ? ['cross', 'corner', 'fork', 'narrow', 'cross', 'corner'] : ['cross', 'corner', 'fork', 'narrow', 'corner', 'park', 'cross', 'fork', 'corner'], k = kinds[g.segI % kinds.length];
   const tunB = (a, b) => g.tuns.find(t => b > t[0] - 15 && a < t[1] + 15);
+  if (k === 'corner') {
+    // esquina: a la izquierda y a la derecha salen calles hacia otras zonas (de 2 carriles o un callejón de 1)
+    const C = s + 50, tb = tunB(s, C + 30); if (tb) { g.nextSeg = tb[1] + 25; return; }
+    if (g.resv.some(x => x > C - 10)) { g.nextSeg = Math.max(...g.resv) + 12; return; }
+    const z = zinfo(g, C).z, o = []; for (let i = 1; i < ZONES.length; i++) o.push((z + i) % ZONES.length);
+    for (let i = o.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); const t = o[i]; o[i] = o[j]; o[j] = t; }
+    const nL = r() < 0.5 ? 1 : 2, nR = r() < 0.65 ? 3 - nL : nL;
+    g.corners.push({ s: C, z, L: { z: o[0], n: nL }, R: { z: o[1], n: nR }, done: 0, ai: null });
+    g.sideBusy[0] = g.sideBusy[1] = C + 12;
+    coinLine(g, 0, C - 40, 6, 0.8, 3); coinLine(g, 3, C - 40, 6, 0.8, 3);
+    g.genS = C + 14; g.nextSeg = g.genS + 400 + r() * 260; g.segI++; return;
+  }
   if (k === 'park' || k === 'cross') { const tb = tunB(s, s + 240); if (tb) { g.nextSeg = tb[1] + 25; return; } }
   if (k === 'fork') {
     const a = s + 44, L = 150 + r() * 80, b = a + L;
@@ -193,13 +215,13 @@ function genSeg(g) {
 }
 
 function genRow(g) {
-  const r = g.rng, s = g.genS, d = diffAt(s), v = vEst(g, s) * hillK(g, HILLD(s)), rain = RAINY(Math.floor(s / 1000));
+  const r = g.rng, s = g.genS, d = diffAt(s), v = vEst(g, s) * hillK(g, HILLD(s)), rain = RAINY(zinfo(g, s).ed);
   const tg = lerp(1.25, 0.78, d), gap = Math.max(11, v * tg) * (1 + r() * 0.35);
   const st = ['free', 'free', 'free', 'free'];
   let len = 0, coinLane = -1, kind;
   g.rows++;
   const rl = () => Math.floor(r() * NL), wRain = p => rain ? p.map(j => j[0] === 'puddle' ? ['puddle', 3.5] : j) : p;
-  const P0 = POOL[catAt(s)], pool = l => { let p = wRain(l === 0 || l === 3 ? P0.e : P0.m); if (g.street) p = p.filter(j => !STREETX.includes(j[0])); return p; };
+  const P0 = POOL[catAt(g, s)], pool = l => { let p = wRain(l === 0 || l === 3 ? P0.e : P0.m); if (g.street) p = p.filter(j => !STREETX.includes(j[0])); return p; };
   const place = (t, l, ds = 0) => {
     if (s + ds < g.resv[l]) return false;
     if (t === 'branch') { addOb(g, 'branch', l, s + ds, { vis: { side: l < 2 ? -1 : 1, lanes: [l] } }); st[l] = 'duck'; }
@@ -247,11 +269,12 @@ function genRow(g) {
     const fl = D.filter(q => st[q] === 'free'); if (fl.length) coinLine(g, fl[Math.floor(r() * fl.length)], s - 6, 5, 0.8);
     coinLane = -2;
   } else if (park) {
-    g._kind = 'parque'; const k = pickW(r, [['jramp', 4], ['rail', 4], ['cones', 1], ['coins', 1], ['walk', 1.6]]), l = rl();
+    g._kind = 'parque'; const k = pickW(r, [['jramp', 4], ['rail', 4], ['cones', 1], ['coins', 1], ['walk', 1.6], ['pad', g.free ? 2.2 : 0]]), l = rl();
     if (k === 'walk') { if (addNpc(g, l, s, 3)) st[l] = 'block'; else coinLine(g, l, s - 4, 6, 0.8); }
     if (k === 'jramp') { addOb(g, 'jramp', l, s); st[l] = 'ramp'; const vy = 0.275 * v, T = (vy + Math.sqrt(vy * vy + 2 * GRAV * 1.1)) / GRAV; for (let i = 1; i <= 6; i++) { const t = i / 7 * T; addCoin(g, l, s + 2 + v * t, 1.8 + vy * t - GRAV * t * t / 2); } len = v * T + 4; }
     else if (k === 'rail') { const L = 16 + r() * 10; addOb(g, 'rail', l, s + L / 2, { hd: L / 2 }); coinLine(g, l, s + 1.5, Math.floor(L / 2.4) - 1, 1.35); len = L; }
     else if (k === 'cones') { place('cone', l); place('cone', (l + 2) % NL); }
+    else if (k === 'pad') { addOb(g, 'pad', l, s); coinLine(g, l, s + 3, 4, 0.8); }
     else if (k === 'walk') { /* paseantes */ }
     else coinLine(g, l, s - 4, 8, 0.8);
     coinLane = -2;
@@ -325,8 +348,8 @@ function genRow(g) {
     else if (s > 160 && r() < 0.05) it = pickW(r, [['magnet', 3], ['turbo', 1.6], ['x2', 2.2], ['shield', 1.8], ['glide', g.evt === 'cometas' ? 7 : 2.3]]);
     if (it) g.items.push({ k: it, lane: freeL, x: LX(freeL), s: mid, y: 1.0, alive: 1, ch: it === 'letter' ? g.letters[0] : null });
   }
-  const dz = Math.floor(mid / 1000) % ZONES.length;
-  if (mid >= g.nextDel && DELK[dz] >= 0 && !park && !nearX) {
+  const dz = zinfo(g, mid).z;
+  if (!g.free && mid >= g.nextDel && DELK[dz] >= 0 && !park && !nearX) {
     const fk = forkAt(g, mid), side = fk ? (fk.dl ? 1 : -1) : r() < 0.5 ? -1 : 1, sb = side < 0 ? 0 : 1, wl = side < 0 ? 0 : 3;
     if (g.sideBusy[sb] < mid - 7 && !(nar && !nar.open.includes(wl) && false)) {
       let k = mid >= g.nextKio ? 'kio' : pickW(r, [['per', 3], ['rev', 3], ['cor', 2.5], ['pos', 1.8]]);
@@ -340,7 +363,7 @@ function genRow(g) {
 }
 
 function genScen(g) {
-  const r = g.srng, s = g.scenS, zi = Math.floor(Math.max(0, s) / 1000) % ZONES.length, th = THEMES[zi];
+  const r = g.srng, s = g.scenS, zi = zinfo(g, s).z, th = THEMES[zi];
   const Z0 = ZONES[zi], inTun = x => g.tuns.some(t => x >= t[0] - 8 && x <= t[1] + 8);
   if (Z0.tun && s > 300 && !inTun(s + 40) && !g.parks.some(p => p[1] > s - 20 && p[0] < s + 175) && !g.xs.some(X => X.s > s - 20 && X.s < s + 175) && s > (g.tuns.length ? g.tuns[g.tuns.length - 1][1] : 0) + 160 && r() < 0.06) { const a = s + 12, b = a + 70 + r() * 80; g.tuns.push([a, b]); for (const ps of [a, b]) g.scen.push({ k: 'portal', s: ps, x: 0, side: 1, ry: 0, sc: 1, v: 0, sh: 1, z: zi }); }
   if (g.tuns.length > 4) g.tuns.shift();
@@ -348,7 +371,7 @@ function genScen(g) {
   if (tn) { g.scen.push({ k: 'tunnel', s: s + 6, x: 0, side: 1, ry: 0, sc: 1, v: 0, sh: 1, z: zi }); g.scenS += 6 + r() * 5; return; }
   if (th.sea) g.scen.push({ k: 'sea', s, x: 9.6, side: 1, ry: 0, sc: 1, v: 0, sh: 1, z: zi });
   if (th.rail) for (const sd of [-1, 1]) g.scen.push({ k: 'rail', s, x: sd * 5.45, side: sd, ry: 0, sc: 1, v: 0, sh: 1, z: zi });
-  if (s >= g.nextGate - 14) { const ed = g.nextGate / 1000; g.scen.push({ k: 'gate', s: g.nextGate, x: 0, ry: 0, sc: 1, z: ed % ZONES.length, v: 0, sh: 1 }); g.nextGate += 1000; }
+  if (s >= g.nextGate - 14) { const Zg = zinfo(g, g.nextGate); g.scen.push({ k: 'gate', s: g.nextGate, x: 0, ry: 0, sc: 1, z: Zg.z, v: 0, sh: 1 }); g.nextGate = Zg.s1; }
   for (const side of [-1, 1]) {
     const k = pickW(r, th.near);
     if (r() < 0.8) g.scen.push({ k, s: s + r() * 3, x: side * (k === 'bill' ? 7.2 : th.rail ? 5.6 : 6 + r() * 1.6), side, ry: k === 'bill' ? -side * 0.35 : r() * 6.28, sc: 0.85 + r() * 0.35, v: k === 'bill' && g.evt && r() < 0.5 ? EVT.find(e => e.id === g.evt).bill : Math.floor(r() * 14), sh: 0.85 + r() * 0.25, z: zi, nr: 1 });
@@ -398,7 +421,7 @@ function deliver(g, side, auto) {
   if (g.tutWait && g.tutWait.need === 'deliver') g.tutWait.ok = 1;
   return true;
 }
-function chase(g, k, d) { const P = g.p; g.pol = { k, d, t: 0, vp: k === 'pol' ? Math.max(vEst(g, P.s) * 1.1 + 3.5, P.v * 0.92) : 16.5 }; ev(g, 'chase', k); }
+function chase(g, k, d) { if (g.free) return; const P = g.p; g.pol = { k, d, t: 0, vp: k === 'pol' ? Math.max(vEst(g, P.s) * 1.1 + 3.5, P.v * 0.92) : 16.5 }; ev(g, 'chase', k); }
 
 function input(g, k) {
   const P = g.p, V = g.veh; if (!P.alive) return;
@@ -431,6 +454,7 @@ function smash(g, o) {
 }
 function die(g, o) {
   const P = g.p;
+  if (g.free) { P.stumble = 0; P.inv = 1.4; P.slow = 0.5; g.combo = 1; g.comboT = 0; g.falls++; g.cleanBest = Math.max(g.cleanBest, g.cleanS); g.cleanS = 0; if (o && o.t && o.t !== 'wall' && o.t !== 'truck' && o.alive) smash(g, o); ev(g, 'fall', o); return; }
   if (P.shield) { P.shield = 0; P.inv = 1.2; if (o && o.t && o.t !== 'wall' && o.t !== 'truck') smash(g, o); ev(g, 'shield'); return; }
   P.alive = false; P.deadT = 0; P.vy = 5; P.air = true; P.brake = 0; g.cause = o ? (o.name || o.T.name) : 'una caída'; g.hard = o && o.T.hard ? 1 : 0;
   g.causePat = o ? o.pat + (P.stumble > 0 ? '+tamb' : '') : ''; g.pol = null;
@@ -466,6 +490,36 @@ function chaseStep(g, dt) {
   else if (c.d < 6 && (P.brake || P.v < vp * 0.7) && g.t - P.laneT < 0.5) { g.pol = null; g.overT = -4; g.dodges++; g.score += 400 * g.mult; style(g, 0.3); ev(g, 'polDodge'); }
   else if (c.d < 0.9) { const fine = Math.min(g.coinsRun, 40 + Math.floor(g.coinsRun * 0.12)); g.coinsRun -= fine; g.fines++; P.slow = 0.55; P.boost = 0; g.pol = null; g.overT = -4; ev(g, 'polFine', fine); }
 }
+
+/* doblar en una esquina: se rehace lo que viene con la zona elegida y una calle angosta */
+function turnAt(g, c, dir) {
+  const P = g.p, B = dir < 0 ? c.L : c.R, cut = c.s + 1, keep = o => o.s < cut;
+  g.obs = g.obs.filter(o => o.T.moving ? o.s < c.s - 12 : o.s - o.hd < cut);
+  g.coins = g.coins.filter(keep); g.items = g.items.filter(keep); g.dels = g.dels.filter(keep); g.crs = g.crs.filter(keep); g.shops = g.shops.filter(keep); g.xs = g.xs.filter(keep);
+  g.scen = g.scen.filter(sc => sc.s < cut - 2); g.corners = g.corners.filter(x => x.s <= c.s);
+  g.nars = g.nars.filter(n => n.a < cut); g.parks = g.parks.filter(p => p[0] < cut); g.forks = g.forks.filter(f => f.a < cut); g.tuns = g.tuns.filter(t => t[0] < cut);
+  g.nar = g.park = g.fork = null; g.lf = g.lf.map(x => Math.min(x, cut)); g.resv = g.resv.map(x => Math.min(x, cut));
+  const Z = zinfo(g, c.s); g.zt = g.zt.filter(e => e.s < c.s); g.zt.push({ s: c.s, z: B.z, ed: Z.ed + 1 }); g.nextGate = c.s + 1000;
+  const a = c.s + 6, L = (B.n === 1 ? 170 : 230) + g.rng() * 90, b = a + L, open = B.n === 1 ? [dir < 0 ? 1 : 2] : [1, 2];
+  g._kind = 'calle';
+  for (const l of LANES) if (!open.includes(l)) addOb(g, 'wall', l, a + L / 2, { hd: L / 2, st: 1, adj: open.some(q => Math.abs(q - l) === 1) ? 1 : 0 });
+  g.nar = { a, b, open, st: 1 }; g.nars.push(g.nar);
+  g.scen.push({ k: 'gate', s: a + 4, x: 0, ry: 0, sc: 1, z: B.z, v: 0, sh: 1 });
+  g.genS = a + 16; g.scenS = c.s + 0.5; g.nextSeg = b + 320 + g.rng() * 200; g.sideBusy = [a + 24, a + 24]; g.nextDel = Math.max(g.nextDel, a + 30);
+  const nl = open.reduce((m, l) => Math.abs(l - P.lane) < Math.abs(m - P.lane) ? l : m, open[0]); P.lane = P.from = nl; P.x = LX(nl);
+  if (g.pol) { if (g.pol.k === 'pol') { g.escapes++; g.score += 300 * g.mult; ev(g, 'polEsc'); } g.pol = null; }
+  if (g.riv) { if (g.riv.ah) { g.duels++; g.score += 150 * g.mult; ev(g, 'rivShake', g.riv); } g.riv = null; g.nextRiv = P.s + 600; }
+  g.turns++; g.score += 50 * g.mult; style(g, 0.25); ev(g, 'turn', { dir, z: B.z, n: B.n });
+}
+/* zona libre: retos de habilidad encadenados */
+function drillStep(g) {
+  const D = DRILL[g.drI % DRILL.length], lap = Math.floor(g.drI / DRILL.length), v = g[D.k] || 0;
+  const need = D.k === 'combo' ? Math.min(D.n + 0.2 * lap, g.comboCap - 0.05) : Math.round(D.n * (1 + 0.6 * lap)), cur = D.abs ? v : v - g.drB;
+  g.drP = clamp(cur / need, 0, 1); g.drCur = cur; g.drNeed = need;
+  if (cur >= need) { g.drills++; g.drI++; const N = DRILL[g.drI % DRILL.length]; g.drB = g[N.k] || 0; g.score += 200 * g.mult; g.coinsRun += 25; ev(g, 'drill', { t: drillTxt(D, need), i: g.drills }); }
+}
+const drillTxt = (D, need) => D.t.replace('{n}', D.k === 'combo' ? need.toFixed(1).replace('.', ',') : fmtN(need));
+const fmtN = n => Math.round(n).toLocaleString('es-CO');
 
 /* rivales: otros repartidores de la historia que te pasan y te quitan entregas */
 function rivalStep(g, dt, base) {
@@ -644,7 +698,9 @@ function step(g, dt, inp) {
   }
   // puntuación por distancia
   const ds = P.s - s0; g.score += ds * mul; g.cleanS += ds;
-  const ed = Math.floor(P.s / 1000); if (ed > g.edition) { g.edition = ed; if (RAINY(ed)) g.rainSeen = 1; ev(g, 'zone', ed); }
+  const Zi = zinfo(g, P.s); if (Zi.ed > g.edition) { g.edition = Zi.ed; if (RAINY(Zi.ed)) g.rainSeen = 1; ev(g, 'zone', { ed: Zi.ed, z: Zi.z }); }
+  for (const c of g.corners) if (!c.done && P.s >= c.s - 1) { c.done = 1; const dir = P.lane === 0 ? -1 : P.lane === 3 ? 1 : 0; if (dir && P.alive) turnAt(g, c, dir); else ev(g, 'straight', c); break; }
+  if (g.free) drillStep(g);
   if (!g.tunSeen && g.tuns.length && g.tuns.some(t => P.s > t[0] + 5 && P.s < t[1])) g.tunSeen = 1;
   // limpieza y generación
   if ((g._cl = (g._cl || 0) + 1) % 30 === 0) {
@@ -654,7 +710,8 @@ function step(g, dt, inp) {
     g.items = g.items.filter(i => i.alive && i.s > cut);
     g.dels = g.dels.filter(d => d.s > cut - 12);
     g.xs = g.xs.filter(X => X.s > cut - 20); g.crs = g.crs.filter(c => !c.done || c.s > cut); g.shops = g.shops.filter(q => q.s > cut - 20);
-    g.nars = g.nars.filter(n => n.b > cut); g.parks = g.parks.filter(p => p[1] > cut);
+    g.nars = g.nars.filter(n => n.b > cut); g.parks = g.parks.filter(p => p[1] > cut); g.corners = g.corners.filter(c => c.s > cut - 40);
+    while (g.zt.length > 4 && g.zt[2].s < cut - 300) g.zt.shift();
     g.scen = g.scen.filter(sc => sc.s > cut - (sc.k === 'bld' || sc.k === 'hill' || sc.k === 'ped' ? 30 : 0));
   }
   genAhead(g);
@@ -719,8 +776,10 @@ function aiThink(g, skill = 1) {
     if (P.v < 1.5 && line < 8) { const p = lightP(X, g.t); if (!(p < TG - 1.7)) brake = true; }
     else if (red && line <= dStop + P.v * 0.12 + 1.5) brake = true;
   }
+  const cn = g.corners.find(c => !c.done && c.s - P.s < 75 && c.s - P.s > -1);
   const cost = info.map((f, l) => {
     let c = Math.abs(l - P.lane) * 0.7 + (l < 2 ? 0.5 : 0) + (stopAhead && l < 2 ? 4 : 0);
+    if (cn) { if (cn.ai == null) cn.ai = [-1, 0, 1, -1, 1][Math.floor(g.xr() * 5)]; if ((cn.ai < 0 && l === 0) || (cn.ai > 0 && l === 3)) c -= 6; }
     const fa = g.forks.find(f => P.s > f.a - 70 && P.s < f.b); if (fa) { if (P.s > fa.a - 8 && (l < 2) !== (P.lane < 2)) c += 300; else if ((l < 2) === !(fa.dl ^ (g.aiPad ? 1 : 0))) c -= 2.5; }
     if (f) {
       if (f.need === 'block') c += f.front < 0.5 ? 200 : f.front < P.v * 0.75 + 3 ? 60 + Math.max(0, 40 - f.front) : 5;
@@ -730,6 +789,7 @@ function aiThink(g, skill = 1) {
       if (l !== P.lane && f.need !== 'ramp' && f.front < P.v * 0.42) c += 40;
       if (f.need !== 'block' && f.front < 0 && P.lane !== l) c += 150;
     }
+    if (g.free && f && f.o.t === 'rail') c -= 5;
     let n = 0; for (const cn of g.coins) if (cn.alive && cn.lane === l && cn.s > P.s && cn.s < P.s + 22) n++;
     return c - Math.min(1.5, n * 0.18);
   });
@@ -750,12 +810,13 @@ function aiThink(g, skill = 1) {
     if (f.need === 'duck' && f.front <= P.v * 0.3 + 0.4 && P.crouch < 0.18 && f.front > -0.5) return 'D';
   }
   for (const d of g.dels) if (!d.done && !d.miss) { const a = d.s - P.s; if (a > 3 && a < 8.5) return d.side < 0 ? 'Q' : 'E'; }
+  if (g.free) { if (!P.air && !P.grind && (!f || f.front > 7) && g.xr() < 0.05) return 'U'; if (P.air && P.airT > 0.12 && P.trN < 1 && P.jumps >= g.maxJ && P.y > 0.9 && P.vy > -1) return 'U'; }
   return null;
 }
 
 /* Simulación rápida sin render (bot de pruebas) */
 function simulate(o) {
-  const g = newGame({ seed: o.seed, veh: o.veh || 'foot', ai: true, up: o.up, mult: 1, cluesLeft: 12, pet: o.pet, letters: 'EMSAY', fit: o.fit == null ? 50 : o.fit, inj: o.inj, perks: o.perks, skill: o.skill2 || 0, tut: o.tut, evt: o.evt, vup: o.vup });
+  const g = newGame({ seed: o.seed, veh: o.veh || 'foot', ai: true, up: o.up, mult: 1, cluesLeft: 12, pet: o.pet, letters: 'EMSAY', fit: o.fit == null ? 50 : o.fit, inj: o.inj, perks: o.perks, skill: o.skill2 || 0, tut: o.tut, evt: o.evt, vup: o.vup, free: o.free });
   const maxT = o.maxT || 240; let n = 0, inp = null, errs = [], stuck = 0; g.aiPad = !!o.padRoute;
   while (g.p.alive && g.t < maxT) {
     if (n % 3 === 0) inp = aiThink(g, o.skill == null ? 1 : o.skill); else inp = null;
@@ -771,5 +832,5 @@ function simulate(o) {
   }
   return { seed: o.seed, veh: g.veh.id, dist: Math.round(g.p.s), t: +g.t.toFixed(1), score: Math.round(g.score), coins: g.coinsRun, cause: g.p.alive ? 'tiempo' : g.cause, pat: g.causePat || '', bad: g.bad, rows: g.rows,
     jumps: g.jumps, ducks: g.ducks, tricks: g.tricks, trucks: g.trucks, gifts: g.gifts, clues: g.clues, powers: g.powers, deliv: g.deliv, pads: g.pads, forks: g.forksN, perf: g.perf, cross: g.crossN, red: g.redRuns, civic: g.civic, fines: g.fines, esc: g.escapes,
-    badK: g.badK || '', near: g.near, vaults: g.vaults, grind: Math.round(g.grindM), duels: g.duels, rivLost: g.rivLost, crit: g.critOk, errs };
+    badK: g.badK || '', near: g.near, vaults: g.vaults, grind: Math.round(g.grindM), duels: g.duels, rivLost: g.rivLost, crit: g.critOk, turns: g.turns, drills: g.drills, falls: g.falls, ed: g.edition, errs };
 }
