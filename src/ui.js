@@ -3,14 +3,14 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const fmt = n => Math.round(n).toLocaleString('es-CO');
 const dayKey = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-const VERSION = '2.0.0', SKEY = 'runscooter.v1';
+const VERSION = '2.1.0', SKEY = 'runscooter.v1';
 const MREW = [100, 200, 350, 550, 800], MXP = [150, 300, 500, 800, 1200], DAILY = [100, 150, 200, 's1', 300, 400, 's3'];
 
 const SV = {
   S: null,
   def() {
     return { v: 1, coins: 0, stars: 0, xp: 0, best: 0, bestDist: 0, veh: 'foot', owned: { foot: 1 }, cos: { casco: 'h0', ropa: 'r0', pintura: 'p0', estela: 't0', mascota: 'm0', piel: 's0', pelo: 'k0' }, ownedCos: { h0: 1, r0: 1, p0: 1, t0: 1, m0: 1 }, ach: {},
-      fit: 25, skill: 0, inj: 0, ment: {}, cnt: { footM: 0, near: 0, perf: 0, boosts: 0, civic: 0, grind: 0, duels: 0, esc: 0 }, riv: { w: 0, l: 0 },
+      fit: 25, skill: 0, inj: 0, ment: {}, vup: {}, cnt: { footM: 0, near: 0, perf: 0, boosts: 0, civic: 0, grind: 0, duels: 0, esc: 0 }, riv: { w: 0, l: 0 },
       up: { magnet: 0, turbo: 0, x2: 0, gift: 0, en: 0, rue: 0, fre: 0, mor: 0 }, clues: 0, readClues: 0, mis: [], misLvl: {}, misDone: 0, daily: { last: '', streak: 0 }, ch: { day: '', best: 0, rew: '' }, word: { day: '', got: '', done: 0, doneDay: '' }, boostTip: 0, rank: 0,
       set: { sfx: 1, music: 1, vib: 1, q: 'auto', fps: 0, lh: 0, mus: 'mix' }, tut: 1, runs: [], tot: { runs: 0, dist: 0, coins: 0, time: 0, deliv: 0 }, created: Date.now() };
   },
@@ -18,7 +18,7 @@ const SV = {
     if (!b || typeof b !== 'object' || Array.isArray(b)) return a;
     for (const k of Object.keys(b)) {
       const av = a[k], bv = b[k];
-      if (av === undefined) { if (['number', 'string', 'boolean'].includes(typeof bv)) a[k] = bv; continue; }
+      if (av === undefined) { if (['number', 'string', 'boolean'].includes(typeof bv)) a[k] = bv; else if (bv && typeof bv === 'object' && !Array.isArray(bv)) a[k] = this.merge({}, bv); continue; }
       if (Array.isArray(av)) { if (Array.isArray(bv)) a[k] = bv.slice(0, 300); }
       else if (av && typeof av === 'object') a[k] = this.merge(av, bv);
       else if (typeof av === typeof bv && (typeof bv !== 'number' || Number.isFinite(bv))) a[k] = bv;
@@ -46,6 +46,8 @@ const misText = m => misDef(m.k).t.replace('{n}', fmt(misDef(m.k).n[m.lvl]));
 const cosCfg = S => { const h = COSI[S.cos.casco], r = COSI[S.cos.ropa], p = COSI[S.cos.pintura]; return { helmet: h.c, he: !!h.e, shirt: r.a, pants: r.b, se: !!r.e, paint: p.c, pe: !!p.e, pet: S.cos.mascota || 'm0', skin: (COSI[S.cos.piel] || COSI.s0).c, hair: (COSI[S.cos.pelo] || COSI.k0).hair, hc: (COSI[S.cos.pelo] || COSI.k0).c }; };
 const perksOf = S => { const k = {}; for (const m of MENT) if (S.ment[m.id] && m.perk) k[m.perk] = 1; return k; };
 const mentProg = (S, m) => m.key === 'pages' ? S.clues : (S.cnt[m.key] || 0);
+const VUP = [['v', 'Velocidad', 2, 'Motor y ruedas: +2 % de velocidad por nivel'], ['b', 'Impulso', 6, 'Más empuje en cada toque de ⚡'], ['h', 'Manejo', 5, 'Cambios de carril más rápidos']];
+const vupCost = (v, lv) => Math.round(Math.max(250, v.price * 0.1) * (lv + 1) / 50) * 50;
 const KIND = { h: 'Fuerza', e: 'Eléctrico', m: 'Motor', f: 'Especial' }, ENL = { h: 'ALIENTO', e: 'BATERÍA', m: 'GASOLINA', f: 'COMBUSTIBLE' }, DICO = { per: '📰', rev: '📖', cor: '✉', pos: '🖼', kio: '📦' }, DCOLS = { per: '#8a8f96', rev: '#39c8ff', cor: '#ffc23a', pos: '#ff2fb3', kio: '#2dffb3' };
 const priceTxt = it => it.ach ? '🏆 Logro: ' + (ACH.find(a => a[0] === it.ach) || ['', ''])[1] : it.st ? '✦ ' + it.st : '◉ ' + fmt(it.p || 0);
 function checkAch(g) {
@@ -75,6 +77,7 @@ const UI = {
   cover() {
     const S = SV.S, rk = rankOf(S.xp), wg = S.word.day === dayKey() ? S.word.got : '';
     $('cCard').innerHTML = `<div class="rk">${rk + 1}</div><div class="nm">${esc(RANKS[rk])} · ${esc(VEHI[S.veh].name)}<span>◉ ${fmt(S.coins)} · ✦ ${S.stars}</span></div>${this.bars(S)}<div style="grid-column:span 2;display:flex;justify-content:space-between;gap:8px"><span>Mejor ${fmt(S.best)} · 🔤 ${'EMSAY'.split('').map((c, i) => i < wg.length ? c : '_').join('')}</span><span class="${S.inj ? 'inj' : ''}">${S.inj ? '🩹'.repeat(S.inj) + ' lesión' : 'Sin lesiones'}</span></div>`;
+    const E = evToday(); $('cEvt').innerHTML = `<b>HOY</b> ${esc(E.name)} · <span>${esc(E.desc)}</span>`;
     const news = STORY.filter((p, i) => i < S.clues && (p[2] === 'n' || p[2] === 'e' || p[2] === 'f')).map(p => p[0]);
     $('cTick').textContent = (news.length ? news.slice(-6) : ['EMSAY busca a los mejores velocistas de Orbe', 'Recupera páginas perdidas para leer los titulares', 'Hoy: carrera del día en la ciclovía']).join('  ✦  ');
     $('dCh').hidden = S.ch.day === dayKey();
@@ -111,7 +114,9 @@ const UI = {
         }).join('') + '</div>';
       }
     } else {
-      h = '<div class="cards">' + UPG.map(u => {
+      const V = VEHI[S.veh], VU = S.vup[S.veh] || {};
+      h = `<div class="cat">Mejoras de tu ${esc(V.name)}</div><div class="cards">` + VUP.map(q => { const lv = VU[q[0]] || 0, max = lv >= 5; return `<button class="card" data-act="vup" data-arg="${q[0]}"><span class="nm">${esc(q[1])}</span><span class="ds">${'■'.repeat(lv)}${'□'.repeat(5 - lv)} · +${q[2] * lv} %</span><span class="ds">${esc(q[3])}</span><span class="pr">${max ? 'MÁXIMO' : '◉ ' + fmt(vupCost(V, lv))}</span></button>`; }).join('') + '</div><div class="cat">Mejoras generales</div>' +
+      '<div class="cards">' + UPG.map(u => {
         const lv = S.up[u.id] || 0, max = lv >= 5, pr = UPC[lv];
         const eff = u.id === 'gift' ? `Suerte +${lv * 3}%` : u.pct ? `+${u.per * lv} %` : `${(u.base + u.per * lv).toFixed(1).replace('.0', '')} s`;
         return `<button class="card" data-act="upg" data-arg="${u.id}"><span class="nm">${u.icon} ${esc(u.name)}</span><span class="ds">${'■'.repeat(lv)}${'□'.repeat(5 - lv)} · ${eff}</span><span class="pr">${max ? 'MÁXIMO' : '◉ ' + fmt(pr)}</span></button>`;
@@ -190,6 +195,7 @@ const UI = {
     if (!warn && P.over > 0.4) warn = '⚠ ¡FRENA EN LA BAJADA!';
     if (!warn && g.nar && g.nar.a - P.s > 0 && g.nar.a - P.s < 55) warn = '⚠ VÍA ANGOSTA · carril' + (g.nar.open.length > 1 ? 'es ' : ' ') + g.nar.open.map(l => l + 1).join(' y ');
     if (!warn && P.inPark) warn = '🛹 ZONA LIBRE · trucos ×2';
+    if (!warn) { const f = g.forks.find(f => f.a - P.s > -4 && f.a - P.s < 75); if (f) warn = f.dl ? '⑂ ⚡ IMPULSO ◀ · ▶ ✉ ENTREGAS' : '⑂ ✉ ENTREGAS ◀ · ▶ ⚡ IMPULSO'; }
     if (g.riv) { const gp = g.riv.s - P.s; riv = '🏁 ' + g.riv.name + (gp > 0 ? ' +' + Math.round(gp) + ' m' : ' detrás'); }
     const top = lt + '|' + ltc + '|' + pol + '|' + warn + '|' + riv + '|' + combo;
     if (top !== H.top) { H.top = top; const set = (id, t, cl) => { const el = $(id); el.hidden = !t; if (t) { if (id === 'hLight') { el.className = 'lt ' + cl; el.innerHTML = '<i></i>' + t; } else el.textContent = t; } }; set('hLight', lt, ltc); set('hPol', pol); set('hWarn', warn); set('hRiv', riv); set('hCombo', combo); }

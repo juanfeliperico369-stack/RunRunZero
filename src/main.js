@@ -21,7 +21,8 @@ function startRun(ch) {
   const S = SV.S; AU.init(); AU.music(true); if (ch === undefined) ch = lastCh; lastCh = !!ch;
   UI.ov('oOver', 0); UI.ov('oRevive', 0); UI.ov('oPause', 0); UI.hideScreens(); UI.preview = null;
   refreshPlayer();
-  G = newGame({ seed: ch ? daySeed() : (Math.random() * 4294967295) >>> 0, veh: S.veh, up: S.up, mult: 1 + 0.25 * rankOf(S.xp), cluesLeft: STORY.length - S.clues, letters: (S.word.day !== dayKey() ? (S.word = { day: dayKey(), got: '', done: S.word.done || 0, doneDay: S.word.doneDay || '' }, 'EMSAY') : S.word.doneDay === dayKey() ? '' : 'EMSAY'.slice(S.word.got.length)), tut: S.tut === 1, pet: S.cos.mascota && S.cos.mascota !== 'm0', fit: S.fit, inj: S.inj, perks: perksOf(S), skill: S.skill, rivLv: rankOf(S.xp) });
+  G = newGame({ seed: ch ? daySeed() : (Math.random() * 4294967295) >>> 0, veh: S.veh, up: S.up, mult: 1 + 0.25 * rankOf(S.xp), cluesLeft: STORY.length - S.clues, letters: (S.word.day !== dayKey() ? (S.word = { day: dayKey(), got: '', done: S.word.done || 0, doneDay: S.word.doneDay || '' }, 'EMSAY') : S.word.doneDay === dayKey() ? '' : 'EMSAY'.slice(S.word.got.length)), tut: S.tut === 1, pet: S.cos.mascota && S.cos.mascota !== 'm0', fit: S.fit, inj: S.inj, perks: perksOf(S), skill: S.skill, rivLv: rankOf(S.xp), evt: evToday().id, vup: S.vup[S.veh] });
+  setTimeout(() => { if (mode === 'play') { const E = evToday(); UI.toast('📅 HOY: ' + E.name + ' · ' + E.desc, 'g'); } }, 900);
   if (ch) { G.race = 1; G.nextRiv = 260; }
   $('enL').textContent = ENL[G.veh.kind]; $('bBrake').classList.remove('hit');
   Q.length = 0; acc = 0; overShown = false; reviveT = 0; RN.parts.length = 0; UI.hud = { s: -1, c: -1, d: -1, m: '', pk: '', b: -1, sl: 99, dl: '', en: -1, top: '' };
@@ -56,7 +57,9 @@ function events(g) {
     if (!play) continue;
     switch (e.k) {
       case 'coin': AU.sfx('coin'); break;
-      case 'jump': case 'jump2': case 'land': case 'duck': case 'lane': case 'smash': case 'trick': case 'pEnd': case 'shield': AU.sfx(e.k); break;
+      case 'jump': case 'jump2': case 'land': case 'duck': case 'lane': case 'smash': case 'pEnd': case 'shield': AU.sfx(e.k); break;
+      case 'trick': AU.sfx('trick'); UI.pop('🛹 ' + e.a.name + ' +' + fmt(e.a.pts)); break;
+      case 'pad': AU.sfx('power'); UI.pop('⚡ ¡IMPULSOR! +energía'); break;
       case 'stumble': AU.sfx('stumble'); vib(40); break;
       case 'crash': AU.sfx('crash'); vib([60, 40, 90]); break;
       case 'power': AU.sfx('power'); UI.toast({ magnet: '∩ IMÁN', turbo: '⚡ TURBO', x2: '×2 PUNTOS', shield: '⛑ CASCO PROTECTOR', glide: '☂ PARAGUAS PLANEADOR: ¡a volar!' }[e.a] || 'PODER', 'g'); break;
@@ -133,7 +136,7 @@ function doRevive() {
 function endRun() {
   const S = SV.S, g = G; UI.ov('oRevive', 0); mode = 'over'; $('hud').hidden = true;
   checkMissions(g, true);
-  const rk0 = rankOf(S.xp), xp = Math.floor(g.score / 25); S.xp += xp; const rk1 = rankOf(S.xp);
+  const rk0 = rankOf(S.xp), xp = Math.floor(g.score / 25 * (g.evt === 'maraton' ? 1.5 : 1)); S.xp += xp; const rk1 = rankOf(S.xp);
   const rec = g.score > S.best, recD = g.p.s > S.bestDist;
   S.coins += g.coinsRun; S.stars += g.starsRun; S.best = Math.max(S.best, Math.floor(g.score)); S.bestDist = Math.max(S.bestDist, Math.floor(g.p.s));
   S.tot.deliv = (S.tot.deliv || 0) + g.deliv;
@@ -233,6 +236,7 @@ function act(a, arg, el) {
     case 'cfNo': UI.ov('oConf', 0); confirmFn = null; if (UI.preview) { UI.preview = null; refreshPlayer(); UI.garage(); } break;
     case 'daily': claimDaily(); break;
     case 'stab': UI.stab = arg; UI.story(); break;
+    case 'vup': { const V = VEHI[S.veh], VU = S.vup[S.veh] || (S.vup[S.veh] = {}), lv = VU[arg] || 0; if (lv >= 5) break; const pr = vupCost(V, lv); if (S.coins >= pr) { S.coins -= pr; VU[arg] = lv + 1; SV.save(); AU.sfx('buy'); UI.garage(); } else UI.toast('Te faltan ◉ ' + fmt(pr - S.coins)); break; }
     case 'mus': S.set.mus = arg; SV.save(); AU.style = arg; UI.settings(); break;
     case 'heal': if (S.inj > 0 && S.coins >= 250) { S.coins -= 250; S.inj--; SV.save(); AU.sfx('buy'); UI.garage(); } else UI.toast(S.inj ? 'Te faltan ◉ ' + (250 - S.coins) + ' para el botiquín' : 'No tienes lesiones'); break;
     case 'ment': {
@@ -314,7 +318,7 @@ function tick(dt) {
     count -= dt; const el = $('hCnt'); el.hidden = count <= 0; el.textContent = Math.ceil(count);
     if (count <= 0) { mode = 'play'; acc = 0; }
   }
-  if (view !== 'garage') RN.trail(g, dt, SV.S.cos.estela);
+  if (view !== 'garage') RN.trail(g, dt, g.evt === 'carnaval' && SV.S.cos.estela === 't0' ? 't2' : SV.S.cos.estela);
   const rn = view === 'play' && RN.rk > 0.35; if (rn !== tick.rain) { tick.rain = rn; $('rain').classList.toggle('on', rn); AU.rainOn(rn); }
   if (rn && mode === 'play' && Math.random() < dt * 0.06) { const f = $('flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); setTimeout(() => AU.sfx('thunder'), 300 + Math.random() * 600); }
   if (SV.S.set.fps && mode === 'play') { const f = fpsA.length ? fpsA.length / fpsA.reduce((a, b) => a + b, 0) : 0; $('hFps').textContent = Math.round(f) + ' FPS · ' + R.draws + ' dibujos'; }

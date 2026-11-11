@@ -179,6 +179,24 @@ const MENT = [
   { id: 'gus', name: 'Don Gustavo', perk: 'ojo', hab: 'Ojo de editor', desc: 'Aparecen más páginas perdidas y letras.', favor: 'Recupera 30 páginas', key: 'pages', n: 30, price: 6000, col: '#e8e4c4' },
   { id: 'cometa', name: 'Capitana Cometa', perk: '', veh: 'jetpack', hab: 'Te regala su Jetpack', desc: 'El vehículo más especial de Orbe.', favor: 'Gana 15 duelos a rivales', key: 'duels', n: 15, price: 60000, col: '#39c8ff' }
 ];
+/* Nombres de trucos por vehículo: [salto, truco 1, truco 2] */
+const TRK = {
+  foot: ['Salto de gato', 'Mortal', 'Giro 360'], quad: ['Giro 360', 'Mortal', 'Spagat'], inline: ['Giro 360', 'Mortal', 'Spagat'], skate: ['Ollie', 'Kickflip', '360 Flip'],
+  long: ['Ollie', 'Shove-it', 'Slide'], scooter: ['Bunny hop', 'Tailwhip', 'Barspin'], uni: ['Salto', 'Giro', 'Salto loco'], bike: ['Bunny hop', 'Tailwhip', 'Superman'],
+  trike: ['Salto', 'Caballito', 'Giro'], ebike: ['Bunny hop', 'Tailwhip', 'Superman'], escooter: ['Salto', 'Tailwhip', 'Barspin'], euc: ['Salto', 'Giro', 'Mortal'],
+  moped: ['Salto', 'Caballito', '360'], moto: ['Salto', 'Caballito', 'Superman'], auto: ['Salto', 'Giro', 'Tonel'], camion: ['Salto', 'Giro', 'Tonel'], jetpack: ['Despegue', 'Tirabuzón', 'Rizo']
+};
+/* Evento especial de Orbe según el día de la semana (domingo = 0) */
+const EVT = [
+  { id: 'dominical', name: 'Edición dominical', desc: 'Todas las entregas valen ×1,5', bill: 10 },
+  { id: 'libro', name: 'Feria del Libro de Orbe', desc: 'El doble de páginas perdidas', bill: 10 },
+  { id: 'maraton', name: 'Maratón de la Ciclovía', desc: 'Corredores por todas partes y +50 % de XP', bill: 12 },
+  { id: 'carnaval', name: 'Carnaval de las Mil Ruedas', desc: 'Monedas ×1,5 y confeti para todos', bill: 11 },
+  { id: 'correo', name: 'Jueves de Correo', desc: 'El correo vale el doble', bill: 10 },
+  { id: 'cometas', name: 'Festival de Cometas', desc: 'Muchos más paraguas planeadores', bill: 13 },
+  { id: 'pulgas', name: 'Mercado de las Pulgas', desc: 'Más regalos en la vía', bill: 10 }
+];
+const evToday = () => EVT[new Date().getDay()];
 /* Rivales: otros repartidores que compiten contigo */
 const RIV = [['Rueda Loca', '#ff5a2a'], ['Lu Neón', '#a42cff'], ['Tomás Turbo', '#ffc23a'], ['Sofi Scooter', '#2dffb3'], ['Nico Manubrio', '#39c8ff']];
 /* Secciones de las páginas de EMSAY */

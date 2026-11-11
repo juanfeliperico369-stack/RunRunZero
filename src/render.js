@@ -10,7 +10,7 @@ const RN = {
     for (const k of ['road', 'tree', 'pine', 'bush', 'lamp', 'bench', 'hill', 'billFrame', 'gateFrame', 'rock', 'cone', 'barrier', 'pothole', 'puddle', 'kiosk', 'coin', 'gift', 'clue', 'magnet', 'shield', 'turbo', 'x2', 'cube', 'shadow', 'ink', 'flowers', 'wing', 'bfly', 'bird', 'bwing', 'rabbit', 'palm', 'parasol', 'sea', 'mount', 'fence', 'coffee', 'rail', 'boat', 'buzon', 'flag', 'door', 'rarm', 'mag', 'tunnel', 'portal']) mo[k] = mk(MOD[k]());
     mo.runB = [0, 1, 2, 3].map(c => mk(MOD.npcRun(c, 0))); mo.skB = [0, 1, 2, 3].map(c => mk(MOD.npcRun(c, 1))); mo.runL = mk(MOD.npcLeg(0)); mo.skL = mk(MOD.npcLeg(1));
     mo.kite = [0, 1, 2].map(v => mk(MOD.kite(v))); mo.balloon = [0, 1].map(v => mk(MOD.balloon(v)));
-    for (const k of ['tlight', 'wallseg', 'railseg', 'posterWall', 'bundle', 'envelope', 'paper', 'xroad', 'parkArch', 'quarter', 'policia', 'ducks']) mo[k] = mk(MOD[k]());
+    for (const k of ['tlight', 'wallseg', 'railseg', 'posterWall', 'bundle', 'envelope', 'paper', 'xroad', 'parkArch', 'quarter', 'policia', 'ducks', 'medseg', 'forkSign', 'chev']) mo[k] = mk(MOD[k]());
     mo.shop = [0, 1, 2].map(v => mk(MOD.shop(v))); mo.stall = [0, 1, 2].map(v => mk(MOD.stall(v))); mo.person = [0, 1, 2, 3].map(v => mk(MOD.person(v))); mo.poster = [0, 1, 2, 3].map(v => mk(MOD.poster(v)));
     mo.carNpc = [0, 1, 2, 3].map(v => mk(MOD.carNpc(v))); mo.motoNpc = [0, 1, 2, 3].map(v => mk(MOD.motoNpc(v)));
     mo.dogA = mk(MOD.pet('m1', '#c9935e')); mo.dogT = mk(MOD.petTail('m1', '#c9935e')); mo.catA = mk(MOD.pet('m2', '#3a3a46')); mo.catT = mk(MOD.petTail('m2', '#3a3a46')); this.cars = [];
@@ -242,6 +242,15 @@ const RN = {
       for (const c of crossCars(X, g.t, this.cars)) { M4.trs(M, c.x, 0, zs(c.s), c.dir > 0 ? -HP : HP); R.draw(c.moto ? mo.motoNpc[c.col] : mo.carNpc[c.col], M); }
       if (st !== 2) for (let row = 0; row < 2; row++) { const dir = row ? -1 : 1; M4.trs(M, -dir * 8.8, 0, zs(X.s + (row ? 2.2 : -2.2)), dir > 0 ? -HP : HP); R.draw(mo.carNpc[(X.id + row) % 4], M); }
     }
+    // bifurcaciones: separador con matas, letrero y la ruta de entregas marcada con flechas
+    const CA = this.CA || (this.CA = { d: hex('#ffc23a'), o: hex('#39c8ff') });
+    for (const f of g.forks) {
+      const z0 = zs(f.a); if (z0 < FAR - 300 || zs(f.b) > 14) continue;
+      if (z0 > FAR && z0 < 30) { M4.trs(M, 0, 0, zs(f.a - 4)); R.draw(mo.forkSign, M); }
+      const dx = f.dl ? 1.6 : -1.6, pulse = 0.75 + 0.25 * Math.sin(time * 6);
+      for (let q = f.a - 36; q < f.b; q += 9) { const zq = zs(q); if (zq < FAR || zq > 12) continue; M4.trs(M, dx, 0, zq, 0, 0, 0, pulse); R.draw(mo.chev, M, ONE, CA.d, 1); if (q < f.a) { M4.trs(M, -dx, 0, zq, 0, 0, 0, 0.8); R.draw(mo.chev, M, ONE, CA.o, 1); } }
+      for (const sd of [-1, 1]) { const zz = zs(f.a - 14); if (zz > FAR && zz < 14) { M4.trs(M, sd * 1.6, 3.6 + Math.sin(time * 3) * 0.15, zz, time * 2, 0, 0, 0.42); R.draw(mo.cube, M, ONE, (sd > 0) === !!f.dl ? CA.d : CA.o, 1); } }
+    }
     for (const p of g.parks) { const z = zs(p[0]); if (z > FAR - 160 && z < 20) { if (z > FAR) { M4.trs(M, 0, 0, z); R.draw(mo.parkArch, M); } for (let q = p[0] + 16; q < p[1]; q += 32) { const zq = zs(q); if (zq < FAR || zq > 14) continue; for (const sd of [-1, 1]) { M4.trs(M, sd * 7.2, 0, zq, sd > 0 ? -Math.PI / 2 : Math.PI / 2); R.draw(mo.quarter, M); } } } }
     // obstáculos (los modelos de carril se estrechan a 0,8 para carriles de 1,6 m)
     for (const o of g.obs) {
@@ -250,7 +259,8 @@ const RN = {
       let m, kx = 0.8, ry = 0;
       if (o.t === 'branch') { if (!o.vis) continue; M4.trs(M, 0, 0, z); R.draw(this.branch(o.vis), M); continue; }
       if (o.t === 'gate' && !o.fly) { M4.trs(M, o.x, 0, z, 0, 0, 0, 0.8, 1, 1); R.draw(mo.gatepost, M); M4.trs(M, o.x, gateY(o, g.t), z, 0, 0, 0, 0.8, 1, 1); R.draw(mo.gatebar, M); continue; }
-      if (o.t === 'wall' || o.t === 'rail') { const sm = o.t === 'wall' ? mo.wallseg : mo.railseg, a0 = o.s - o.hd, a1 = o.s + o.hd; for (let k = Math.max(0, Math.floor((P.s - 12 - a0) / 4)); a0 + 4 * k < a1 && a0 + 4 * k < P.s - FAR; k++) { M4.trs(M, o.x, 0, zs(a0 + 4 * k + 2)); R.draw(sm, M); } continue; }
+      if (o.t === 'pad') { if (!o.used) for (const dz of [-0.9, 0.9]) { M4.trs(M, o.x, 0, z + dz, 0, 0, 0, 0.9 + 0.1 * Math.sin(time * 9 + dz)); R.draw(mo.chev, M, ONE, this.CA.o, 1); } continue; }
+      if (o.t === 'wall' || o.t === 'rail' || o.t === 'median') { const sm = o.t === 'wall' ? mo.wallseg : o.t === 'median' ? mo.medseg : mo.railseg, a0 = o.s - o.hd, a1 = o.s + o.hd; for (let k = Math.max(0, Math.floor((P.s - 12 - a0) / 4)); a0 + 4 * k < a1 && a0 + 4 * k < P.s - FAR; k++) { M4.trs(M, o.x, 0, zs(a0 + 4 * k + 2)); R.draw(sm, M); } continue; }
       if (o.T.moving && !o.fly) {
         const yaw = o.u < 0 ? Math.PI : 0;
         if (o.t === 'car') { M4.trs(M, o.x, 0, z, yaw, 0, 0, 0.95, 1, 1); R.draw(mo.carNpc[o.col], M); }
