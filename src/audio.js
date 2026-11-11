@@ -49,6 +49,13 @@ const AU = {
       case 'deliver': this.noise(t, 0.18, 0.08, 2200, 'bandpass', null, 1.5); this.tone(1319, t + 0.16, 0.18, 'sine', 0.1); this.tone(1760, t + 0.24, 0.3, 'sine', 0.09); break;
       case 'dmiss': this.tone(240, t, 0.18, 'triangle', 0.08, 150); break;
       case 'thunder': this.noise(t, 1.6, 0.35, 180, 'lowpass'); this.noise(t + 0.05, 0.5, 0.2, 600, 'lowpass'); break;
+      case 'near': this.noise(t, 0.12, 0.09, 3200, 'bandpass', null, 3); break;
+      case 'grind': this.noise(t, 0.1, 0.07, 5200, 'bandpass', null, 6); break;
+      case 'brake': this.noise(t, 0.16, 0.07, 2400, 'bandpass', null, 5); break;
+      case 'combo': this.tone(880, t, 0.06, 'square', 0.05); this.tone(1320, t + 0.05, 0.09, 'square', 0.05); break;
+      case 'siren': this.tone(700, t, 0.25, 'square', 0.06, 1000); this.tone(1000, t + 0.25, 0.25, 'square', 0.06, 700); break;
+      case 'bark': this.tone(420, t, 0.07, 'sawtooth', 0.12, 260); this.tone(440, t + 0.14, 0.08, 'sawtooth', 0.12, 250); break;
+      case 'warn': this.tone(990, t, 0.09, 'square', 0.07); this.tone(990, t + 0.16, 0.09, 'square', 0.07); break;
       case 'tut': this.tone(880, t, 0.12, 'sine', 0.1); break;
       case 'rank': [523, 659, 784, 1047, 1319].forEach((f, i) => this.tone(f, t + i * 0.09, 0.22, 'square', 0.07)); break;
       case 'buy': this.tone(784, t, 0.08, 'square', 0.07); this.tone(1175, t + 0.07, 0.16, 'square', 0.07); break;
@@ -64,17 +71,57 @@ const AU = {
     if (on && !this.playing) { this.playing = true; this.nextT = this.ctx.currentTime + 0.1; this.stepN = 0; this.timer = setInterval(() => this.sched(), 30); }
     else if (!on && this.playing) { this.playing = false; clearInterval(this.timer); this.timer = null; }
   },
+  /* guitarra con distorsión: quinta + octava en diente de sierra → saturación → pasa-bajos */
+  gtr(f, t, dur, vol, mute) {
+    const c = this.ctx;
+    if (!this.dist) { const ws = c.createWaveShaper(), n = 256, cv = new Float32Array(n); for (let i = 0; i < n; i++) { const x = i / (n - 1) * 2 - 1; cv[i] = Math.tanh(x * 7); } ws.curve = cv; const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2800; const og = c.createGain(); og.gain.value = 0.2; ws.connect(lp); lp.connect(og); og.connect(this.mg); this.dist = ws; }
+    const g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + 0.006);
+    if (mute) g.gain.exponentialRampToValueAtTime(0.0001, t + dur); else { g.gain.setValueAtTime(vol, t + dur * 0.75); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); }
+    g.connect(this.dist);
+    for (const m of [1, 1.498, 2.005]) { const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.value = f * m; o.connect(g); o.start(t); o.stop(t + dur + 0.02); }
+  },
+  /* bajo/sintetizador con filtro que se abre y cierra */
+  pluck(f, t, dur, vol, fc, type = 'sawtooth') {
+    const c = this.ctx, o = c.createOscillator(), fl = c.createBiquadFilter(), g = c.createGain(); o.type = type; o.frequency.value = f;
+    fl.type = 'lowpass'; fl.Q.value = 7; fl.frequency.setValueAtTime(fc, t); fl.frequency.exponentialRampToValueAtTime(Math.max(120, fc * 0.18), t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(fl); fl.connect(g); g.connect(this.mg); o.start(t); o.stop(t + dur + 0.02);
+  },
+  sirenOn(on) {
+    if (!this.ctx) return; const c = this.ctx;
+    if (!this.sirG) { const o = c.createOscillator(), l = c.createOscillator(), lg = c.createGain(), g = c.createGain(); o.type = 'square'; o.frequency.value = 760; l.frequency.value = 2.2; lg.gain.value = 180; l.connect(lg); lg.connect(o.frequency); g.gain.value = 0; o.connect(g); g.connect(this.sg); o.start(); l.start(); this.sirG = g; }
+    this.sirG.gain.setTargetAtTime(on ? 0.035 : 0, c.currentTime, 0.15);
+  },
+  /* banda sonora: rock (guitarras y batería) y electrónica (bombo a negras, bajo y arpegios); en «mezcla» alterna por edición */
   sched() {
     const c = this.ctx; if (!c || c.state !== 'running') return;
-    const BASE = [0, 5, 2, -2, 4, 3, -4, -5, 1, 7, -3], PROG = [[0, 8, 3, 10], [0, 5, 8, 7], [0, 3, 10, 8], [0, 10, 8, 7]], z = this.zone % 11, prog = PROG[z % 4];
+    const mix = this.style || 'mix', rock = mix === 'rock' || (mix === 'mix' && this.inPlay && this.zone % 2 === 0), mg = this.mg, ST = 1.0595;
+    const bpm = rock ? 132 + (this.tempo - 112) * 1.3 : 120 + (this.tempo - 112) * 0.7;
+    const RP = [[0, 3, 5, 8], [0, 8, 3, 10], [0, 5, 3, 7], [0, 10, 8, 5]], EP = [[0, 8, 3, 10], [0, 5, 8, 7], [0, 3, 10, 5], [0, 7, 8, 10]], KEY = [0, 2, -2, 3, 5, -3, 1];
+    const RIFF = [0, -1, 3, 5, -1, 7, 5, 3, 0, -1, 10, 7, 5, -1, 3, 5], ARP = [0, 7, 12, 15, 12, 7, 19, 12, 0, 7, 12, 15, 24, 19, 15, 12];
     while (this.nextT < c.currentTime + 0.15) {
-      const s = this.stepN % 16, bar = Math.floor(this.stepN / 16) % 4, t = this.nextT, root = 110 * Math.pow(1.0595, BASE[z] + prog[bar]), mg = this.mg;
-      if (s % 4 === 0) this.tone(150, t, 0.14, 'sine', 0.5, 42, mg);
-      if (s === 4 || s === 12) { this.noise(t, 0.14, 0.18, 1800, 'bandpass', mg); this.tone(190, t, 0.08, 'triangle', 0.1, 0, mg); }
-      if (s % 2 === 1) this.noise(t, 0.035, 0.06, 7500, 'highpass', mg);
-      if ([0, 3, 6, 8, 11, 14].includes(s)) this.tone(root * (s === 8 ? 1 : 0.5), t, 0.16, 'sawtooth', 0.09, 0, mg);
-      if (s % 2 === 0) { const iv = [0, 7, 12, 15, 19, 12, 7, 3][(s / 2 + bar * 3) % 8]; this.tone(root * 2 * Math.pow(1.0595, iv), t, 0.11, 'triangle', 0.045, 0, mg); }
-      this.nextT += 60 / this.tempo / 4; this.stepN++;
+      const n = this.stepN, s = n % 16, bar = Math.floor(n / 16), b4 = bar % 4, sect = Math.floor(bar / 8), t = this.nextT, key = KEY[(this.zone + sect) % 7], fill = b4 === 3 && s >= 12;
+      if (rock) {
+        const root = 82.41 * Math.pow(ST, key + RP[this.zone % 4][b4]);
+        if ([0, 6, 8, 10].includes(s) && !fill) { this.tone(165, t, 0.13, 'sine', 0.55, 45, mg); this.noise(t, 0.03, 0.1, 3000, 'highpass', mg); }
+        if (s === 4 || s === 12 || fill) { this.noise(t, fill ? 0.09 : 0.17, fill ? 0.16 : 0.24, 1900, 'bandpass', mg, 0.8); this.tone(200, t, 0.09, 'triangle', 0.13, 120, mg); }
+        if (s % 2 === 0) this.noise(t, s % 8 === 6 ? 0.12 : 0.04, 0.05, 8000, 'highpass', mg);
+        if (s === 0 || s === 8) this.gtr(root, t, 60 / bpm * 0.9, 0.5, false);
+        else if (s % 2 === 0 || s === 3 || s === 11) this.gtr(root, t, 0.09, 0.42, true);
+        if (s % 2 === 0) this.pluck(root / 2, t, 0.2, 0.22, 500, 'sawtooth');
+        if (sect % 2 === 1 && RIFF[s] >= 0 && (b4 === 1 || b4 === 3)) this.tone(root * 4 * Math.pow(ST, RIFF[s]), t, 0.13, 'square', 0.035, 0, mg);
+      } else {
+        const root = 55 * Math.pow(ST, key + EP[this.zone % 4][b4]), drop = sect % 4 !== 3 || b4 < 2;
+        if (s % 4 === 0 && drop) this.tone(170, t, 0.16, 'sine', 0.6, 40, mg);
+        if ((s === 4 || s === 12) && drop) { this.noise(t, 0.13, 0.17, 1500, 'bandpass', mg, 0.7); this.noise(t + 0.012, 0.1, 0.1, 2400, 'bandpass', mg, 0.7); }
+        if (s % 4 === 2) this.noise(t, 0.09, 0.07, 9000, 'highpass', mg); else if (s % 2 === 1) this.noise(t, 0.025, 0.035, 9500, 'highpass', mg);
+        if (s % 4 !== 0) this.pluck(root * (s % 8 === 6 ? 2 : 1), t, 0.17, 0.2, 900 + 500 * Math.sin(n * 0.05), 'sawtooth');
+        this.pluck(root * 4 * Math.pow(ST, ARP[(s + b4 * 4) % 16]), t, 0.14, s % 4 === 0 ? 0.035 : 0.06, 2600 + 1400 * Math.sin(n * 0.02), 'square');
+        if (s === 0) for (const iv of [0, 7, 15]) this.tone(root * 2 * Math.pow(ST, iv), t, 60 / bpm * 3.6, 'triangle', 0.035, 0, mg);
+        if (!drop && s % 2 === 0) this.noise(t, 0.08, 0.02 + 0.012 * s, 2000 + 400 * s, 'bandpass', mg, 2);
+        if (fill && drop) this.noise(t, 0.06, 0.13, 1800, 'bandpass', mg);
+      }
+      this.nextT += 60 / bpm / 4; this.stepN++;
     }
   }
 };

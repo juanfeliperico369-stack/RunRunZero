@@ -1,12 +1,12 @@
 /* ===== MODELOS low-poly + atlas estilo revista EMSAY ===== */
 const PC = (i, sh = 1) => [i / 4, sh, 0];           // color de paleta (índice 0..4, sombra)
 const DK = hex('#1c1c22'), GR = hex('#8a8f96'), WH = hex('#f4f1e6'), SKIN = hex('#c98e62');
-const AR = (x, y, w, h) => { const p = 1; return [(x + p) / 1024, (y + p) / 1024, (x + w - p) / 1024, (y + h - p) / 1024]; };
+const AR = (x, y, w, h) => { const p = 1; return [(x + p) / 1024, (y + p) / 2048, (x + w - p) / 1024, (y + h - p) / 2048]; };
 const BILL = i => AR((i % 2) * 512, Math.floor(i / 2) * 192, 512, 192);
-const ATR = { L: { E: AR(464, 960, 64, 64), M: AR(528, 960, 64, 64), S: AR(592, 960, 64, 64), A: AR(656, 960, 64, 64), Y: AR(720, 960, 64, 64) }, shadow: AR(32, 960, 64, 64), bike: AR(96, 960, 64, 64), arrow: AR(160, 960, 64, 64), x2: AR(224, 960, 64, 64), cover: AR(288, 960, 48, 64), star: AR(336, 960, 64, 64), eye: AR(400, 960, 64, 64) };
+const ATR = { sign: [0, 1, 2, 3, 4, 5, 6, 7].map(i => AR((i % 2) * 512, 1024 + Math.floor(i / 2) * 128, 512, 128)), event: [0, 1, 2, 3].map(i => AR((i % 2) * 512, 1536 + Math.floor(i / 2) * 192, 512, 192)), poster: [0, 1, 2, 3].map(i => AR(i * 96, 1920, 96, 128)), L: { E: AR(464, 960, 64, 64), M: AR(528, 960, 64, 64), S: AR(592, 960, 64, 64), A: AR(656, 960, 64, 64), Y: AR(720, 960, 64, 64) }, shadow: AR(32, 960, 64, 64), bike: AR(96, 960, 64, 64), arrow: AR(160, 960, 64, 64), x2: AR(224, 960, 64, 64), cover: AR(288, 960, 48, 64), star: AR(336, 960, 64, 64), eye: AR(400, 960, 64, 64) };
 
 function makeAtlas() {
-  const c = document.createElement('canvas'); c.width = 1024; c.height = 1024;
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 2048;
   const x = c.getContext('2d'), TT = '"Titulos","Arial Narrow",Impact,sans-serif', CU = '"Cuerpo",system-ui,sans-serif', SE = 'Georgia,"Times New Roman",serif', MO = 'ui-monospace,Consolas,monospace';
   x.textBaseline = 'middle'; x.textAlign = 'center';
   const sp = (t, n) => t.split('').join(String.fromCharCode(8202).repeat(n));
@@ -57,6 +57,13 @@ function makeAtlas() {
   x.fillStyle = '#ffc23a'; x.beginPath(); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4 - Math.PI / 2, r = i % 2 ? 10 : 30; x.lineTo(368 + Math.cos(a) * r, 992 + Math.sin(a) * r); } x.closePath(); x.fill();
   x.strokeStyle = '#fff'; x.lineWidth = 5; x.beginPath(); x.arc(432, 992, 26, 0, 7); x.stroke(); x.fillStyle = '#c0191c'; x.beginPath(); x.arc(432, 992, 10, 0, 7); x.fill();
   'EMSAY'.split('').forEach((ch, i) => { const cx = 496 + i * 64; x.fillStyle = '#ffc23a'; x.beginPath(); x.arc(cx, 992, 30, 0, 7); x.fill(); x.lineWidth = 4; x.strokeStyle = '#111'; x.stroke(); x.fillStyle = '#1d4e79'; x.font = '46px ' + TT; x.fillText(ch, cx, 995); });
+  // ---- mitad inferior: letreros de locales, eventos de Orbe y pósters de la editorial ----
+  const SG = [['FERRETERÍA', '#ffc23a', '#111', 'EL TORNILLO FELIZ'], ['MADERAS', '#6b4226', '#f5e6c0', 'DEPÓSITO EL ROBLE'], ['TIENDA', '#c0191c', '#fff', 'MECATO Y GASEOSA'], ['LIMONADA', '#2dbd5a', '#fff', 'BIEN FRÍA'], ['GUARAPO', '#8c6d1f', '#fff', 'DE CAÑA'], ['AREPAS', '#ff5a2a', '#fff', 'Y EMPANADAS'], ['ZONA LIBRE', '#111', '#2dffb3', 'TRUCOS · DESCANSO'], ['KIOSCO EMSAY', '#0e6378', '#e8e4c4', 'LAS NUEVAS NUEVAS']];
+  SG.forEach((q, i) => { const X = (i % 2) * 512, Y = 1024 + Math.floor(i / 2) * 128; x.fillStyle = q[1]; x.fillRect(X, Y, 512, 128); x.strokeStyle = q[2]; x.lineWidth = 6; x.strokeRect(X + 8, Y + 8, 496, 112); x.fillStyle = q[2]; fit(q[0], '#px ' + TT, 470, 92); x.fillText(q[0], X + 256, Y + 54); x.font = '800 17px ' + CU; x.fillText(sp(q[3], 2), X + 256, Y + 104); });
+  const EV = [['FERIA DEL LIBRO', 'DE ORBE', '#fbe7a9', '#c0191c', '#111'], ['CARNAVAL', 'DE LAS MIL RUEDAS', '#a42cff', '#ffc23a', '#fff'], ['MARATÓN', 'DE LA CICLOVÍA', '#0e6378', '#e8e4c4', '#ffc23a'], ['FESTIVAL', 'DE COMETAS', '#5cc6ee', '#fff', '#c0191c']];
+  EV.forEach((q, i) => { const X = (i % 2) * 512, Y = 1536 + Math.floor(i / 2) * 192; x.fillStyle = q[2]; x.fillRect(X, Y, 512, 192); x.fillStyle = q[4]; x.font = '800 15px ' + CU; x.fillText(sp('EMSAY PRESENTA', 3), X + 256, Y + 26); x.fillStyle = q[3]; fit(q[0], '#px ' + TT, 470, 104); x.fillText(q[0], X + 256, Y + 88); x.fillStyle = q[4]; fit(q[1], '#px ' + TT, 440, 46); x.fillText(q[1], X + 256, Y + 152); });
+  const PO = [['LAS', 'NUEVAS', 'NUEVAS', '#0e6378', '#e8e4c4'], ['LEE', 'EMSAY', 'HOY', '#c0191c', '#fff'], ['RUEDA', 'Y', 'LEE', '#ffc23a', '#111'], ['ORBE', 'TE', 'LEE', '#1b4459', '#ff5a2a']];
+  PO.forEach((q, i) => { const X = i * 96, Y = 1920; x.fillStyle = q[3]; x.fillRect(X, Y, 96, 128); x.strokeStyle = q[4]; x.lineWidth = 3; x.strokeRect(X + 5, Y + 5, 86, 118); x.fillStyle = q[4]; for (let k = 0; k < 3; k++) { fit(q[k], '#px ' + TT, 78, 40); x.fillText(q[k], X + 48, Y + 28 + k * 36); } });
   return c;
 }
 
@@ -73,7 +80,8 @@ const MOD = {
     for (let k = -11; k < 60; k++) {
       const z0 = -k * S, z1 = z0 - S, alt = k & 1, q = (x0, x1, y, col, e = 0, uv) => m.quad([x0, y, z0], [x1, y, z0], [x1, y, z1], [x0, y, z1], col, e, uv);
       q(-3.2, 3.2, 0, PC(0, alt ? 1 : 0.955));
-      for (const lx of [-1, 1]) { m.quad([lx - 0.06, 0.012, z0], [lx + 0.06, 0.012, z0], [lx + 0.06, 0.012, z0 - 2], [lx - 0.06, 0.012, z0 - 2], PC(3), 1); }
+      for (const lx of [-1.6, 1.6]) { m.quad([lx - 0.05, 0.012, z0], [lx + 0.05, 0.012, z0], [lx + 0.05, 0.012, z0 - 2], [lx - 0.05, 0.012, z0 - 2], PC(3), 1); }
+      for (const lx of [-0.1, 0.1]) q(lx - 0.035, lx + 0.035, 0.012, PC(4, 1.1), 1);
       for (const sd of [-1, 1]) {
         const a = sd * 3.02, b = sd * 3.12; q(Math.min(a, b), Math.max(a, b), 0.012, PC(3), 1);
         const c0 = sd * 3.2, c1 = sd * 3.5; q(Math.min(c0, c1), Math.max(c0, c1), 0.16, PC(4), 1);
@@ -83,8 +91,10 @@ const MOD = {
         const g0 = sd * 5.3, g1 = sd * 80; q(Math.min(g0, g1), Math.max(g0, g1), 0, PC(2, (k >> 1) & 1 ? 1 : 0.9));
       }
       if (k % 10 === 0) {
-        m.quad([-0.6, 0.014, z0 - 1], [0.6, 0.014, z0 - 1], [0.6, 0.014, z0 - 2.4], [-0.6, 0.014, z0 - 2.4], PC(3), 1, ATR.bike);
-        for (const lx of [-2, 2]) m.quad([lx - 0.45, 0.014, z0 - 20], [lx + 0.45, 0.014, z0 - 20], [lx + 0.45, 0.014, z0 - 21.8], [lx - 0.45, 0.014, z0 - 21.8], PC(3), 1, ATR.arrow);
+        const fl = u => [u[0], u[3], u[2], u[1]];
+        m.quad([0.25, 0.014, z0 - 1], [1.35, 0.014, z0 - 1], [1.35, 0.014, z0 - 2.3], [0.25, 0.014, z0 - 2.3], PC(3), 1, ATR.bike); m.quad([-1.35, 0.014, z0 - 11], [-0.25, 0.014, z0 - 11], [-0.25, 0.014, z0 - 12.3], [-1.35, 0.014, z0 - 12.3], PC(3), 1, fl(ATR.bike));
+        for (const lx of [0.8, 2.4]) m.quad([lx - 0.4, 0.014, z0 - 20], [lx + 0.4, 0.014, z0 - 20], [lx + 0.4, 0.014, z0 - 21.7], [lx - 0.4, 0.014, z0 - 21.7], PC(3), 1, ATR.arrow);
+        for (const lx of [-0.8, -2.4]) m.quad([lx - 0.4, 0.014, z0 - 30], [lx + 0.4, 0.014, z0 - 30], [lx + 0.4, 0.014, z0 - 31.7], [lx - 0.4, 0.014, z0 - 31.7], PC(3), 1, fl(ATR.arrow));
       }
     }
     return m;
@@ -108,6 +118,7 @@ const MOD = {
     return m;
   },
   billFrame() { const m = new MB(); for (const x of [-2, 2]) m.box(x, 1.6, 0.12, 0.16, 3.2, 0.16, PC(1, 0.8)); m.box(0, 3.95, 0.06, 5.0, 1.95, 0.12, PC(1, 0.7)); return m; },
+  billPanelUV(uv) { const m = new MB(); m.quad([-2.4, 3.05, 0], [2.4, 3.05, 0], [2.4, 4.85, 0], [-2.4, 4.85, 0], WH, 1, uv); return m; },
   billPanel(i) { const m = new MB(); m.quad([-2.4, 3.05, 0], [2.4, 3.05, 0], [2.4, 4.85, 0], [-2.4, 4.85, 0], WH, 1, BILL(i)); return m; },
   gateFrame() { const m = new MB(); for (const x of [-4.4, 4.4]) { m.box(x, 3, 0, 0.5, 6, 0.5, PC(1, 0.85)); m.box(x, 0.2, 0, 0.8, 0.4, 0.8, PC(1, 0.7)); } m.box(0, 6.0, 0, 9.4, 0.4, 0.5, PC(1, 0.85)); m.box(0, 5.05, 0.02, 7.1, 2.0, 0.2, PC(1, 0.6)); return m; },
   gatePanel(i) { const m = new MB(); m.quad([-3.4, 4.15, -0.14], [3.4, 4.15, -0.14], [3.4, 5.9, -0.14], [-3.4, 5.9, -0.14], WH, 1, BILL(i)); m.quad([3.4, 4.15, 0.14], [-3.4, 4.15, 0.14], [-3.4, 5.9, 0.14], [3.4, 5.9, 0.14], WH, 1, BILL(i)); return m; },
@@ -123,7 +134,7 @@ const MOD = {
   puddle() { const m = new MB(); m.at(0, 0, 0, 0, 0, 0, 1, 1, 1.55, q => { q.cyl(0, 0.004, 0, 0.85, 0.012, 12, hex('#5fb4e6'), 1); q.cyl(0.25, 0.006, -0.2, 0.3, 0.012, 8, hex('#d8f1ff'), 1); }); return m; },
   branch(side, lanes) {
     const m = new MB(), brown = hex('#5b4636'), leaf = hex('#3f8a4f'), leaf2 = hex('#2f6e3c'), r = rngOf(lanes.length * 7 + side + 20);
-    const tx = side * 4.4, xs = lanes.map(l => (l - 1) * LW), far = side > 0 ? Math.min(...xs) - 1 : Math.max(...xs) + 1, near = side > 0 ? Math.max(...xs) + 1 : Math.min(...xs) - 1;
+    const tx = side * 4.4, xs = lanes.map(l => LX(l)), far = side > 0 ? Math.min(...xs) - 0.8 : Math.max(...xs) + 0.8, near = side > 0 ? Math.max(...xs) + 0.8 : Math.min(...xs) - 0.8;
     m.cyl(tx, 0, 0, 0.32, 4.2, 7, brown); m.ico(tx, 4.6, 0, 1.7, leaf2, 0, 0.85, r, 0.25);
     const len = Math.abs(tx - far); m.at((tx + far) / 2, 3.1, 0, 0, 0, Math.PI / 2, 1, 1, 1, q => q.cyl(0, -len / 2, 0, 0.15, len, 6, brown));
     const lw = Math.abs(near - far); m.at((near + far) / 2, 1.5, 0, 0, 0, Math.PI / 2, 1, 1, 1, q => q.cyl(0, -lw / 2, 0, 0.12, lw, 6, brown));

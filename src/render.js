@@ -7,12 +7,17 @@ const RN = {
   parts: [], mo: {}, branches: {}, pl: null, plKey: '', trailT: 0, quality: 1,
   init() {
     const mk = b => R.mesh(b), mo = this.mo;
-    for (const k of ['road', 'tree', 'pine', 'bush', 'lamp', 'bench', 'hill', 'billFrame', 'gateFrame', 'rock', 'cone', 'barrier', 'pothole', 'puddle', 'cart', 'kiosk', 'coin', 'gift', 'clue', 'magnet', 'shield', 'turbo', 'x2', 'cube', 'shadow', 'ink', 'flowers', 'wing', 'bfly', 'bird', 'bwing', 'rabbit', 'palm', 'parasol', 'sea', 'mount', 'fence', 'coffee', 'rail', 'boat', 'buzon', 'flag', 'door', 'rarm', 'mag', 'tunnel', 'portal']) mo[k] = mk(MOD[k]());
+    for (const k of ['road', 'tree', 'pine', 'bush', 'lamp', 'bench', 'hill', 'billFrame', 'gateFrame', 'rock', 'cone', 'barrier', 'pothole', 'puddle', 'kiosk', 'coin', 'gift', 'clue', 'magnet', 'shield', 'turbo', 'x2', 'cube', 'shadow', 'ink', 'flowers', 'wing', 'bfly', 'bird', 'bwing', 'rabbit', 'palm', 'parasol', 'sea', 'mount', 'fence', 'coffee', 'rail', 'boat', 'buzon', 'flag', 'door', 'rarm', 'mag', 'tunnel', 'portal']) mo[k] = mk(MOD[k]());
     mo.runB = [0, 1, 2, 3].map(c => mk(MOD.npcRun(c, 0))); mo.skB = [0, 1, 2, 3].map(c => mk(MOD.npcRun(c, 1))); mo.runL = mk(MOD.npcLeg(0)); mo.skL = mk(MOD.npcLeg(1));
     mo.kite = [0, 1, 2].map(v => mk(MOD.kite(v))); mo.balloon = [0, 1].map(v => mk(MOD.balloon(v)));
+    for (const k of ['tlight', 'wallseg', 'railseg', 'posterWall', 'bundle', 'envelope', 'paper', 'xroad', 'parkArch', 'quarter', 'policia', 'ducks']) mo[k] = mk(MOD[k]());
+    mo.shop = [0, 1, 2].map(v => mk(MOD.shop(v))); mo.stall = [0, 1, 2].map(v => mk(MOD.stall(v))); mo.person = [0, 1, 2, 3].map(v => mk(MOD.person(v))); mo.poster = [0, 1, 2, 3].map(v => mk(MOD.poster(v)));
+    mo.carNpc = [0, 1, 2, 3].map(v => mk(MOD.carNpc(v))); mo.motoNpc = [0, 1, 2, 3].map(v => mk(MOD.motoNpc(v)));
+    mo.dogA = mk(MOD.pet('m1', '#c9935e')); mo.dogT = mk(MOD.petTail('m1', '#c9935e')); mo.catA = mk(MOD.pet('m2', '#3a3a46')); mo.catT = mk(MOD.petTail('m2', '#3a3a46')); this.cars = [];
     mo.house = [0, 1, 2].map(v => mk(MOD.house(v))); mo.resi = [0, 1, 2].map(v => mk(MOD.resi(v))); this.proj = [];
     mo.bld = []; for (let v = 0; v < 3; v++) mo.bld.push([mk(MOD.bld(v, 2)), mk(MOD.bld(v, 3))]);
     mo.bill = []; mo.gate = []; for (let i = 0; i < 10; i++) { mo.bill.push(mk(MOD.billPanel(i))); mo.gate.push(mk(MOD.gatePanel(i))); }
+    for (let i = 0; i < 4; i++) mo.bill.push(mk(MOD.billPanelUV(ATR.event[i])));
     mo.truck = [0, 1, 2].map(c => mk(MOD.truck(c))); mo.npc = [0, 1, 2, 3].map(c => mk(MOD.npc(c)));
     mo.ramp = mk(MOD.ramp(2.4, 6, '#ffc23a')); mo.jramp = mk(MOD.ramp(1.1, 4, '#ff5a2a'));
     mo.halo = { magnet: mk(MOD.halo('#ff5a2a')), turbo: mk(MOD.halo('#ffc23a')), x2: mk(MOD.halo('#ff2fb3')), shield: mk(MOD.halo('#39c8ff')), gift: mk(MOD.halo('#ff2fb3')), clue: mk(MOD.halo('#2dffb3')), glide: mk(MOD.halo('#2dffb3')), letter: mk(MOD.halo('#ffc23a')) };
@@ -21,9 +26,10 @@ const RN = {
   branch(v) { const k = v.side + ':' + v.lanes.join(''); return this.branches[k] || (this.branches[k] = R.mesh(MOD.branch(v.side, v.lanes))); },
   setPlayer(cos, vid) {
     const key = JSON.stringify(cos) + vid; if (key === this.plKey) return; this.plKey = key;
-    if (this.pl) for (const k in this.pl) R.free(this.pl[k]);
+    if (this.pl) for (const k in this.pl) if (this.pl[k]) R.free(this.pl[k]);
     const r = MOD.rider(cos);
-    this.pl = { veh: R.mesh(MOD.veh(vid, cos.paint, cos.pe)), t: R.mesh(r.t), th: R.mesh(r.th), sn: R.mesh(r.sn), ar: R.mesh(r.ar) };
+    const v2 = ['uni', 'ebike', 'moped', 'moto', 'auto', 'camion'].includes(vid), nov = vid === 'foot' || vid === 'jetpack';
+    this.pl = { veh: nov ? null : R.mesh(v2 ? MOD.veh2(vid, cos.paint, cos.pe) : MOD.veh(vid, cos.paint, cos.pe)), jet: vid === 'jetpack' ? R.mesh(MOD.veh2('jetpack', cos.paint, cos.pe)) : null, t: R.mesh(r.t), th: R.mesh(r.th), sn: R.mesh(r.sn), ar: R.mesh(r.ar) };
     const pc = COSI[cos.pet]; if (pc && pc.c) { this.pl.pet = R.mesh(MOD.pet(cos.pet, pc.c)); this.pl.ptail = R.mesh(MOD.petTail(cos.pet, pc.c)); } this.petK = pc && pc.c ? cos.pet : null;
     this.vid = vid;
   },
@@ -40,7 +46,7 @@ const RN = {
   },
   camera(g, mode, time, dt) {
     const P = g.p, c = this.cam, asp = R.w / R.h, k = clamp((1.05 - asp) / 0.55, 0, 1);
-    if (mode === 'garage') { const a = time * 0.45 + 0.6, rr = 4.9 + k * 0.6; c.ex = Math.sin(a) * rr; c.ez = Math.cos(a) * rr; c.ey = 1.7; c.cx = 0; c.cy = -0.85 - k * 0.2; c.cz = 0; c.fov = 0.9 + k * 0.2; }
+    if (mode === 'garage') { const a = time * 0.45 + 0.6, rr = (g.veh.id === 'auto' || g.veh.id === 'camion' ? 7.5 : 4.9) + k * 0.6; c.ex = P.x + Math.sin(a) * rr; c.ez = Math.cos(a) * rr; c.ey = 1.7; c.cx = P.x; c.cy = -0.85 - k * 0.2; c.cz = 0; c.fov = 0.9 + k * 0.2; }
     else if (mode === 'menu') { c.ex = P.x * 0.6 + 1.6; c.ey = 1.85 + P.y * 0.5; c.ez = 4.4 + k * 1.6; c.cx = P.x * 0.6; c.cy = 1.0 + P.y * 0.4; c.cz = -8; c.fov = 1.0 + k * 0.15; }
     else {
       this.camY = lerp(this.camY, P.y, Math.min(1, dt * 6));
@@ -71,7 +77,11 @@ const RN = {
     else if (e.k === 'clue') this.emit(14, P.x, 1.2, P.s + 1, hex('#2dffb3'), 5, 0.1, 0.9, 4, 0.2);
     else if (e.k === 'power' || e.k === 'gift') this.emit(10, P.x, 1.4, P.s + 0.5, hex(e.k === 'gift' ? '#ff2fb3' : '#39c8ff'), 3, 0.06, 0.45, 3.5, 0.4);
     else if (e.k === 'land' && e.a > 0.35) this.emit(5, P.x, 0.1, P.s, hex('#cfc4a8'), 3, 0.1, 0.4, 1.5);
-    else if (e.k === 'deliver') { const d = e.a; this.proj.push({ x0: P.x + (d.x > 0 ? 0.3 : -0.3), y0: P.y + 1.4, s0: P.s, x1: d.x, y1: 1.3, s1: d.s, t: 0, T: d.T }); this.throwT = 0.32; this.throwSide = d.x > 0 ? 1 : -1; }
+    else if (e.k === 'deliver') { const d = e.a; this.proj.push({ x0: P.x + d.side * 0.3, y0: P.y + 1.4, s0: P.s, x1: d.side * (d.obj === 'kiosko' ? 3.8 : 4.35), y1: d.obj === 'muro' ? 1.5 : 1.3, s1: d.s, t: 0, T: d.T, m: d.k === 'per' ? 'paper' : d.k === 'cor' ? 'envelope' : d.k === 'kio' ? 'bundle' : 'mag' }); this.throwT = 0.32; this.throwSide = d.side; }
+    else if (e.k === 'grind' || e.k === 'grindOn') this.emit(6, P.x, P.y + 0.05, P.s, hex('#ffc23a'), 4, 0.06, 0.35, 2.5);
+    else if (e.k === 'vault') this.emit(5, P.x, 0.4, P.s, hex('#cfc4a8'), 3, 0.09, 0.4, 2);
+    else if (e.k === 'near') this.emit(4, (P.x + e.a.x) / 2, 1, P.s, hex('#ffffff'), 2, 0.05, 0.3, 1, 0);
+    else if (e.k === 'critHit') { this.emit(10, e.a.x, 0.4, e.a.s, hex('#f4f1e6'), 5, 0.08, 0.7, 4); }
     else if (e.k === 'shield') { this.emit(14, P.x, 1, P.s, hex('#39c8ff'), 6, 0.12, 0.8, 4); this.shake = 0.5; }
   },
   trail(g, dt, id) {
@@ -84,28 +94,38 @@ const RN = {
   },
   drawPlayer(g, time, dt) {
     const P = g.p, id = g.veh.id, pl = this.pl; if (!pl) return;
-    const M = this.M, A = this.A, B = this.B, C = this.C, D = this.D, Ee = this.E;
-    this.cr = lerp(this.cr, P.crouch > 0 ? 1 : 0, Math.min(1, dt * 18)); const cr = this.cr;
-    const tx = (P.lane - 1) * LW, roll = clamp((tx - P.x) * 0.16, -0.32, 0.32), pitch = P.air ? clamp(-P.vy * 0.012, -0.25, 0.25) : 0;
-    let spin = 0, vspin = 0, vflip = 0;
-    if (P.air && !P.trickHit && P.airT > 0.15 && P.alive) { const k = clamp((P.airT - 0.15) / 0.38, 0, 1), e = k * k * (3 - 2 * k) * Math.PI * 2; if (id === 'skate') vflip = e; else if (id === 'scooter' || id === 'long') vspin = e; else spin = e; }
+    const M = this.M, A = this.A, B = this.B, C = this.C, D = this.D, Ee = this.E, TAU = Math.PI * 2;
+    this.cr = lerp(this.cr, P.crouch > 0 ? 1 : P.grind ? 0.45 : 0, Math.min(1, dt * 18)); const cr = this.cr;
+    this.brk = lerp(this.brk || 0, P.brake ? 1 : 0, Math.min(1, dt * 10)); const brk = this.brk;
+    const big = id === 'auto' || id === 'camion', tx = LX(P.lane), roll = clamp((tx - P.x) * 0.16, -0.32, 0.32) * (big ? 0.3 : 1), pitch = P.air ? clamp(-P.vy * 0.012, -0.25, 0.25) : 0;
+    let spin = 0, vspin = 0, vflip = 0, flip = 0;
+    if (P.air && !P.trickHit && P.airT > 0.15 && P.alive && !big && P.glide <= 0 && !P.trN) { const k = clamp((P.airT - 0.15) / 0.38, 0, 1), e = k * k * (3 - 2 * k) * TAU; if (id === 'skate') vflip = e; else if (id === 'scooter' || id === 'long') vspin = e; else if (id !== 'foot' && id !== 'jetpack') spin = e; }
+    if (P.trN > 0 && P.air && !big) { const k = clamp(P.trT / 0.3, 0, 1), e = k * k * (3 - 2 * k) * TAU; if (P.trN === 1) flip = -e; else spin = e; }
     let dead = 0, slide = 0; if (!P.alive) { dead = Math.min(1.5, P.deadT * 4); slide = Math.min(3.5, P.deadT * 6); }
-    const blink = P.inv > 0 && P.alive && Math.floor(time * 14) % 2;
-    if (blink) return;
-    M4.trs(B, P.x, P.y, 0, spin, pitch - dead * 0.2 + Math.atan(this.sl || 0), roll);
+    if (P.inv > 0 && P.alive && Math.floor(time * 14) % 2) return;
+    const rx = pitch - dead * 0.2 + Math.atan(this.sl || 0) + (big ? -brk * 0.03 : 0);
+    if (flip) { M4.trs(B, P.x, P.y + 0.95, 0, spin, rx + flip, roll); M4.trs(A, 0, -0.95, 0); M4.mul(B, B, A); } else M4.trs(B, P.x, P.y, 0, spin, rx, roll);
     // vehículo
     const sk = id === 'quad' || id === 'inline';
-    if (!sk) { M4.trs(A, 0, 0, -slide, vspin, 0, vflip + dead * 0.6); M4.mul(M, B, A); R.draw(pl.veh, M); }
+    if (!sk && pl.veh) { M4.trs(A, 0, 0, -slide, vspin, 0, vflip + dead * 0.6); M4.mul(M, B, A); R.draw(pl.veh, M); }
+    if (big) return;
     // pose
     let hy, hz = 0, yaw = 0, lean, feet, arms, splay = 0.04;
     const ph = P.phase, grounded = !P.air && P.alive;
-    if (id === 'scooter') { hy = 0.98 - 0.34 * cr; hz = 0.02; lean = 0.18 + 0.5 * cr; const f = time * 7.5, lift = Math.max(0, Math.cos(f)) * 0.16; feet = [[0.19, -0.06], grounded && cr < 0.5 ? [0.07 + lift, 0.2 + 0.25 * Math.sin(f)] : [0.19, 0.2]]; arms = [[0.72 + 0.3 * cr, 0.05], [0.72 + 0.3 * cr, -0.05]]; }
+    if (id === 'foot' || id === 'jetpack') {
+      hy = 0.9 - 0.3 * cr; lean = 0.22 + 0.45 * cr; const run = clamp(P.v / 9, 0.12, 1), f = ph * 0.9;
+      if (!grounded) { feet = [[0.44, -0.2], [0.3, 0.22]]; arms = id === 'jetpack' ? [[0.35, 0.25], [0.35, -0.25]] : [[-0.5, 0.5], [-0.5, -0.5]]; }
+      else { feet = [0, 1].map(i => { const a = f + i * Math.PI; return [0.08 + Math.max(0, -Math.cos(a)) * 0.3 * run, 0.36 * Math.sin(a) * run]; }); arms = [[0.85 * Math.sin(f) * run, 0.08], [-0.85 * Math.sin(f) * run, -0.08]]; }
+    }
+    else if (id === 'scooter') { hy = 0.98 - 0.34 * cr; hz = 0.02; lean = 0.18 + 0.5 * cr; const f = time * 7.5, lift = Math.max(0, Math.cos(f)) * 0.16; feet = [[0.19, -0.06], grounded && cr < 0.5 && !P.brake ? [0.07 + lift, 0.2 + 0.25 * Math.sin(f)] : [0.19, 0.2]]; arms = [[0.72 + 0.3 * cr, 0.05], [0.72 + 0.3 * cr, -0.05]]; }
     else if (id === 'escooter') { hy = 1.02 - 0.34 * cr; hz = 0.03; lean = 0.12 + 0.5 * cr; feet = [[0.255, -0.17], [0.255, 0.2]]; arms = [[0.7 + 0.3 * cr, 0.05], [0.7 + 0.3 * cr, -0.05]]; }
-    else if (id === 'bike' || id === 'trike') { hy = 1.03 - 0.08 * cr; hz = 0.12; lean = 0.55 + 0.3 * cr; const f = ph * 0.7; feet = [[0.36 - 0.17 * Math.cos(f) + 0.07, -0.02 + 0.17 * Math.sin(f)], [0.36 + 0.17 * Math.cos(f) + 0.07, -0.02 - 0.17 * Math.sin(f)]]; arms = [[1.0, 0.08], [1.0, -0.08]]; }
+    else if (id === 'bike' || id === 'trike' || id === 'ebike') { hy = 1.03 - 0.08 * cr; hz = 0.12; lean = 0.55 + 0.3 * cr; const f = ph * 0.7; feet = [[0.36 - 0.17 * Math.cos(f) + 0.07, -0.02 + 0.17 * Math.sin(f)], [0.36 + 0.17 * Math.cos(f) + 0.07, -0.02 - 0.17 * Math.sin(f)]]; arms = [[1.0, 0.08], [1.0, -0.08]]; }
+    else if (id === 'uni') { hy = 1.12 - 0.12 * cr; lean = 0.1 + 0.5 * cr; const f = ph * 1.2; feet = [[0.4 - 0.13 * Math.cos(f), 0.13 * Math.sin(f)], [0.4 + 0.13 * Math.cos(f), -0.13 * Math.sin(f)]]; arms = [[0.2, -0.9 + 0.15 * Math.sin(time * 5)], [0.2, 0.9 + 0.15 * Math.sin(time * 5)]]; splay = 0.1; }
+    else if (id === 'moped' || id === 'moto') { const mt = id === 'moto'; hy = (mt ? 0.94 : 0.88) - 0.1 * cr; hz = mt ? 0.2 : 0.28; lean = (mt ? 0.38 : 0.2) + 0.35 * cr; feet = mt ? [[0.4, -0.02], [0.4, -0.02]] : [[0.3, -0.12], [0.3, -0.12]]; arms = [[1.02, 0.1], [1.02, -0.1]]; splay = 0.16; }
     else if (id === 'euc') { hy = 1.02 - 0.34 * cr; lean = 0.1 + 0.5 * cr; feet = [[0.25, -0.02], [0.25, 0.02]]; arms = [[0.3, -0.6], [0.3, 0.6]]; splay = 0.12; }
     else if (id === 'skate' || id === 'long') { hy = 0.9 - 0.3 * cr; yaw = -1.35; lean = 0.15 + 0.4 * cr; feet = null; arms = [[0.25, 0.95], [0.25, -0.95]]; }
-    else { hy = (id === 'inline' ? 1.0 : 0.97) - 0.32 * cr; lean = 0.3 + 0.45 * cr; const f = time * (id === 'inline' ? 5.2 : 6.5); feet = [[0.17 + Math.max(0, -Math.cos(f)) * 0.08, 0.22 * Math.sin(f)], [0.17 + Math.max(0, Math.cos(f)) * 0.08, -0.22 * Math.sin(f)]]; arms = [[0.45 * Math.sin(f), 0.15], [-0.45 * Math.sin(f), -0.15]]; splay = 0.1; }
-    if (!P.alive) { lean += dead * 0.6; }
+    else { hy = (id === 'inline' ? 1.0 : 0.97) - 0.32 * cr; lean = 0.3 + 0.45 * cr; const f = time * (id === 'inline' ? 5.2 : 6.5) * (P.brake ? 0 : 1); feet = [[0.17 + Math.max(0, -Math.cos(f)) * 0.08, 0.22 * Math.sin(f)], [0.17 + Math.max(0, Math.cos(f)) * 0.08, -0.22 * Math.sin(f)]]; arms = [[0.45 * Math.sin(f), 0.15], [-0.45 * Math.sin(f), -0.15]]; splay = 0.1; }
+    lean -= brk * 0.28; if (!P.alive) lean += dead * 0.6;
     // cadera
     M4.trs(A, 0, hy, hz, yaw, 0, 0); M4.mul(C, B, A);
     for (let i = 0; i < 2; i++) {
@@ -118,9 +138,11 @@ const RN = {
     }
     // torso y brazos
     M4.trs(A, 0, 0, 0, 0, -lean, 0); M4.mul(D, C, A); R.draw(pl.t, D);
+    if (pl.jet) { R.draw(pl.jet, D); if (P.air && P.alive && Math.random() < 0.7) this.emit(1, P.x + (Math.random() - 0.5) * 0.2, P.y + 0.75, P.s - 0.3, hex(Math.random() < 0.5 ? '#ff8a1e' : '#ffd23a'), 1, 0.13, 0.22, -4, 0); }
     if (P.glide > 0) arms = [[2.95, 0.12], [2.95, -0.12]];
     if (this.throwT > 0) { this.throwT = Math.max(0, this.throwT - dt); const k = Math.sin((1 - this.throwT / 0.32) * Math.PI), i = this.throwSide > 0 ? 1 : 0; arms = arms.slice(); arms[i] = [2.3 * k - lean * 0.6, this.throwSide * 0.9 * k]; }
-    for (let i = 0; i < 2; i++) { const ar = arms[i], sx = i ? 0.255 : -0.255; M4.trs(A, sx, 0.58, 0, 0, ar[0] + (id === 'skate' || id === 'long' ? 0 : lean * 0.6), ar[1]); M4.mul(M, D, A); R.draw(pl.ar, M); }
+    const stand = id === 'skate' || id === 'long';
+    for (let i = 0; i < 2; i++) { const ar = arms[i], sx = i ? 0.255 : -0.255; M4.trs(A, sx, 0.58, 0, 0, ar[0] + (stand ? 0 : lean * 0.6), ar[1]); M4.mul(M, D, A); R.draw(pl.ar, M); }
     if (P.glide > 0) { M4.trs(A, 0, 2.25, 0.05, time * 0.6, Math.sin(time * 2) * 0.08, Math.sin(time * 1.7) * 0.1, 1.35); M4.mul(M, B, A); R.draw(this.mo.umbrella, M); }
   },
   /* fauna silvestre: mariposas, pájaros, conejos, luciérnagas y semillas (solo decoración) */
@@ -130,7 +152,7 @@ const RN = {
     const zi = Math.floor(Math.max(0, P.s) / 1000) % ZONES.length, night = ZONES[zi].stars > 0.5, urban = zi === 2;
     if (L.length < (this.quality < 0.7 ? 6 : 13) && Math.random() < dt * 3.2) {
       const r = Math.random(), sd = Math.random() < 0.5 ? -1 : 1, s = P.s + 35 + Math.random() * 85;
-      const k = night ? (r < 0.8 ? 'fly' : 'bird') : r < (urban ? 0.3 : 0.55) ? 'bfly' : r < 0.75 ? 'bird' : r < (urban ? 0.78 : 0.9) ? 'rabbit' : 'seed';
+      const k = night ? (r < 0.8 ? 'fly' : 'bird') : r < (urban ? 0.3 : 0.55) ? 'bfly' : r < 0.75 ? 'bird' : 'seed';
       const BF = ['#ff8a1e', '#ffd23a', '#39a0ff', '#f4f1e6', '#ff2fb3', '#2dffb3'];
       L.push({ k, s, x: sd * (k === 'bird' ? 10 : 3 + Math.random() * 4), y: k === 'bird' ? 6 + Math.random() * 4 : k === 'rabbit' ? 0 : 0.8 + Math.random() * 1.4,
         vx: -sd * (k === 'bird' ? 4 + Math.random() * 3 : k === 'rabbit' ? 2.6 + Math.random() : 0.7 + Math.random() * 1.3), vs: k === 'bird' ? (Math.random() - 0.5) * 6 : (Math.random() - 0.5) * 1.2,
@@ -187,12 +209,15 @@ const RN = {
     R.pal(true, E.road); M4.trs(M, 0, 0, P.s % 40); R.draw(mo.road, M);
     // escenario
     R.pal(true, E.scen); const panels = [];
+    const peds = this.peds || (this.peds = []); peds.length = 0;
     for (const sc of g.scen) {
+      if (sc.k === 'ped') { const zz = zs(sc.s + sc.mv * (g.t - sc.t0)); if (zz > FAR && zz < 12) peds.push(sc, zz); continue; }
       const z = zs(sc.s); if (z < FAR || z > 14) continue;
+      if (sc.nr && (g.xs.some(X => Math.abs(X.s - sc.s) < 9) || g.shops.some(q => q.side === sc.side && Math.abs(q.s - sc.s) < 5) || g.dels.some(d => d.side === sc.side && Math.abs(d.s - sc.s) < 3.5))) continue;
       let m = null, kx = sc.sc, ky = sc.sc, ry = sc.ry, sh = [sc.sh, sc.sh, sc.sh];
       switch (sc.k) {
         case 'bld': m = mo.bld[sc.v][sc.pi - 2]; ky = sc.h; break;
-        case 'bill': m = mo.billFrame; panels.push([mo.bill[sc.v % 10], sc.x, z, ry]); break;
+        case 'bill': m = mo.billFrame; panels.push([mo.bill[sc.v % 14], sc.x, z, ry]); break;
         case 'gate': m = mo.gateFrame; panels.push([mo.gate[ZONES[sc.z].bill], 0, z, 0]); break;
         case 'lamp': m = mo.lamp; ry = sc.side > 0 ? 0 : Math.PI; break;
         case 'bench': m = mo.bench; ry = sc.side > 0 ? 0 : Math.PI; break;
@@ -203,47 +228,88 @@ const RN = {
     }
     R.pal(false);
     for (const p of panels) { M4.trs(M, p[1], 0, p[2], p[3]); R.draw(p[0], M); }
-    // obstáculos
+    for (let i = 0; i < peds.length; i += 2) { const sc = peds[i], ph = time * 5.5 + sc.s; M4.trs(M, sc.x, 0.16, peds[i + 1], sc.mv > 0 ? 0 : Math.PI, 0, 0, 0.95); R.draw(mo.runB[sc.v], M); for (const sx of [-1, 1]) { M4.trs(this.A, sx * 0.1, 0.95, 0, 0, 0.42 * Math.sin(ph) * sx, 0); M4.mul(this.B, M, this.A); R.draw(mo.runL, this.B); } }
+    // locales con camiones descargando, cruces con semáforo y zonas libres
+    for (const q of g.shops) { const z = zs(q.s); if (z < FAR || z > 20) continue; M4.trs(M, q.side * 5.35, 0, z, q.side > 0 ? 0 : Math.PI); R.draw(mo.shop[q.v], M); }
+    const LC = this.LC || (this.LC = [hex('#ff2a2a'), hex('#ffc23a'), hex('#2dff6a'), hex('#1a1a1e')]);
+    for (const X of g.xs) {
+      const z = zs(X.s); if (z < FAR - 10 || z > 30) continue;
+      M4.trs(M, 0, 0, z); R.draw(mo.xroad, M);
+      const st = lightAt(X, g.t), HP = Math.PI / 2;
+      for (let k = 0; k < 2; k++) { const lx = k ? -3.8 : 3.8, lz = zs(X.s + (k ? 7.4 : -7.4)); M4.trs(M, lx, 0, lz); R.draw(mo.tlight, M); for (let i = 0; i < 3; i++) { const on = 2 - i === st; M4.trs(M, lx, 3.55 - 0.3 * i, lz + 0.15, 0, 0, 0, on ? 0.2 : 0.15); R.draw(mo.cube, M, ONE, on ? LC[i] : LC[3], on ? 1 : 0); } }
+      for (const c of crossCars(X, g.t, this.cars)) { M4.trs(M, c.x, 0, zs(c.s), c.dir > 0 ? -HP : HP); R.draw(c.moto ? mo.motoNpc[c.col] : mo.carNpc[c.col], M); }
+      if (st !== 2) for (let row = 0; row < 2; row++) { const dir = row ? -1 : 1; M4.trs(M, -dir * 8.8, 0, zs(X.s + (row ? 2.2 : -2.2)), dir > 0 ? -HP : HP); R.draw(mo.carNpc[(X.id + row) % 4], M); }
+    }
+    for (const p of g.parks) { const z = zs(p[0]); if (z > FAR - 160 && z < 20) { if (z > FAR) { M4.trs(M, 0, 0, z); R.draw(mo.parkArch, M); } for (let q = p[0] + 16; q < p[1]; q += 32) { const zq = zs(q); if (zq < FAR || zq > 14) continue; for (const sd of [-1, 1]) { M4.trs(M, sd * 7.2, 0, zq, sd > 0 ? -Math.PI / 2 : Math.PI / 2); R.draw(mo.quarter, M); } } } }
+    // obstáculos (los modelos de carril se estrechan a 0,8 para carriles de 1,6 m)
     for (const o of g.obs) {
       if (!o.alive && !o.fly) continue;
-      const z = zs(o.s); if (z < FAR || z > 14) continue;
-      let m;
-      if (o.t === 'branch') { if (!o.vis) continue; m = this.branch(o.vis); M4.trs(M, 0, 0, z); R.draw(m, M); continue; }
-      if (o.t === 'gate' && !o.fly) { M4.trs(M, o.x, 0, z); R.draw(mo.gatepost, M); M4.trs(M, o.x, gateY(o, g.t), z); R.draw(mo.gatebar, M); continue; }
-      if (o.t === 'rider' && o.nk && !o.fly && o.alive) {
-        const sk = o.nk === 2, ph = time * (sk ? 5 : 10) + o.R, B0 = this.B, A0 = this.A;
-        M4.trs(M, o.x, 0, z, 0, 0, 0); R.draw((sk ? mo.skB : mo.runB)[o.col || 0], M);
-        for (const sx of [-1, 1]) { const a = Math.sin(ph) * sx; M4.trs(A0, sx * 0.1, 0.95, 0, 0, sk ? 0.2 + 0.15 * a : 0.75 * a, sk ? sx * (0.12 + 0.18 * Math.max(0, a)) : 0); M4.mul(B0, M, A0); R.draw(sk ? mo.skL : mo.runL, B0); }
+      const z = zs(o.s); if (z < FAR - o.hd || z > 14 + o.hd) continue;
+      let m, kx = 0.8, ry = 0;
+      if (o.t === 'branch') { if (!o.vis) continue; M4.trs(M, 0, 0, z); R.draw(this.branch(o.vis), M); continue; }
+      if (o.t === 'gate' && !o.fly) { M4.trs(M, o.x, 0, z, 0, 0, 0, 0.8, 1, 1); R.draw(mo.gatepost, M); M4.trs(M, o.x, gateY(o, g.t), z, 0, 0, 0, 0.8, 1, 1); R.draw(mo.gatebar, M); continue; }
+      if (o.t === 'wall' || o.t === 'rail') { const sm = o.t === 'wall' ? mo.wallseg : mo.railseg, a0 = o.s - o.hd, a1 = o.s + o.hd; for (let k = Math.max(0, Math.floor((P.s - 12 - a0) / 4)); a0 + 4 * k < a1 && a0 + 4 * k < P.s - FAR; k++) { M4.trs(M, o.x, 0, zs(a0 + 4 * k + 2)); R.draw(sm, M); } continue; }
+      if (o.T.moving && !o.fly) {
+        const yaw = o.u < 0 ? Math.PI : 0;
+        if (o.t === 'car') { M4.trs(M, o.x, 0, z, yaw, 0, 0, 0.95, 1, 1); R.draw(mo.carNpc[o.col], M); }
+        else if (o.nk === 5) { M4.trs(M, o.x, 0, z, yaw); R.draw(mo.motoNpc[o.col], M); }
+        else if (o.nk === 0) { M4.trs(M, o.x, 0, z, yaw, 0, 0, 0.9); R.draw(mo.npc[o.col], M); }
+        else {
+          const sk = o.nk === 2, wk = o.nk === 3, ph = time * (sk ? 5 : wk ? 5.5 : 10) + o.R, am = wk ? 0.4 : 0.75;
+          M4.trs(M, o.x, 0, z, yaw); R.draw((sk ? mo.skB : mo.runB)[o.col], M);
+          for (const sx of [-1, 1]) { const a = Math.sin(ph) * sx; M4.trs(this.A, sx * 0.1, 0.95, 0, 0, sk ? 0.2 + 0.15 * a : am * a, sk ? sx * (0.12 + 0.18 * Math.max(0, a)) : 0); M4.mul(this.B, M, this.A); R.draw(sk ? mo.skL : mo.runL, this.B); }
+        }
         continue;
       }
-      if (o.t === 'truck') m = mo.truck[o.col || 0]; else if (o.t === 'rider') m = mo.npc[o.col || 0]; else m = mo[o.t];
+      if (o.t === 'truck') m = mo.truck[o.col || 0]; else if (o.t === 'stall') { m = mo.stall[o.v || 0]; kx = 1; } else if (o.t === 'person') { m = mo.person[o.v || 0]; kx = 1; ry = o.ry || 0; } else if (o.T.moving) m = o.t === 'car' ? mo.carNpc[o.col] : mo.npc[o.col]; else m = mo[o.t];
       if (!m) continue;
       if (o.fly) { const f = o.fly; f.t += dt; const t = f.t; M4.trs(M, o.x + f.vx * t, Math.max(0, f.vy * t - GRAV * 0.5 * t * t), z - f.vz * t, f.ry * t, f.rx * t, 0); }
-      else M4.trs(M, o.x, 0, z, 0, 0, 0);
+      else M4.trs(M, o.x, 0, z, ry, 0, 0, kx, 1, 1);
       R.draw(m, M);
     }
-    // entregas: buzones y casitas (bandera, puerta, vecino que saluda)
+    // entregas: buzones, casitas, muros para pósters y kioscos EMSAY
+    const DC = this.DC || (this.DC = { per: hex('#f4f1e6'), rev: hex('#39c8ff'), cor: hex('#ffc23a'), pos: hex('#ff2fb3'), kio: hex('#2dffb3') });
     for (const d of g.dels) {
       const z = zs(d.s); if (z < FAR || z > 16) continue;
-      const sx = d.x < 0 ? -1 : 1; if (d.done && d.ta == null) d.ta = time;
+      const sd = d.side, HP = Math.PI / 2; if (d.done && d.ta == null) d.ta = time;
       const up = d.done ? clamp((time - d.ta - (d.T || 0)) / 0.25, 0, 1) : 0;
-      M4.trs(M, d.x, 0, z, 0, 0, 0, sx, 1, 1); R.draw(mo.buzon, M);
-      M4.trs(this.A, 0.12, 1.22, 0.27, 0, (1 - up) * Math.PI / 2, 0); M4.mul(this.B, M, this.A); R.draw(mo.flag, this.B);
-      if (d.k === 'casita') {
-        R.draw(mo.house[d.v], M);
-        M4.trs(this.A, 1.36, 0, 0.79, -up * 1.7, 0, 0); M4.mul(this.B, M, this.A); R.draw(mo.door, this.B);
-        if (up > 0) {
-          const k = clamp((time - d.ta - (d.T || 0)) / 0.35, 0, 1), wv = Math.sin(time * 9) * 0.5;
-          M4.trs(this.A, 1.12, 0, 0.42, Math.PI / 2, 0, 0, 0.3 + 0.7 * k); M4.mul(this.B, M, this.A); R.draw(mo.resi[d.v], this.B);
-          M4.trs(this.A, 0.22, 1.18, 0, 0, 0, -0.45 + wv * 0.7); M4.mul(this.C, this.B, this.A); R.draw(mo.rarm, this.C);
+      if (d.obj === 'muro') { M4.trs(M, sd * 4.7, 0, z, sd > 0 ? 0 : Math.PI); R.draw(mo.posterWall, M); if (up > 0) { M4.trs(M, sd * 4.58, 1.45 * (1 - up), z, sd > 0 ? 0 : Math.PI, 0, 0, 1, up, 1); R.draw(mo.poster[d.v % 4], M); } }
+      else if (d.obj === 'kiosko') { M4.trs(M, sd * 4.75, 0, z, sd > 0 ? -HP : HP); R.draw(mo.kiosk, M); M4.trs(M, sd * 4.75, 0, z + 1.5, sd > 0 ? -HP : HP); R.draw(mo.person[d.v % 4], M); if (up > 0) for (let i = 0; i < 2; i++) { M4.trs(M, sd * 3.75, 0.17 + i * 0.3 * up, z - 0.3 + i * 0.1, i * 0.4); R.draw(mo.bundle, M); } }
+      else {
+        M4.trs(M, sd * 4.35, 0, z, 0, 0, 0, sd, 1, 1); R.draw(mo.buzon, M);
+        M4.trs(this.A, 0.12, 1.22, 0.27, 0, (1 - up) * HP, 0); M4.mul(this.B, M, this.A); R.draw(mo.flag, this.B);
+        if (d.obj === 'casita') {
+          R.draw(mo.house[d.v], M);
+          M4.trs(this.A, 1.36, 0, 0.79, -up * 1.7, 0, 0); M4.mul(this.B, M, this.A); R.draw(mo.door, this.B);
+          if (up > 0) {
+            const k = clamp((time - d.ta - (d.T || 0)) / 0.35, 0, 1), wv = Math.sin(time * 9) * 0.5;
+            M4.trs(this.A, 1.12, 0, 0.42, HP, 0, 0, 0.3 + 0.7 * k); M4.mul(this.B, M, this.A); R.draw(mo.resi[d.v], this.B);
+            M4.trs(this.A, 0.22, 1.18, 0, 0, 0, -0.45 + wv * 0.7); M4.mul(this.C, this.B, this.A); R.draw(mo.rarm, this.C);
+          }
         }
       }
+      if (!d.done && !d.miss) { M4.trs(M, sd * 4.35, 3.3 + Math.sin(time * 6) * 0.15, z, time * 3, 0.6, 0, 0.3); R.draw(mo.cube, M, ONE, DC[d.k], 1); }
     }
     for (let i = this.proj.length - 1; i >= 0; i--) {
       const p = this.proj[i]; p.t += dt; const k = Math.min(1, p.t / p.T);
       if (k >= 1) { this.emit(8, p.x1, p.y1, p.s1, hex('#ffc23a'), 3, 0.07, 0.5, 2.5); this.proj.splice(i, 1); continue; }
-      M4.trs(M, lerp(p.x0, p.x1, k), lerp(p.y0, p.y1, k) + 1.1 * 4 * k * (1 - k), zs(lerp(p.s0, p.s1, k)), time * 12, 0, time * 7); R.draw(mo.mag, M);
+      M4.trs(M, lerp(p.x0, p.x1, k), lerp(p.y0, p.y1, k) + 1.1 * 4 * k * (1 - k), zs(lerp(p.s0, p.s1, k)), time * 12, 0, time * 7); R.draw(mo[p.m] || mo.mag, M);
     }
+    // animalitos que cruzan
+    for (const c of g.crs) {
+      const z = zs(c.s); if (z < FAR || z > 12 || (c.done && Math.abs(c.x) > 6)) continue;
+      const run = c.t0 >= 0 ? 1 : 0, b = Math.abs(Math.sin(time * 12)) * 0.1 * run;
+      if (c.kind === 'duck') { M4.trs(M, c.x, b * 0.3, z, c.dir > 0 ? 0 : Math.PI); R.draw(mo.ducks, M); }
+      else { const dg = c.kind === 'dog'; M4.trs(M, c.x, b, z, c.dir > 0 ? -Math.PI / 2 : Math.PI / 2, 0, 0, dg ? 1.1 : 1); R.draw(dg ? mo.dogA : mo.catA, M); M4.trs(this.A, 0, dg ? 0.5 : 0.4, 0.26, Math.sin(time * 12) * 0.6, 0, 0); M4.mul(this.B, M, this.A); R.draw(dg ? mo.dogT : mo.catT, this.B); }
+    }
+    // rival de turno
+    if (g.riv) { const Rv = g.riv, z = zs(Rv.s); if (z > FAR && z < 14) { const ph = time * 5 + Rv.i, c = Rv.i % 4; M4.trs(M, Rv.x, Rv.y, z); R.draw(mo.skB[c], M); for (const sx of [-1, 1]) { const a = Math.sin(ph) * sx; M4.trs(this.A, sx * 0.1, 0.95, 0, 0, 0.2 + 0.15 * a, sx * (0.12 + 0.18 * Math.max(0, a))); M4.mul(this.B, M, this.A); R.draw(mo.skL, this.B); } M4.trs(M, Rv.x, Rv.y + 2.35, z, time * 2, 0.6, 0, 0.24); R.draw(mo.cube, M, ONE, (this.rc || (this.rc = RIV.map(r => hex(r[1]))))[Rv.i], 1); } }
+    // policía o perro que te persigue
+    if (g.pol && mode === 'play') {
+      const c = g.pol, zc = Math.min(c.d, 30); this.polX = lerp(this.polX == null ? P.x : this.polX, P.x, Math.min(1, dt * 2.5));
+      if (c.k === 'pol') { M4.trs(M, this.polX, 0, zc); R.draw(mo.policia, M, ONE, Math.floor(time * 8) % 2 ? this.pc1 || (this.pc1 = [1.7, 0.3, 0.3]) : this.pc2 || (this.pc2 = [0.3, 0.5, 1.9]), 1); }
+      else { M4.trs(M, this.polX, Math.abs(Math.sin(time * 14)) * 0.12, zc, 0, 0, 0, 1.1); R.draw(mo.dogA, M); M4.trs(this.A, 0, 0.5, 0.26, Math.sin(time * 12) * 0.6, 0, 0); M4.mul(this.B, M, this.A); R.draw(mo.dogT, this.B); }
+    } else this.polX = null;
     // monedas y objetos
     const spin = time * 4;
     for (const c of g.coins) { if (!c.alive) continue; const z = zs(c.s); if (z < -125 || z > 8) continue; M4.trs(M, c.x, c.y, z, spin + c.s * 0.2); R.draw(mo.coin, M); }
@@ -261,9 +327,6 @@ const RN = {
       if (pk === 'm3') { const f = Math.sin(time * 16) * 0.8; M4.trs(M, this.petX * 0.9 + sd * 0.1, P.y + 2.05 + Math.sin(time * 3) * 0.12, 0.25, 0, 0, 0, 1.3); R.draw(this.pl.pet, M); M4.trs(this.A, 0.08, 0.05, 0, 0, 0, f); M4.mul(this.B, M, this.A); R.draw(this.pl.ptail, this.B); M4.trs(this.A, -0.08, 0.05, 0, 0, 0, -f, -1, 1, 1); M4.mul(this.B, M, this.A); R.draw(this.pl.ptail, this.B); }
       else { const run = mode === 'garage' ? 0.3 : 1, ph = time * 14, b = Math.abs(Math.sin(ph)) * 0.12 * run; M4.trs(M, this.petX, py + b, 0.3, 0, Math.sin(ph) * 0.12 * run, 0, 1.15); R.draw(this.pl.pet, M); M4.trs(this.A, 0, 0.5, 0.26, Math.sin(time * 12) * 0.6, 0, 0); M4.mul(this.B, M, this.A); R.draw(this.pl.ptail, this.B); }
     }
-    // la Tinta Gris persigue al jugador cuando se tambalea (y lo atrapa al caer)
-    const it = mode === 'play' ? (!P.alive ? 1.45 : P.stumble > 0 ? 1 : 0) : 0; this.ink = lerp(this.ink || 0, it, Math.min(1, dt * (it > (this.ink || 0) ? 3 : 1.5)));
-    if (this.ink > 0.03) { const k = this.ink, w = Math.sin(time * 9) * 0.06; M4.trs(M, P.x * 0.92, -1.3 * Math.max(0, 1 - k), 7.4 - 4.9 * k, Math.sin(time * 3) * 0.2, 0, 0, 0.6 + w, 0.6 - w, 0.6); R.draw(mo.ink, M); }
     // partículas
     for (let i = this.parts.length - 1; i >= 0; i--) {
       const p = this.parts[i]; p.life -= dt; if (p.life <= 0) { this.parts.splice(i, 1); continue; }
@@ -274,7 +337,7 @@ const RN = {
     // sombras
     R.blend(true, 0.42);
     M4.trs(M, P.x, (P.gy || 0), 0, 0, 0, 0, 1.1 / (1 + Math.max(0, P.y - (P.gy || 0)) * 0.4)); R.draw(mo.shadow, M, ONE, ONE, 0);
-    for (const o of g.obs) if (o.t === 'rider' && o.alive) { const z = zs(o.s); if (z > -80 && z < 10) { M4.trs(M, o.x, 0, z, 0, 0, 0, 1.2, 1, 2); R.draw(mo.shadow, M, ONE, ONE, 0); } }
+    for (const o of g.obs) if (o.T.moving && o.alive && !o.fly) { const z = zs(o.s); if (z > -80 && z < 10) { M4.trs(M, o.x, 0, z, 0, 0, 0, 1.2, 1, 2); R.draw(mo.shadow, M, ONE, ONE, 0); } }
     R.blend(false);
   }
 };

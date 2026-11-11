@@ -2,7 +2,7 @@
 import fs from 'node:fs'; import { execSync } from 'node:child_process';
 const root = new URL('../', import.meta.url).pathname, src = root + 'src/', out = root + 'web/';
 const URL_PUB = process.env.PUB_URL || 'https://juanfeliperico369-stack.github.io/RunRunZero/';
-const order = ['engine', 'data', 'game', 'models', 'render', 'audio', 'ui', 'main'];
+const order = ['engine', 'data', 'story', 'game', 'models', 'models2', 'render', 'audio', 'ui', 'main'];
 const js = "(()=>{'use strict';\n" + order.map(f => `/* ---- ${f}.js ---- */\n` + fs.readFileSync(src + f + '.js', 'utf8')).join('\n') + '\n})();';
 const tmp = root + 'tools/.bundle.check.js'; fs.writeFileSync(tmp, js);
 try { execSync('node --check ' + tmp, { stdio: 'inherit' }); } finally { fs.unlinkSync(tmp); }

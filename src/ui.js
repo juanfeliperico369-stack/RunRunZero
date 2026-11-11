@@ -3,15 +3,16 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const fmt = n => Math.round(n).toLocaleString('es-CO');
 const dayKey = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-const VERSION = '1.6.0', SKEY = 'runscooter.v1';
+const VERSION = '2.0.0', SKEY = 'runscooter.v1';
 const MREW = [100, 200, 350, 550, 800], MXP = [150, 300, 500, 800, 1200], DAILY = [100, 150, 200, 's1', 300, 400, 's3'];
 
 const SV = {
   S: null,
   def() {
-    return { v: 1, coins: 0, stars: 0, xp: 0, best: 0, bestDist: 0, veh: 'scooter', owned: { scooter: 1 }, cos: { casco: 'h0', ropa: 'r0', pintura: 'p0', estela: 't0', mascota: 'm0', personaje: 'c0' }, ownedCos: { h0: 1, r0: 1, p0: 1, t0: 1, m0: 1, c0: 1, c1: 1 }, ach: {},
-      up: { magnet: 0, turbo: 0, x2: 0, gift: 0 }, clues: 0, readClues: 0, mis: [], misLvl: {}, misDone: 0, daily: { last: '', streak: 0 }, ch: { day: '', best: 0, rew: '' }, word: { day: '', got: '', done: 0, doneDay: '' }, boostTip: 0, rank: 0,
-      set: { sfx: 1, music: 1, vib: 1, q: 'auto', fps: 0, lh: 0 }, tut: 1, runs: [], tot: { runs: 0, dist: 0, coins: 0, time: 0, deliv: 0 }, created: Date.now() };
+    return { v: 1, coins: 0, stars: 0, xp: 0, best: 0, bestDist: 0, veh: 'foot', owned: { foot: 1 }, cos: { casco: 'h0', ropa: 'r0', pintura: 'p0', estela: 't0', mascota: 'm0', piel: 's0', pelo: 'k0' }, ownedCos: { h0: 1, r0: 1, p0: 1, t0: 1, m0: 1 }, ach: {},
+      fit: 25, skill: 0, inj: 0, ment: {}, cnt: { footM: 0, near: 0, perf: 0, boosts: 0, civic: 0, grind: 0, duels: 0, esc: 0 }, riv: { w: 0, l: 0 },
+      up: { magnet: 0, turbo: 0, x2: 0, gift: 0, en: 0, rue: 0, fre: 0, mor: 0 }, clues: 0, readClues: 0, mis: [], misLvl: {}, misDone: 0, daily: { last: '', streak: 0 }, ch: { day: '', best: 0, rew: '' }, word: { day: '', got: '', done: 0, doneDay: '' }, boostTip: 0, rank: 0,
+      set: { sfx: 1, music: 1, vib: 1, q: 'auto', fps: 0, lh: 0, mus: 'mix' }, tut: 1, runs: [], tot: { runs: 0, dist: 0, coins: 0, time: 0, deliv: 0 }, created: Date.now() };
   },
   merge(a, b) {
     if (!b || typeof b !== 'object' || Array.isArray(b)) return a;
@@ -27,8 +28,11 @@ const SV = {
   load() { let d = null; try { d = JSON.parse(localStorage.getItem(SKEY) || 'null'); } catch (e) { d = null; } this.S = this.merge(this.def(), d); this.fix(); return this.S; },
   fix() {
     const S = this.S;
-    if (!VEHI[S.veh] || !S.owned[S.veh]) S.veh = 'scooter';
-    for (const c in S.cos) if (!COSI[S.cos[c]] || !S.ownedCos[S.cos[c]]) S.cos[c] = COS[c][0].id;
+    S.owned.foot = 1; if (!VEHI[S.veh] || !S.owned[S.veh]) S.veh = 'foot';
+    for (const id in COSI) { const c = COSI[id]; if (!c.p && !c.st && !c.ach) S.ownedCos[id] = 1; }
+    for (const c in S.cos) if (!COS[c]) delete S.cos[c];
+    for (const c in COS) if (!COSI[S.cos[c]] || COSI[S.cos[c]].cat !== c || !S.ownedCos[S.cos[c]]) S.cos[c] = COS[c][0].id;
+    S.fit = clamp(+S.fit || 0, 0, 100); S.skill = clamp(+S.skill || 0, 0, 100); S.inj = clamp(S.inj | 0, 0, 3);
     S.mis = S.mis.filter(m => m && MIS.some(d => d.k === m.k) && typeof m.prog === 'number').slice(0, 3);
     while (S.mis.length < 3) S.mis.push(newMis(S, S.mis.map(m => m.k)));
     S.clues = clamp(S.clues | 0, 0, STORY.length); S.coins = Math.max(0, S.coins | 0); S.stars = Math.max(0, S.stars | 0);
@@ -37,9 +41,12 @@ const SV = {
 };
 function newMis(S, ex) { const pool = MIS.filter(m => !ex.includes(m.k)); const d = pool[Math.floor(Math.random() * pool.length)]; return { k: d.k, lvl: Math.min(4, S.misLvl[d.k] || 0), prog: 0, best: 0 }; }
 const misDef = k => MIS.find(m => m.k === k);
-const misVal = (k, g) => k === 'coins' ? g.coinsRun : k === 'dist' ? g.p.s : k === 'jumps' ? g.jumps : k === 'ducks' ? g.ducks : k === 'gifts' ? g.gifts : k === 'powers' ? g.powers : k === 'tricks' ? g.tricks : k === 'score' ? g.score : k === 'clean' ? Math.max(g.cleanBest, g.cleanS) : k === 'trucks' ? g.trucks : k === 'deliv' ? g.deliv : k === 'dstreak' ? g.dBest : g.edition + 1;
+const misVal = (k, g) => k === 'coins' ? g.coinsRun : k === 'dist' ? g.p.s : k === 'jumps' ? g.jumps : k === 'ducks' ? g.ducks : k === 'gifts' ? g.gifts : k === 'powers' ? g.powers : k === 'tricks' ? g.tricks : k === 'score' ? g.score : k === 'clean' ? Math.max(g.cleanBest, g.cleanS) : k === 'trucks' ? g.trucks : k === 'deliv' ? g.deliv : k === 'dstreak' ? g.dBest : k === 'perf' ? g.perf : k === 'near' ? g.near : k === 'civic' ? g.civic : k === 'grind' ? g.grindM : k === 'duels' ? g.duels : g.edition + 1;
 const misText = m => misDef(m.k).t.replace('{n}', fmt(misDef(m.k).n[m.lvl]));
-const cosCfg = S => { const h = COSI[S.cos.casco], r = COSI[S.cos.ropa], p = COSI[S.cos.pintura]; return { helmet: h.c, he: !!h.e, shirt: r.a, pants: r.b, se: !!r.e, paint: p.c, pe: !!p.e, pet: S.cos.mascota || 'm0', skin: (COSI[S.cos.personaje] || COSI.c0).skin, hair: (COSI[S.cos.personaje] || COSI.c0).hair, hc: (COSI[S.cos.personaje] || COSI.c0).hc }; };
+const cosCfg = S => { const h = COSI[S.cos.casco], r = COSI[S.cos.ropa], p = COSI[S.cos.pintura]; return { helmet: h.c, he: !!h.e, shirt: r.a, pants: r.b, se: !!r.e, paint: p.c, pe: !!p.e, pet: S.cos.mascota || 'm0', skin: (COSI[S.cos.piel] || COSI.s0).c, hair: (COSI[S.cos.pelo] || COSI.k0).hair, hc: (COSI[S.cos.pelo] || COSI.k0).c }; };
+const perksOf = S => { const k = {}; for (const m of MENT) if (S.ment[m.id] && m.perk) k[m.perk] = 1; return k; };
+const mentProg = (S, m) => m.key === 'pages' ? S.clues : (S.cnt[m.key] || 0);
+const KIND = { h: 'Fuerza', e: 'Eléctrico', m: 'Motor', f: 'Especial' }, ENL = { h: 'ALIENTO', e: 'BATERÍA', m: 'GASOLINA', f: 'COMBUSTIBLE' }, DICO = { per: '📰', rev: '📖', cor: '✉', pos: '🖼', kio: '📦' }, DCOLS = { per: '#8a8f96', rev: '#39c8ff', cor: '#ffc23a', pos: '#ff2fb3', kio: '#2dffb3' };
 const priceTxt = it => it.ach ? '🏆 Logro: ' + (ACH.find(a => a[0] === it.ach) || ['', ''])[1] : it.st ? '✦ ' + it.st : '◉ ' + fmt(it.p || 0);
 function checkAch(g) {
   const S = SV.S, got = [];
@@ -54,7 +61,7 @@ const UI = {
   show(id) {
     for (const s of document.querySelectorAll('.scr')) s.classList.toggle('on', s.id === id);
     this.cur = id;
-    if (id === 'sCover') this.cover(); else if (id === 'sGarage') this.garage(); else if (id === 'sRank') this.rank(); else if (id === 'sStory') this.story(); else if (id === 'sMis') this.missions(); else if (id === 'sAch') this.ach(); else if (id === 'sSet') this.settings();
+    if (id === 'sCover') this.cover(); else if (id === 'sGarage') this.garage(); else if (id === 'sRank') this.rank(); else if (id === 'sStory') this.story(); else if (id === 'sMis') this.missions(); else if (id === 'sAch') this.ach(); else if (id === 'sMent') this.ment(); else if (id === 'sSet') this.settings();
     const el = $(id); if (el) el.scrollTop = 0;
   },
   hideScreens() { for (const s of document.querySelectorAll('.scr')) s.classList.remove('on'); this.cur = ''; },
@@ -64,13 +71,24 @@ const UI = {
     const d = document.createElement('div'); d.className = 'toast ' + cls; d.textContent = txt; box.appendChild(d); setTimeout(() => d.remove(), 2500);
   },
   wallet() { const S = SV.S; return `<span>◉ <b>${fmt(S.coins)}</b></span><span>✦ <b>${fmt(S.stars)}</b></span>`; },
+  bars(S) { return `<div class="bar2"><span>Físico</span><i><b style="width:${S.fit.toFixed(0)}%"></b></i><span>${S.fit.toFixed(0)}</span></div><div class="bar2 sk"><span>Habilidad</span><i><b style="width:${S.skill.toFixed(0)}%"></b></i><span>${S.skill.toFixed(0)}</span></div>`; },
   cover() {
-    const S = SV.S, rk = rankOf(S.xp);
-    const wg = S.word.day === dayKey() ? S.word.got : '';
-    $('cStats').innerHTML = `<span class="chip">🔤 <b>${'EMSAY'.split('').map((c, i) => i < wg.length ? c : '_').join(' ')}</b></span><span class="chip">◉ <b>${fmt(S.coins)}</b></span><span class="chip">✦ <b>${S.stars}</b></span><span class="chip">MEJOR <b>${fmt(S.best)}</b></span><span class="chip">${esc(RANKS[rk])}</span>`;
-    $('cEd').textContent = 'Nº ' + Math.max(1, Math.floor(S.bestDist / 1000) + 1);
+    const S = SV.S, rk = rankOf(S.xp), wg = S.word.day === dayKey() ? S.word.got : '';
+    $('cCard').innerHTML = `<div class="rk">${rk + 1}</div><div class="nm">${esc(RANKS[rk])} · ${esc(VEHI[S.veh].name)}<span>◉ ${fmt(S.coins)} · ✦ ${S.stars}</span></div>${this.bars(S)}<div style="grid-column:span 2;display:flex;justify-content:space-between;gap:8px"><span>Mejor ${fmt(S.best)} · 🔤 ${'EMSAY'.split('').map((c, i) => i < wg.length ? c : '_').join('')}</span><span class="${S.inj ? 'inj' : ''}">${S.inj ? '🩹'.repeat(S.inj) + ' lesión' : 'Sin lesiones'}</span></div>`;
+    const news = STORY.filter((p, i) => i < S.clues && (p[2] === 'n' || p[2] === 'e' || p[2] === 'f')).map(p => p[0]);
+    $('cTick').textContent = (news.length ? news.slice(-6) : ['EMSAY busca a los mejores velocistas de Orbe', 'Recupera páginas perdidas para leer los titulares', 'Hoy: carrera del día en la ciclovía']).join('  ✦  ');
     $('dCh').hidden = S.ch.day === dayKey();
     $('dStory').hidden = S.readClues >= S.clues; $('dMis').hidden = !S.mis.some(m => (misDef(m.k).run ? m.best : m.prog) >= misDef(m.k).n[m.lvl] * 0.8);
+    $('dMent').hidden = !MENT.some(m => !S.ment[m.id] && (mentProg(S, m) >= m.n || S.coins >= m.price));
+  },
+  ment() {
+    const S = SV.S; $('mtWallet').innerHTML = this.wallet();
+    $('mtBody').innerHTML = MENT.map(m => {
+      const ok = S.ment[m.id], pr = mentProg(S, m), done = pr >= m.n;
+      return `<div class="ment${ok ? ' ok' : ''}"><div class="av" style="background:${m.col}">${esc(m.name.replace(/^(Don|Doña|La|Capitana|Maestra|Entrenador) /, '')[0])}</div><div class="nm">${esc(m.name)}</div><div class="hb">${esc(m.hab)}</div><div class="ds">${esc(m.desc)}</div>
+        <div class="fv">Favor: ${esc(m.favor)} · ${fmt(Math.min(pr, m.n))} / ${fmt(m.n)}</div><div class="bar2"><i><b style="width:${clamp(pr / m.n * 100, 0, 100).toFixed(0)}%"></b></i></div>
+        <div class="row">${ok ? '<b>✔ Aprendido</b>' : `<button class="btn pri" data-act="ment" data-arg="${m.id}:f"${done ? '' : ' disabled'}>${done ? '¡Reclamar favor!' : 'Favor pendiente'}</button><button class="btn" data-act="ment" data-arg="${m.id}:p">Pagar ◉ ${fmt(m.price)}</button>`}</div></div>`;
+    }).join('');
   },
   garage() {
     const S = SV.S; $('gWallet').innerHTML = this.wallet();
@@ -78,24 +96,24 @@ const UI = {
     for (const b of $('gTabs').children) b.classList.toggle('on', b.dataset.arg === this.gtab);
     let h = '';
     if (this.gtab === 'veh') {
-      h = '<div class="cards">' + VEH.map(v => {
+      h = `<div class="pcard" style="margin-bottom:12px"><div class="rk">♥</div><div class="nm">Tu cuerpo<span>${S.inj ? '<b class="inj">' + '🩹'.repeat(S.inj) + ' −' + S.inj * 12 + ' % aliento</b>' : 'sano'}</span></div>${this.bars(S)}<div style="grid-column:span 2">El físico crece a pie y con vehículos de fuerza; la habilidad, con trucos y barandas.${S.inj ? ' <button class="btn" style="font-size:15px;min-height:32px;padding:2px 10px" data-act="heal">Botiquín ◉ 250</button>' : ''}</div></div>` + '<div class="cards">' + VEH.map(v => {
         const own = S.owned[v.id], sel = S.veh === v.id;
-        const st = (n, x) => `<div class="stat">${n}<i style="--v:${Math.round(clamp((x - 0.85) / 0.5, 0.08, 1) * 100)}%"></i></div>`;
-        return `<button class="card${sel ? ' sel' : ''}" data-act="veh" data-arg="${v.id}">${sel ? '<span class="tag">EN USO</span>' : ''}<span class="nm">${esc(v.name)}</span><span class="ds">${esc(v.desc)}</span>${st('Vel', v.spd)}${st('Salto', v.jmp)}${st('Manejo', v.hnd)}<span class="ds"><b>★ ${esc(v.perk)}</b></span><span class="pr">${own ? (sel ? '✔ Seleccionado' : 'Toca para usar') : '◉ ' + fmt(v.price)}</span></button>`;
+        const st = (n, x, a = 0.55, b = 0.75) => `<div class="stat">${n}<i style="--v:${Math.round(clamp((x - a) / b, 0.08, 1) * 100)}%"></i></div>`;
+        return `<button class="card${sel ? ' sel' : ''}" data-act="veh" data-arg="${v.id}">${sel ? '<span class="tag">EN USO</span>' : ''}<span class="nm">${esc(v.name)}</span><span class="ds"><span class="vkind">${KIND[v.kind]}</span>${v.street ? '<span class="vkind">Calle</span>' : ''}${esc(v.desc)}</span>${st('Vel', v.spd)}${st('Impulso', v.boost, 2, 8)}${st('Salto', v.jmp, 0.4, 0.8)}${st('Manejo', v.hnd, 0.7, 0.65)}<span class="ds"><b>★ ${esc(v.perk)}</b></span><span class="pr">${own ? (sel ? '✔ Seleccionado' : 'Toca para usar') : v.id === 'jetpack' ? '🎓 Capitana Cometa · ◉ ' + fmt(v.price) : '◉ ' + fmt(v.price)}</span></button>`;
       }).join('') + '</div>';
     } else if (this.gtab === 'cos') {
-      const N = { personaje: 'Personaje', casco: 'Casco', ropa: 'Ropa', pintura: 'Pintura del vehículo', estela: 'Estela', mascota: 'Mascota (atrapa monedas del carril vecino)' };
+      const N = { piel: 'Tu personaje · piel', pelo: 'Tu personaje · peinado', casco: 'Casco', ropa: 'Ropa', pintura: 'Pintura del vehículo', estela: 'Estela', mascota: 'Mascota (atrapa monedas del carril vecino)' };
       for (const cat in COS) {
         h += `<div class="cat">${N[cat]}</div><div class="cards">` + COS[cat].map(c => {
           const own = S.ownedCos[c.id], sel = S.cos[cat] === c.id;
-          const sw = cat === 'personaje' ? `linear-gradient(90deg,${c.skin} 60%,${c.hc} 60%)` : cat === 'ropa' ? `linear-gradient(90deg,${c.a} 50%,${c.b} 50%)` : cat === 'estela' || !c.c ? '#111' : c.c;
+          const sw = cat === 'ropa' ? `linear-gradient(90deg,${c.a} 50%,${c.b} 50%)` : cat === 'estela' || !c.c ? '#111' : c.c;
           return `<button class="card${sel ? ' sel' : ''}" data-act="cos" data-arg="${c.id}">${sel ? '<span class="tag">PUESTO</span>' : ''}<span class="sw" style="background:${sw}"></span><span class="nm" style="font-size:18px">${esc(c.name)}</span><span class="pr">${own ? (sel ? '✔ Puesto' : 'Toca para usar') : priceTxt(c)}</span></button>`;
         }).join('') + '</div>';
       }
     } else {
       h = '<div class="cards">' + UPG.map(u => {
         const lv = S.up[u.id] || 0, max = lv >= 5, pr = UPC[lv];
-        const eff = u.id === 'gift' ? `Suerte +${lv * 3}%` : `${(u.base + u.per * lv).toFixed(1).replace('.0', '')} s`;
+        const eff = u.id === 'gift' ? `Suerte +${lv * 3}%` : u.pct ? `+${u.per * lv} %` : `${(u.base + u.per * lv).toFixed(1).replace('.0', '')} s`;
         return `<button class="card" data-act="upg" data-arg="${u.id}"><span class="nm">${u.icon} ${esc(u.name)}</span><span class="ds">${'■'.repeat(lv)}${'□'.repeat(5 - lv)} · ${eff}</span><span class="pr">${max ? 'MÁXIMO' : '◉ ' + fmt(pr)}</span></button>`;
       }).join('') + '</div>';
     }
@@ -117,13 +135,15 @@ const UI = {
     }
     $('rBody').innerHTML = h + '</div>';
   },
+  stab: 'all',
   story() {
-    const S = SV.S; S.readClues = Math.max(S.readClues, 0);
-    $('stLede').textContent = S.clues >= STORY.length ? '¡Temporada completa! Recuperaste las 12 páginas. Don Ramiro estaría orgulloso.' : `Has recuperado ${S.clues} de ${STORY.length} páginas. Búscalas en la ciclovía: brillan en verde menta.`;
-    $('stGrid').innerHTML = STORY.map((p, i) => i < S.clues ? `<button class="ptile" data-act="read" data-arg="${i}"><span class="k">Nº${i + 1}</span><span class="t">${esc(p[0])}</span></button>` : `<div class="ptile lock"><span class="k">?</span><span class="t">Página ${i + 1}</span></div>`).join('');
+    const S = SV.S, tb = this.stab;
+    $('stLede').textContent = S.clues >= STORY.length ? '¡Hemeroteca completa! Recuperaste todas las páginas. Don Gustavo estaría orgulloso.' : `Has recuperado ${S.clues} de ${STORY.length} páginas. Búscalas en la ciclovía: brillan en verde menta.`;
+    $('stTabs').innerHTML = [['all', 'Todas']].concat(Object.entries(SECT)).map(x => `<button class="${tb === x[0] ? 'on' : ''}" data-act="stab" data-arg="${x[0]}">${x[1]}</button>`).join('');
+    $('stGrid').innerHTML = STORY.map((p, i) => tb !== 'all' && p[2] !== tb ? '' : i < S.clues ? `<button class="ptile" data-act="read" data-arg="${i}"><span class="sc">${SECT[p[2]]}</span><span class="k">Nº${i + 1}</span><span class="t">${esc(p[0])}</span></button>` : `<div class="ptile lock"><span class="sc">${SECT[p[2]]}</span><span class="k">?</span><span class="t">Página ${i + 1}</span></div>`).join('');
   },
   read(i) {
-    const p = STORY[i]; if (!p) return; $('rdN').textContent = 'PÁGINA ' + (i + 1) + ' / ' + STORY.length; $('rdT').textContent = p[0]; $('rdX').textContent = p[1];
+    const p = STORY[i]; if (!p) return; $('rdN').textContent = SECT[p[2]].toUpperCase() + ' · ' + (i + 1) + ' / ' + STORY.length; $('rdT').textContent = p[0]; $('rdX').textContent = p[1];
     SV.S.readClues = Math.max(SV.S.readClues, i + 1); SV.save(); this.ov('oRead', 1);
   },
   ach() {
@@ -143,14 +163,15 @@ const UI = {
     const q = ['auto', 'alta', 'baja'].map(x => `<button class="${S.set.q === x ? 'on' : ''}" data-act="qual" data-arg="${x}">${x}</button>`).join('');
     $('setBody').innerHTML = t('sfx', S.set.sfx, 'Efectos de sonido') + t('music', S.set.music, 'Música') + t('vib', S.set.vib, 'Vibración', 'En celulares compatibles') + t('fps', S.set.fps, 'Mostrar FPS') + t('lh', S.set.lh, 'Modo zurdo', 'Botón ⚡ IMPULSO a la izquierda') +
       `<div class="opt"><span>Calidad gráfica<small>Auto ajusta según tu celular</small></span><div class="seg">${q}</div></div>
-      <div class="opt"><span>Controles<small>Desliza ← → ↑ ↓ · Teclado: flechas, WASD, espacio, P = pausa</small></span></div>
+      <div class="opt"><span>Banda sonora<small>Rock, electrónica o mezcla según la edición</small></span><div class="seg">${[['mix', 'Mezcla'], ['rock', 'Rock'], ['electro', 'Electro']].map(x => `<button class="${S.set.mus === x[0] ? 'on' : ''}" data-act="mus" data-arg="${x[0]}">${x[1]}</button>`).join('')}</div></div>
+      <div class="opt"><span>Controles<small>Desliza ← → ↑ ↓ · Botones: ⚡ impulso, ■ freno, ✉ entregas · Teclado: flechas/WASD, espacio salta, F o Shift impulso, X freno, Q y E entregan, P pausa</small></span></div>
       <div class="opt"><span>Tutorial<small>Volver a ver los gestos básicos</small></span><button class="tg" data-act="tut">VER</button></div>
       <div class="cat" style="color:#2b2112">Mis partidas (${S.runs.length})</div>
       <div class="row"><button class="btn" data-act="exp">Exportar .json</button><button class="btn" data-act="csv">Exportar .csv</button><button class="btn gh" data-act="imp">Importar</button></div>
       <div class="cat" style="color:#2b2112">Zona peligrosa</div><button class="btn red" data-act="reset">Borrar progreso</button>
-      <div class="film" style="margin-top:16px;--fc:#a42cff">RUN SCOOTER v${VERSION} · juego offline<br>Estilo: revista EMSAY + Doc Element<br>Motor 3D propio · sin librerías · sin internet</div>`;
+      <div class="film" style="margin-top:16px;--fc:#a42cff">RUN SCOOTER v${VERSION} · juego offline<br>Ciudad de Orbe · editorial EMSAY<br>Motor 3D propio · sin librerías · sin internet</div>`;
   },
-  hud: { s: -1, c: -1, d: -1, m: '', pk: '', b: -1, sl: 99, dl: '' },
+  hud: { s: -1, c: -1, d: -1, m: '', pk: '', b: -1, sl: 99, dl: '', en: -1, top: '' },
   updHud(g) {
     const H = this.hud, P = g.p, sc = Math.floor(g.score), c = g.coinsRun, d = Math.floor(P.s);
     if (sc !== H.s) { H.s = sc; $('hScore').textContent = fmt(sc); }
@@ -160,6 +181,25 @@ const UI = {
     if (d !== H.d) { H.d = d; $('hDist').textContent = fmt(d) + ' M · ED. ' + (g.edition + 1); }
     const b = Math.round(P.boost * 20); if (b !== H.b) { H.b = b; $('bbF').style.height = (b * 5) + '%'; }
     const sl = Math.round(P.sl * 100); if (sl !== H.sl) { H.sl = sl; const el = $('hSlope'); el.hidden = Math.abs(sl) < 3; el.className = 'slope ' + (sl > 0 ? 'up' : 'dn'); el.textContent = (sl > 0 ? '▲ SUBIDA ' : '▼ BAJADA ') + Math.abs(sl) + ' %'; }
+    const en = Math.round(P.en / Math.max(g.enMax, 0.01) * 25); if (en !== H.en) { H.en = en; $('enF').style.height = (en * 4) + '%'; $('enF').parentNode.parentNode.classList.toggle('low', en < 5); }
+    // avisos: semáforo, policía, animales, bajada, vía angosta, rival y estilo
+    let lt = '', ltc = '', pol = '', warn = '', riv = '', combo = g.combo > 1.05 ? 'ESTILO ×' + g.combo.toFixed(1) : '';
+    for (const X of g.xs) { const dC = X.s - P.s; if (X.pass || dC > 95 || dC < 0) continue; const st = lightAt(X, g.t); ltc = st === 2 ? 'r' : st === 1 ? 'y' : ''; lt = (st === 2 ? 'ROJO · FRENA' : st === 1 ? 'AMARILLO' : 'VERDE · SIGUE') + ' · ' + Math.round(dC / 5) * 5 + ' m'; }
+    if (g.pol) pol = g.pol.k === 'pol' ? '🚓 POLICÍA A ' + Math.round(g.pol.d) + ' m' : '🐕 ¡PERRO! acelera o frena';
+    for (const c of g.crs) if (!c.done && c.s - P.s > 0 && c.s - P.s < 60 && c.t0 >= 0) warn = '⚠ ANIMAL CRUZANDO';
+    if (!warn && P.over > 0.4) warn = '⚠ ¡FRENA EN LA BAJADA!';
+    if (!warn && g.nar && g.nar.a - P.s > 0 && g.nar.a - P.s < 55) warn = '⚠ VÍA ANGOSTA · carril' + (g.nar.open.length > 1 ? 'es ' : ' ') + g.nar.open.map(l => l + 1).join(' y ');
+    if (!warn && P.inPark) warn = '🛹 ZONA LIBRE · trucos ×2';
+    if (g.riv) { const gp = g.riv.s - P.s; riv = '🏁 ' + g.riv.name + (gp > 0 ? ' +' + Math.round(gp) + ' m' : ' detrás'); }
+    const top = lt + '|' + ltc + '|' + pol + '|' + warn + '|' + riv + '|' + combo;
+    if (top !== H.top) { H.top = top; const set = (id, t, cl) => { const el = $(id); el.hidden = !t; if (t) { if (id === 'hLight') { el.className = 'lt ' + cl; el.innerHTML = '<i></i>' + t; } else el.textContent = t; } }; set('hLight', lt, ltc); set('hPol', pol); set('hWarn', warn); set('hRiv', riv); set('hCombo', combo); }
+    // botones de entrega: aparecen cuando hay un buzón, casita, muro o kiosco a tiro
+    for (const sd of [-1, 1]) {
+      let d = null; for (const q of g.dels) { if (q.done || q.miss || q.side !== sd) continue; const a = q.s - P.s; if (a < -2.5 || a > 22) continue; if (!d || q.s < d.s) d = q; }
+      const el = $(sd < 0 ? 'bDelL' : 'bDelR'), key = d ? d.k + (d.s - P.s >= 2 && d.s - P.s <= 9.5 ? '!' : '') : '';
+      if (key !== el._k) { el._k = key; el.hidden = !d; if (d) { el.lastChild.textContent = DICO[d.k]; el.style.setProperty('--dc', DCOLS[d.k]); el.classList.toggle('ok', key.endsWith('!')); } }
+      if (d) el.style.setProperty('--o', (113 * clamp((d.s - P.s) / 22, 0, 1)).toFixed(0));
+    }
     const m = '×' + (g.mult * (P.x2 > 0 ? 2 : 1) * (g.veh.id === 'bike' ? 1.15 : 1) * (1 + 0.5 * P.boost)).toFixed(2).replace(/\.?0+$/, '');
     if (m !== H.m) { H.m = m; $('hMult').textContent = m; }
     const pw = [['magnet', 'IMÁN', '#ff5a2a'], ['turbo', 'TURBO', '#ffc23a'], ['x2', '×2', '#ff2fb3'], ['glide', 'PARAGUAS', '#2dffb3']].filter(p => P[p[0]] > 0);
@@ -194,8 +234,8 @@ async function saveFile(name, text, mime) {
 }
 function exportJSON() { const S = SV.S; return JSON.stringify({ app: 'Run Scooter', version: VERSION, exportado: new Date().toISOString(), partidas: S.runs, perfil: S }, null, 1); }
 function exportCSV() {
-  const K = ['d', 'ch', 'deliv', 'veh', 'dist', 'score', 'coins', 'stars', 'clues', 'gifts', 'jumps', 'ducks', 'tricks', 'powers', 'trucks', 'ed', 'rev', 'time', 'cause', 'seed'];
-  const H = ['fecha', 'reto_dia', 'entregas', 'vehiculo', 'metros', 'puntos', 'monedas', 'estrellas', 'paginas', 'regalos', 'saltos', 'agachadas', 'trucos', 'poderes', 'furgones', 'edicion', 'revivir', 'segundos', 'causa', 'semilla'];
+  const K = ['d', 'ch', 'deliv', 'perf', 'duels', 'civic', 'veh', 'dist', 'score', 'coins', 'stars', 'clues', 'gifts', 'jumps', 'ducks', 'tricks', 'powers', 'trucks', 'ed', 'rev', 'time', 'cause', 'seed'];
+  const H = ['fecha', 'carrera_dia', 'entregas', 'perfectas', 'duelos', 'semaforos', 'vehiculo', 'metros', 'puntos', 'monedas', 'estrellas', 'paginas', 'regalos', 'saltos', 'agachadas', 'trucos', 'poderes', 'furgones', 'edicion', 'revivir', 'segundos', 'causa', 'semilla'];
   return [H.join(';')].concat(SV.S.runs.map(r => K.map(k => '"' + String(r[k] == null ? '' : r[k]).replace(/"/g, '""') + '"').join(';'))).join('\n');
 }
 function importJSON(text) {

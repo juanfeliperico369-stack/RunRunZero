@@ -28,6 +28,11 @@
   <div id="hud" hidden>
     <div class="hl"><div id="hScore" class="hs">0</div><div class="hc"><span class="coin"></span><b id="hCoins">0</b></div><br><div class="hc dl" id="hDel" hidden></div><div id="hDist" class="hd">0 M</div><div id="hSlope" class="slope" hidden></div><div id="hWord" class="word"></div></div>
     <div class="hr"><button id="bPause" data-act="pause" aria-label="Pausa">❚❚</button><div id="hMult" class="hm">×1</div><div id="hPow"></div></div>
+    <div class="htop"><div id="hLight" class="lt" hidden></div><div id="hPol" class="pol" hidden></div><div id="hWarn" class="warn" hidden></div><div id="hRiv" class="riv" hidden></div><div id="hCombo" class="combo" hidden></div></div>
+    <button id="bDelL" class="del l" hidden aria-label="Entregar a la izquierda"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="18"/></svg><span></span></button>
+    <button id="bDelR" class="del r" hidden aria-label="Entregar a la derecha"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="18"/></svg><span></span></button>
+    <button id="bBrake" class="brake" aria-label="Freno: mantén presionado"><span>■</span><small>FRENO</small></button>
+    <div class="enbar"><i><b id="enF"></b></i><small id="enL">ALIENTO</small></div>
     <button id="bBoost" class="boost" aria-label="Impulso: toca seguido para acelerar"><i><b id="bbF"></b></i><span>⚡</span><small>IMPULSO</small></button>
     <div id="hPop"></div>
     <div id="hBanner"></div>
@@ -38,30 +43,38 @@
   </div>
 
   <section id="sCover" class="scr cover on">
-    <div class="cband"><div>EMSAY</div><div>DISPONIBLE CADA DOMINGO</div></div>
+    <div class="cband"><div>EMSAY</div><div>LAS NUEVAS NUEVAS · CADA SEMANA</div></div>
     <div class="cbody">
-      <p class="srf">Carriles, saltos, regalos, pistas<br>y la historia de la ciclovía sin fin</p>
+      <p class="srf">La editorial del momento busca<br>a los mejores velocistas de Orbe</p>
       <h1 class="mega t1">RUN</h1>
-      <p class="kick">¿Sabes a dónde lleva?</p>
+      <p class="kick">¡Reparte las nuevas nuevas!</p>
       <h1 class="mega t2">SCOOTER</h1>
       <div class="cmid"></div>
-      <div class="ctag">¡Recorre la<br>ciclovía<br>sin fin!!!</div>
-      <div class="cstats" id="cStats"></div>
+      <div class="ticker"><b>TITULAR</b><span id="cTick"></span></div>
+      <div class="pcard" id="cCard"></div>
       <div class="cbtns">
-        <button class="btn pri big" data-act="play" data-arg="n">▶ Jugar</button>
-        <div class="cgrid">
-          <button class="btn red w2" data-act="play" data-arg="ch">★ Reto del día<i id="dCh" class="dot" style="background:var(--amb)" hidden></i></button>
-          <button class="btn" data-act="go" data-arg="sGarage">Garaje</button>
-          <button class="btn" data-act="go" data-arg="sRank">Ranking</button>
-          <button class="btn" data-act="go" data-arg="sStory">Historia<i id="dStory" class="dot" hidden></i></button>
-          <button class="btn" data-act="go" data-arg="sMis">Misiones<i id="dMis" class="dot" hidden></i></button>
-          <button class="btn" data-act="go" data-arg="sAch">Logros</button>
-          <button class="btn" data-act="go" data-arg="sSet">Ajustes</button>
-        </div>
+        <button class="btn pri big" data-act="play" data-arg="n">▶ Repartir</button>
+        <button class="btn red" data-act="play" data-arg="ch">★ Carrera del día<i id="dCh" class="dot" style="background:var(--amb)" hidden></i></button>
       </div>
     </div>
-    <div class="cfoot"><span class="mega">La revista sobre ruedas más actual</span><span class="adv">Edición<b><span id="cEd">Nº 1</span></b>sin fin</span></div>
+    <nav class="cnav">
+      <button data-act="go" data-arg="sGarage"><i>🛴</i>Garaje</button>
+      <button data-act="go" data-arg="sMent"><i>🎓</i>Mentores<b id="dMent" class="dot" hidden></b></button>
+      <button data-act="go" data-arg="sStory"><i>📰</i>Páginas<b id="dStory" class="dot" hidden></b></button>
+      <button data-act="go" data-arg="sMis"><i>🎯</i>Misiones<b id="dMis" class="dot" hidden></b></button>
+      <button data-act="go" data-arg="sRank"><i>🏆</i>Ranking</button>
+      <button data-act="go" data-arg="sAch"><i>★</i>Logros</button>
+      <button data-act="go" data-arg="sSet"><i>⚙</i>Ajustes</button>
+    </nav>
   </section>
+
+  <section id="sMent" class="scr"><div class="page pg-paper"><div class="wrap">
+    <div class="ph"><button class="back" data-act="go" data-arg="sCover">◀ Portada</button><div class="wallet" id="mtWallet"></div></div>
+    <div class="pag">Sección especial · Gente de Orbe</div>
+    <h2 class="mega" style="font-size:clamp(46px,14vw,80px);color:var(--red)">Mentores</h2>
+    <p class="kick" style="font-size:17px;margin:2px 0 12px;color:#111">Hazles un favor o págales la clase: te enseñan su habilidad para siempre.</p>
+    <div id="mtBody"></div>
+  </div></div></section>
 
   <section id="sGarage" class="scr gar">
     <div class="show"><div class="ph"><button class="back" data-act="go" data-arg="sCover">◀ Portada</button><div class="wallet" id="gWallet"></div></div><div class="vname" id="gName"></div></div>
@@ -85,6 +98,7 @@
     <div class="ph"><button class="back" data-act="go" data-arg="sCover">◀ Portada</button><span class="pag">PAG 5 · Sesión 3</span></div>
     <h2 class="h-serif">Las páginas perdidas de EMSAY</h2>
     <p class="lede" id="stLede"></p>
+    <div class="stabs" id="stTabs"></div>
     <div class="pgrid" id="stGrid"></div>
   </div></div></section>
 

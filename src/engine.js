@@ -43,7 +43,7 @@ const M4 = {
 };
 
 /* ---------- Atlas de texturas (Canvas2D → WebGL) ---------- */
-const AT = { W: 1024, H: 1024, white: [16 / 1024, 990 / 1024], r: {} };
+const AT = { W: 1024, H: 1024, white: [16 / 1024, 990 / 2048], r: {} };
 const WUV = AT.white;
 
 /* ---------- Constructor de mallas low-poly ---------- */

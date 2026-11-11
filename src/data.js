@@ -1,14 +1,22 @@
 /* ===== DATOS · vehículos, ediciones (zonas), historia, misiones, rangos ===== */
 const VEH = [
-  { id: 'scooter', name: 'Scooter', price: 0, spd: 1.0, jmp: 1.0, hnd: 1.0, perk: 'Equilibrio: el tambaleo dura 2,2 s (no 3 s)', desc: 'El clásico de empuje del repartidor. Estable y noble.' },
-  { id: 'quad', name: 'Patines quad', price: 1500, spd: 0.97, jmp: 1.0, hnd: 1.32, perk: 'Doble salto en el aire', desc: 'Dos ruedas adelante y dos atrás: el más ágil entre carriles.' },
-  { id: 'inline', name: 'Patines en línea', price: 4000, spd: 1.06, jmp: 1.02, hnd: 1.18, perk: 'Rueda en hilera: los charcos no te tumban', desc: 'Cuatro ruedas en fila: el más veloz sobre el asfalto.' },
-  { id: 'skate', name: 'Skate', price: 3000, spd: 0.99, jmp: 1.17, hnd: 1.06, perk: 'Ollie alto y trucos ×2', desc: 'Tabla, lija y actitud. Cada salto es un truco.' },
-  { id: 'long', name: 'Longboard', price: 3500, spd: 1.07, jmp: 0.95, hnd: 0.96, perk: 'Las bajadas aceleran el doble', desc: 'Tabla larga y ruedas blandas: vuela en las bajadas.' },
-  { id: 'bike', name: 'Bicicleta', price: 5000, spd: 1.08, jmp: 0.93, hnd: 0.94, perk: '+15 % de puntos', desc: 'La reina de la ciclovía, con canasta de revistas.' },
-  { id: 'trike', name: 'Triciclo de carga', price: 6000, spd: 0.96, jmp: 0.86, hnd: 0.9, perk: 'Entregas ×2 (puntos y monedas)', desc: 'El vehículo oficial de reparto EMSAY, con cajón de revistas.' },
-  { id: 'escooter', name: 'Monopatín eléctrico', price: 8000, spd: 1.04, jmp: 0.96, hnd: 1.0, perk: 'Poderes +35 % de duración', desc: 'Batería llena: imán, turbo y x2 duran más.' },
-  { id: 'euc', name: 'Monociclo eléctrico', price: 10000, spd: 1.05, jmp: 1.05, hnd: 1.12, perk: 'Mini imán: atrae monedas cercanas', desc: 'Una sola rueda y mucho equilibrio. El más moderno.' }
+  { id: 'foot', name: 'A pie', price: 0, kind: 'h', spd: 0.62, jmp: 1.0, hnd: 1.3, boost: 3.5, perk: 'Parkour: saltas solo rocas, vallas y bolardos', desc: 'Así empieza todo repartidor de EMSAY: tenis, morral y ganas.' },
+  { id: 'quad', name: 'Patines quad', price: 600, kind: 'h', spd: 0.8, jmp: 1.0, hnd: 1.32, boost: 4.5, perk: 'Doble salto en el aire', desc: 'Dos ruedas adelante y dos atrás: el más ágil entre carriles.' },
+  { id: 'inline', name: 'Patines en línea', price: 1400, kind: 'h', spd: 0.86, jmp: 1.02, hnd: 1.18, boost: 5.5, perk: 'Rueda en hilera: los charcos no te tumban', desc: 'Cuatro ruedas en fila: veloces sobre el asfalto.' },
+  { id: 'skate', name: 'Skate', price: 2000, kind: 'h', spd: 0.84, jmp: 1.17, hnd: 1.06, boost: 4.5, perk: 'Ollie alto y trucos ×2', desc: 'Tabla, lija y actitud. Cada salto es un truco.' },
+  { id: 'long', name: 'Longboard', price: 2800, kind: 'h', spd: 0.88, jmp: 0.95, hnd: 0.96, boost: 5, perk: 'Bajadas más rápidas y sin perder el control', desc: 'Tabla larga y ruedas blandas: vuela en las bajadas.' },
+  { id: 'scooter', name: 'Monopatín', price: 3500, kind: 'h', spd: 0.85, jmp: 1.0, hnd: 1.0, boost: 4.5, perk: 'Equilibrio: el tambaleo dura 2,2 s (no 3 s)', desc: 'El clásico de empuje. Estable y noble.' },
+  { id: 'uni', name: 'Monociclo', price: 4200, kind: 'h', spd: 0.83, jmp: 1.05, hnd: 1.2, boost: 4, perk: 'Equilibrista: los roces laterales no te tambalean', desc: 'Una rueda, un sillín y mucho circo.' },
+  { id: 'bike', name: 'Bicicleta', price: 5500, kind: 'h', spd: 0.96, jmp: 0.93, hnd: 0.94, boost: 7, perk: '+15 % de puntos', desc: 'La reina de la ciclovía, con canasta de revistas.' },
+  { id: 'trike', name: 'Triciclo de carga', price: 7000, kind: 'h', spd: 0.88, jmp: 0.86, hnd: 0.9, boost: 5, perk: 'Entregas ×2 (puntos y monedas)', desc: 'El vehículo oficial de reparto EMSAY, con cajón de revistas.' },
+  { id: 'ebike', name: 'Bicicleta eléctrica', price: 9000, kind: 'e', spd: 1.0, jmp: 0.93, hnd: 0.96, boost: 8, perk: 'Asistencia: las subidas no te frenan', desc: 'Pedaleo asistido para repartir sin sudar.' },
+  { id: 'escooter', name: 'Monopatín eléctrico', price: 11000, kind: 'e', spd: 0.98, jmp: 0.96, hnd: 1.0, boost: 7, perk: 'Poderes +35 % de duración', desc: 'Batería llena: imán, turbo y x2 duran más.' },
+  { id: 'euc', name: 'Monociclo eléctrico', price: 13000, kind: 'e', spd: 1.0, jmp: 1.05, hnd: 1.12, boost: 7.5, perk: 'Mini imán: atrae monedas cercanas', desc: 'Una sola rueda y mucho equilibrio. El más moderno.' },
+  { id: 'moped', name: 'Scooter eléctrico', price: 16000, kind: 'e', spd: 1.06, jmp: 0.9, hnd: 0.98, boost: 8.5, perk: 'Batería grande: +50 % de energía', desc: 'Parece una mini moto y no hace ruido.' },
+  { id: 'moto', name: 'Moto de reparto', price: 22000, kind: 'm', street: 1, spd: 1.14, jmp: 0.9, hnd: 1.0, boost: 10, perk: 'Sale a la calle · entregas +25 %', desc: 'Con baúl EMSAY. Ojo con el límite de velocidad.' },
+  { id: 'auto', name: 'Auto de prensa', price: 30000, kind: 'm', street: 1, spd: 1.18, jmp: 0.92, hnd: 0.92, boost: 10, perk: 'Carrocería: aguanta un golpe cada 45 s', desc: 'El carro de la redacción, con letrero en el techo.' },
+  { id: 'camion', name: 'Camión EMSAY', price: 40000, kind: 'm', street: 1, spd: 1.05, jmp: 0.86, hnd: 0.82, boost: 7, perk: 'Cuadrilla: las entregas se hacen solas y perfectas', desc: 'Con personal que te ayuda a repartir toda la edición.' },
+  { id: 'jetpack', name: 'Jetpack', price: 60000, kind: 'f', spd: 1.1, jmp: 1.0, hnd: 1.15, boost: 9, perk: 'Propulsión: 4 impulsos en el aire y caída lenta', desc: 'El invento de la Capitana Cometa. Corre en tierra, vuela con ↑.' }
 ];
 const VEHI = Object.fromEntries(VEH.map(v => [v.id, v]));
 
@@ -21,21 +29,26 @@ const COS = {
   ropa: [
     { id: 'r0', name: 'Repartidor', a: '#e8e4c4', b: '#1b4459', p: 0 }, { id: 'r1', name: 'Tipologías', a: '#ff5a2a', b: '#1b4459', p: 500 },
     { id: 'r2', name: 'Oralidad gris', a: '#9a9ea6', b: '#2b2d33', p: 700 }, { id: 'r3', name: 'Rojo y negro', a: '#c0191c', b: '#151515', p: 1000 },
-    { id: 'r4', name: 'Sesión final', a: '#c49a2c', b: '#4a2e12', p: 1200 }, { id: 'r5', name: 'Doc Element', a: '#1a0636', b: '#39c8ff', st: 4, e: 1 }
+    { id: 'r4', name: 'Sesión final', a: '#c49a2c', b: '#4a2e12', p: 1200 }, { id: 'r6', name: 'Sakura', a: '#f4a6c0', b: '#2b2d33', p: 900 }, { id: 'r7', name: 'Caribe', a: '#2f9fd1', b: '#f0d9a0', p: 900 }, { id: 'r8', name: 'Cafetal', a: '#3f8a3a', b: '#6b4226', p: 1100 }, { id: 'r5', name: 'Doc Element', a: '#1a0636', b: '#39c8ff', st: 4, e: 1 }
   ],
   pintura: [
     { id: 'p0', name: 'Teal', c: '#0e6378', p: 0 }, { id: 'p1', name: 'Crema', c: '#e8e4c4', p: 400 },
     { id: 'p2', name: 'Rojo', c: '#c0191c', p: 800 }, { id: 'p3', name: 'Naranja', c: '#ff5a2a', p: 1200 },
-    { id: 'p4', name: 'Mostaza', c: '#c49a2c', p: 1600 }, { id: 'p5', name: 'Neón azul', c: '#39c8ff', st: 6, e: 1 }
+    { id: 'p4', name: 'Mostaza', c: '#c49a2c', p: 1600 }, { id: 'p6', name: 'Negro mate', c: '#22242a', p: 1000 }, { id: 'p7', name: 'Rosa sakura', c: '#f4a6c0', p: 1400 }, { id: 'p8', name: 'Verde menta', c: '#2dffb3', p: 2000, e: 1 }, { id: 'p5', name: 'Neón azul', c: '#39c8ff', st: 6, e: 1 }
   ],
   estela: [
     { id: 't0', name: 'Ninguna', p: 0 }, { id: 't1', name: 'Polvo', p: 600 }, { id: 't2', name: 'Confeti EMSAY', p: 1500 },
     { id: 't3', name: 'Línea neón', st: 8 }, { id: 't4', name: 'Estrellas ✦', st: 12 }
   ],
-  personaje: [
-    { id: 'c0', name: 'Repartidor', skin: '#c98e62', hair: 'corto', hc: '#2b2112', p: 0 }, { id: 'c1', name: 'Repartidora', skin: '#a8754e', hair: 'coleta', hc: '#1b1410', p: 0 },
-    { id: 'c2', name: 'Kevin', skin: '#6b4428', hair: 'afro', hc: '#141010', p: 800 }, { id: 'c3', name: 'Lu', skin: '#f0c9a8', hair: 'coleta', hc: '#c0391c', p: 800 },
-    { id: 'c4', name: 'La Patinadora', skin: '#c98e62', hair: 'moño', hc: '#a42cff', ach: 'a8' }, { id: 'c5', name: 'Don Ramiro', skin: '#d9a47e', hair: 'canoso', hc: '#e6e6e6', ach: 'a14' }
+  piel: [
+    { id: 's0', name: 'Canela', c: '#c98e62', p: 0 }, { id: 's1', name: 'Miel', c: '#e0b089', p: 0 }, { id: 's2', name: 'Marfil', c: '#f0c9a8', p: 0 },
+    { id: 's3', name: 'Cacao', c: '#8a5a3a', p: 0 }, { id: 's4', name: 'Ébano', c: '#5a3a24', p: 0 }
+  ],
+  pelo: [
+    { id: 'k0', name: 'Corto negro', hair: 'corto', c: '#1b1410', p: 0 }, { id: 'k1', name: 'Coleta castaña', hair: 'coleta', c: '#5a3a1e', p: 0 },
+    { id: 'k2', name: 'Afro', hair: 'afro', c: '#141010', p: 200 }, { id: 'k3', name: 'Coleta roja', hair: 'coleta', c: '#c0391c', p: 400 },
+    { id: 'k6', name: 'Rubio corto', hair: 'corto', c: '#e0b84a', p: 300 }, { id: 'k7', name: 'Moño azul', hair: 'moño', c: '#39c8ff', p: 600 },
+    { id: 'k4', name: 'Moño morado', hair: 'moño', c: '#a42cff', ach: 'a8' }, { id: 'k5', name: 'Canas de editor', hair: 'canoso', c: '#e6e6e6', ach: 'a14' }
   ],
   mascota: [
     { id: 'm0', name: 'Sin mascota', p: 0 }, { id: 'm1', name: 'Perro Bache', c: '#c9935e', p: 2500 },
@@ -49,13 +62,17 @@ const ACH = [
   ['a1', 'Primera entrega', 'Entrega tu primera revista', 1, S => S.tot.deliv >= 1], ['a2', 'Cartero del barrio', 'Entrega 100 revistas en total', 2, S => S.tot.deliv >= 100],
   ['a3', 'Racha de oro', 'Encadena 10 entregas seguidas', 2, (S, g) => g && g.dBest >= 10], ['a4', 'Medio camino', 'Recorre 2.000 m en una partida', 1, (S, g) => g && g.p.s >= 2000],
   ['a5', 'Sin fin', 'Recorre 5.000 m en una partida', 3, (S, g) => g && g.p.s >= 5000], ['a6', 'Maratón', 'Suma 42.195 m en total', 2, S => S.tot.dist >= 42195],
-  ['a7', 'Bolsillo lleno', 'Junta 10.000 monedas en total', 2, S => S.tot.coins >= 10000], ['a8', 'Acróbata', 'Haz 25 trucos en una partida', 2, (S, g) => g && g.tricks >= 25, 'c4'],
-  ['a9', 'Rey del furgón', 'Sube a 15 furgones en una partida', 1, (S, g) => g && g.trucks >= 15], ['a10', 'Bajo la lluvia', 'Llega a una edición con lluvia', 1, (S, g) => g && g.rainSeen],
-  ['a11', 'Topo urbano', 'Atraviesa un túnel', 1, (S, g) => g && g.tunSeen], ['a12', 'Coleccionista', 'Ten los 9 vehículos', 3, S => VEH.every(v => S.owned[v.id])],
-  ['a13', 'Con estilo', 'Ten 15 cosméticos', 2, S => Object.keys(S.ownedCos).length >= 15], ['a14', 'Lector de EMSAY', 'Recupera las 12 páginas', 3, S => S.clues >= 12, 'c5'],
+  ['a7', 'Bolsillo lleno', 'Junta 10.000 monedas en total', 2, S => S.tot.coins >= 10000], ['a8', 'Acróbata', 'Haz 25 trucos en una partida', 2, (S, g) => g && g.tricks >= 25, 'k4'],
+  ['a9', 'Rey del camión', 'Sube a 8 camiones en una partida', 1, (S, g) => g && g.trucks >= 8], ['a10', 'Bajo la lluvia', 'Llega a una edición con lluvia', 1, (S, g) => g && g.rainSeen],
+  ['a11', 'Topo urbano', 'Atraviesa un túnel', 1, (S, g) => g && g.tunSeen], ['a12', 'Coleccionista', 'Ten 10 vehículos', 3, S => VEH.filter(v => S.owned[v.id]).length >= 10],
+  ['a13', 'Con estilo', 'Ten 15 cosméticos', 2, S => Object.keys(S.ownedCos).length >= 15], ['a14', 'Lector de EMSAY', 'Recupera las 12 páginas', 3, S => S.clues >= 12, 'k5'],
   ['a15', 'Madrugador', 'Racha de 7 días de regalo', 2, S => S.daily.streak >= 7], ['a16', 'Retador', 'Supera un Reto del día', 1, S => !!S.ch.rew],
   ['a17', 'Leyenda', 'Llega al rango Leyenda', 3, S => rankOf(S.xp) >= 9], ['a18', 'Poder total', 'Usa 8 poderes en una partida', 1, (S, g) => g && g.powers >= 8],
   ['a21', 'Deletreo', 'Completa la palabra EMSAY', 2, S => S.word && S.word.done >= 1], ['a22', 'Planeador', 'Vuela con el paraguas', 1, (S, g) => g && g.glides >= 1],
+  ['a23', 'Buen ciudadano', 'Respeta 10 semáforos en rojo', 1, S => (S.cnt.civic || 0) >= 10], ['a24', 'Escurridizo', 'Pierde a la policía 3 veces', 2, S => (S.cnt.esc || 0) >= 3],
+  ['a25', 'Duelista', 'Gana 5 duelos a rivales', 2, S => (S.cnt.duels || 0) >= 5], ['a26', 'Equilibrio total', 'Desliza 150 m por barandas en una partida', 2, (S, g) => g && g.grindM >= 150],
+  ['a27', 'Lector voraz', 'Recupera 50 páginas', 3, S => S.clues >= 50], ['a28', 'Hemeroteca', 'Recupera todas las páginas', 5, S => S.clues >= STORY.length],
+  ['a29', 'En forma', 'Llega a 80 de capacidad física', 2, S => S.fit >= 80], ['a30', 'Aprendiz aplicado', 'Aprende 3 habilidades de mentores', 2, S => Object.keys(S.ment).length >= 3],
   ['a19', 'Mejor amigo', 'Consigue una mascota', 1, S => Object.keys(S.ownedCos).some(k => /^m[1-9]/.test(k))], ['a20', 'Velocista', 'Toca ⚡ 150 veces en una partida', 1, (S, g) => g && (g.boosts || 0) >= 150]
 ];
 const UPG = [
@@ -64,6 +81,7 @@ const UPG = [
   { id: 'x2', name: 'Puntos x2', base: 10, per: 3, icon: '×2' },
   { id: 'gift', name: 'Suerte en regalos', base: 0, per: 0, icon: '◆' }
 ];
+UPG.push({ id: 'en', name: 'Aliento y batería', base: 0, per: 8, icon: '♥', pct: 1 }, { id: 'rue', name: 'Ruedas y tenis', base: 0, per: 7, icon: '◎', pct: 1 }, { id: 'fre', name: 'Frenos', base: 0, per: 8, icon: '■', pct: 1 }, { id: 'mor', name: 'Morral de reparto', base: 0, per: 6, icon: '✉', pct: 1 });
 const UPC = [400, 900, 1800, 3500, 6000];
 
 /* Ediciones: cada 1000 m cambia la "página" de la revista EMSAY */
@@ -98,36 +116,25 @@ const ZRAW = [
 const ZORD = [0, 1, 7, 2, 9, 3, 8, 4, 10, 5, 6];
 const ZONES = ZORD.map(i => ZRAW[i]);
 
-/* Historia · Las páginas perdidas de EMSAY (12 recortes) */
-const STORY = [
-  ['La rotativa en blanco', 'Domingo, 6:00 a.m. La rotativa de EMSAY se detuvo sola. Cuando volvió a arrancar, la edición de esta semana salió en blanco. Solo quedó una nota: «Las palabras se fueron a rodar».'],
-  ['Huellas de llanta', 'La primera página estaba pegada a un poste de la ciclovía. Tenía huellas de llanta y olía a pan recién horneado. Alguien la llevaba con mucha prisa.'],
-  ['Oír y escuchar', 'En el margen alguien escribió: «Oír es sentir el viento. Escuchar es saber hacia dónde sopla». Es la letra de Don Ramiro, el viejo editor.'],
-  ['El editor perdido', 'Don Ramiro desapareció hace diez años, el día que inauguraron la ciclovía. Salió en bicicleta a entregar la última edición y nunca volvió a la redacción.'],
-  ['La rueda con un ojo', 'Cada página trae el mismo dibujo: una rueda con un ojo, igual al ojo rojo de la Sesión 3. ¿Una firma? ¿Una advertencia? Hay que leer entre líneas.'],
-  ['No es una carrera', 'Los otros ciclistas no son rivales: también buscan páginas. Una patinadora me gritó al pasar: «¡Esto no es una carrera, es una conversación!».'],
-  ['El mapa', 'Página siete: un mapa. La ciclovía no termina nunca; rodea la ciudad y se cruza consigo misma en un punto que nadie ha visto: el Kilómetro Cero.'],
-  ['Tiza negra', 'Los baches no son casuales. Alguien los dibuja de noche con tiza negra para que los repartidores frenen. ¿Quién no quiere que la revista llegue?'],
-  ['La Tinta Gris', 'La encontré: la Tinta Gris, una mancha que se come las palabras que nadie lee. Crece cada vez que la gente deja de escucharse.'],
-  ['Un metro por lector', 'La única forma de vencerla es entregar cada página a tiempo. Cada vez que alguien lee, la Tinta Gris retrocede un metro.'],
-  ['Kilómetro Cero', 'En el Kilómetro Cero había una bicicleta antigua y una nota de Don Ramiro: «La revista nunca fue mía. Es de quien la reparte. Sigue rodando».'],
-  ['Sin fin', 'Ahora entiendo por qué la ciclovía es infinita: mientras alguien ruede con una historia que contar, EMSAY saldrá cada domingo. Fin de la temporada 1… ¿o no?']
-];
-
 /* Misiones (3 activas) — run:1 = dentro de una sola partida */
 const MIS = [
   { k: 'coins', t: 'Recoge {n} monedas en una partida', n: [50, 120, 250, 400, 650], run: 1 },
   { k: 'dist', t: 'Recorre {n} m en una partida', n: [500, 1000, 2000, 3500, 5500], run: 1 },
   { k: 'jumps', t: 'Salta {n} veces', n: [15, 35, 70, 120, 200] },
-  { k: 'ducks', t: 'Agáchate bajo {n} ramas', n: [4, 10, 20, 35, 60] },
+  { k: 'ducks', t: 'Agáchate bajo {n} ramas o talanqueras', n: [3, 8, 16, 28, 45] },
   { k: 'gifts', t: 'Abre {n} regalos', n: [1, 3, 6, 10, 16] },
   { k: 'powers', t: 'Usa {n} poderes', n: [2, 5, 10, 16, 25] },
   { k: 'tricks', t: 'Haz {n} trucos en el aire', n: [5, 12, 25, 45, 70] },
   { k: 'score', t: 'Haz {n} puntos en una partida', n: [1500, 4000, 9000, 18000, 35000], run: 1 },
   { k: 'clean', t: 'Recorre {n} m sin tambalearte', n: [300, 700, 1200, 2000, 3000], run: 1 },
-  { k: 'trucks', t: 'Sube a {n} furgones EMSAY', n: [2, 5, 10, 18, 30] },
+  { k: 'trucks', t: 'Sube a {n} camiones', n: [1, 3, 6, 10, 16] },
   { k: 'zone', t: 'Llega a la edición {n}', n: [2, 3, 4, 6, 8], run: 1 },
-  { k: 'deliv', t: 'Entrega {n} revistas en buzones', n: [5, 15, 30, 55, 90] },
+  { k: 'deliv', t: 'Haz {n} entregas', n: [8, 20, 40, 70, 110] },
+  { k: 'perf', t: 'Haz {n} entregas perfectas', n: [4, 10, 20, 35, 60] },
+  { k: 'near', t: 'Pasa rozando a {n} personas', n: [5, 12, 25, 40, 60] },
+  { k: 'civic', t: 'Respeta {n} semáforos en rojo', n: [1, 3, 6, 10, 15] },
+  { k: 'grind', t: 'Desliza {n} m por barandas', n: [30, 80, 160, 280, 450] },
+  { k: 'duels', t: 'Gana {n} duelos a rivales', n: [1, 2, 4, 7, 10] },
   { k: 'dstreak', t: 'Encadena {n} entregas seguidas', n: [3, 5, 8, 12, 16], run: 1 }
 ];
 
@@ -137,7 +144,7 @@ const rankOf = xp => { let i = 0; while (i < RANKXP.length - 1 && xp >= RANKXP[i
 
 /* Ranking de la ciudad (rivales ficticios) */
 const CITY = [
-  ['Don Ramiro', 250000], ['La Patinadora', 120000], ['Tinta Gris', 90000], ['Rueda Loca', 65000], ['Mango Biche', 48000],
+  ['Don Gustavo', 250000], ['La Patinadora', 120000], ['Capitana Cometa', 90000], ['Rueda Loca', 65000], ['Mango Biche', 48000],
   ['Doña Ciclo', 36000], ['El Ollie', 27000], ['Kiko Quad', 20000], ['Paz Pedal', 15000], ['Lu Neón', 11000],
   ['Tomás Turbo', 8200], ['Bache Bravo', 6000], ['Sofi Scooter', 4500], ['Nico Manubrio', 3200], ['La Canasta', 2300],
   ['Pepe Piñón', 1600], ['Rita Rampa', 1100], ['Juancho Cono', 700], ['Bici Bebé', 400], ['El Domingo', 200]
@@ -146,14 +153,36 @@ const CITY = [
 const TIPS = [
   'Desliza ↓ en el aire para caer rápido y agacharte al tocar el suelo.',
   'Dos golpes leves en 3 segundos te tumban: conos, charcos y roces cuentan.',
-  'Las filas de monedas suelen marcar el carril seguro.',
-  'Sube por la rampa amarilla al techo de los furgones EMSAY: arriba hay monedas.',
-  'Las ramas bajas solo se esquivan agachándose (↓).',
-  'El casco te salva de un choque fuerte. El turbo atraviesa todo.',
-  'Cada 1000 m cambia la edición: la revista pasa de página.',
-  'Las páginas perdidas cuentan la historia de Don Ramiro.',
-  'Sube de rango para ganar multiplicador de puntos permanente.',
-  'Con patines en línea los charcos no te hacen tambalear.',
-  'Si te tambaleas, la Tinta Gris te persigue: un golpe más y te atrapa.',
-  'El Reto del día es igual para todos: misma ciclovía, mismo orden de obstáculos.'
+  'Los carriles de la izquierda vienen de frente: úsalos solo para adelantar.',
+  'Toca el botón de entrega cuando el aro esté verde: entrega PERFECTA y doble puntaje.',
+  'En rojo cruzan carros. Mantén FRENO, espera el verde y ganas puntos por buen ciudadano.',
+  'En las bajadas fuertes frena un poco o perderás el control.',
+  'El impulso gasta aliento. Entrena a pie o en vehículos de fuerza y tu capacidad física crece.',
+  'Con motor no superes el límite: si te sigue la policía, acelera a fondo o frena y cambia de carril.',
+  'Salta sobre las barandas para deslizar: dan puntos, estilo y energía.',
+  'Si un animalito cruza, frena o pasa por donde ya cruzó.',
+  'Las zonas libres recargan tu energía y los trucos valen doble.',
+  'Los mentores enseñan habilidades: cúmpleles un favor o págales la clase.',
+  'Cada 1000 m cambia la edición: Orbe tiene barrios de todo el mundo.',
+  'Las páginas perdidas cuentan la historia de Don Gustavo.',
+  'El Reto del día es igual para todos: misma ruta, mismo orden de obstáculos.'
 ];
+
+/* Mentores: personajes especiales que enseñan habilidades (por un favor o pagando la clase) */
+const MENT = [
+  { id: 'kiko', name: 'Kiko Parkour', perk: 'parkour', hab: 'Parkour', desc: 'Doble salto a pie y en todo vehículo de fuerza.', favor: 'Recorre 8.000 m a pie', key: 'footM', n: 8000, price: 3000, col: '#ff5a2a' },
+  { id: 'pati', name: 'La Patinadora', perk: 'derrape', hab: 'Derrape', desc: 'Cambias de carril 20 % más rápido.', favor: 'Pasa rozando a 60 personas', key: 'near', n: 60, price: 3500, col: '#a42cff' },
+  { id: 'correo', name: 'Doña Correo', perk: 'brazo', hab: 'Brazo de cartero', desc: 'Entregas perfectas más fáciles y desde más lejos.', favor: 'Haz 80 entregas perfectas', key: 'perf', n: 80, price: 4000, col: '#0e6378' },
+  { id: 'tito', name: 'Entrenador Tito', perk: 'pulmon', hab: 'Pulmón de acero', desc: '+30 % de aliento y lo recuperas más rápido.', favor: 'Usa el impulso 1.500 veces', key: 'boosts', n: 1500, price: 4500, col: '#c49a2c' },
+  { id: 'freno', name: 'Maestra Freno', perk: 'freno', hab: 'Freno fino', desc: 'Frenas 40 % más rápido y los perros no te persiguen.', favor: 'Respeta 25 semáforos en rojo', key: 'civic', n: 25, price: 3500, col: '#c0191c' },
+  { id: 'ollie', name: 'Ollie', perk: 'trucos', hab: 'Trucos de calle', desc: 'Trucos y barandas valen el doble.', favor: 'Desliza 1.200 m por barandas', key: 'grind', n: 1200, price: 5000, col: '#2dffb3' },
+  { id: 'gus', name: 'Don Gustavo', perk: 'ojo', hab: 'Ojo de editor', desc: 'Aparecen más páginas perdidas y letras.', favor: 'Recupera 30 páginas', key: 'pages', n: 30, price: 6000, col: '#e8e4c4' },
+  { id: 'cometa', name: 'Capitana Cometa', perk: '', veh: 'jetpack', hab: 'Te regala su Jetpack', desc: 'El vehículo más especial de Orbe.', favor: 'Gana 15 duelos a rivales', key: 'duels', n: 15, price: 60000, col: '#39c8ff' }
+];
+/* Rivales: otros repartidores que compiten contigo */
+const RIV = [['Rueda Loca', '#ff5a2a'], ['Lu Neón', '#a42cff'], ['Tomás Turbo', '#ffc23a'], ['Sofi Scooter', '#2dffb3'], ['Nico Manubrio', '#39c8ff']];
+/* Secciones de las páginas de EMSAY */
+const SECT = { h: 'Historia', f: 'Farándula', n: 'Noticias', l: 'Libros', e: 'Eventos', d: 'Editorial' };
+/* Orbe: la ciudad donde caben todas las ciudades */
+['Centro de Orbe', 'Barrio Sakura', 'Puerto Nórdico', 'La Medina', 'Pequeña Lagos', 'Sabana Dorada', 'Avenida Neón', 'Malecón del Caribe', 'Bosque Nublado', 'Alto Andino', 'Puente del Río Mundo'].forEach((b, i) => { ZRAW[i].sub = b; });
+ZRAW[1].scen[0] = hex('#f4a6c0');
