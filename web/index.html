@@ -61,7 +61,7 @@ button:focus-visible{outline:3px solid var(--amb);outline-offset:2px}
 .cover{background:linear-gradient(180deg,rgba(243,239,224,.97) 0,rgba(243,239,224,.86) 33%,rgba(243,239,224,0) 48%,rgba(243,239,224,0) 58%,rgba(243,239,224,.9) 72%,rgba(243,239,224,.97) 100%);color:var(--navy)}
 .cband{flex:none;display:flex;min-height:calc(48px + var(--st));padding-top:var(--st);background:var(--teal)}
 .cband>div{flex:1;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;letter-spacing:.42em;font-size:13px}
-.cband>div+div{flex:1.4;background:var(--cream);color:var(--teal);letter-spacing:.2em;font-weight:600;font-size:11.5px;margin:6px 0 0}
+.cband>div+div{flex:1.9;background:var(--cream);color:var(--teal);letter-spacing:.08em;font-weight:700;font-size:10.5px;margin:6px 0 0;white-space:nowrap}
 .cbody{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;padding:6px 12px 0;max-width:620px;margin:0 auto;width:100%}
 .srf{font-family:var(--fs);text-transform:uppercase;color:#111;font-size:clamp(12px,3.4vw,17px);line-height:1.2;margin:4px 0 2px}
 .cover .t1{font-size:clamp(96px,32vw,190px);color:var(--navy);text-shadow:0 3px 0 rgba(243,239,224,.7)}
@@ -1158,7 +1158,6 @@ function genRow(g) {
     else g.dels.push({ s, side: 1, k: 'rev', obj: 'casita', v: 0, done: 0, miss: 0, tut: 3 });
     g.tut++; g.genS = s + 32; coinLine(g, 3, s - 10, 5, 0.8); return;
   }
-  if (g.tut === TUT.length) g.tut = -1;
   if (s >= g.nextSeg && !g.nar && !g.park) { genSeg(g); if (g.genS !== s) return; }
   let nar = g.nar, park = g.park;
   if (nar && s > nar.b - 4) { g.nar = nar = null; g.genS = s + 12; return; }
@@ -1397,7 +1396,7 @@ function chaseStep(g, dt) {
 function rivalStep(g, dt, base) {
   const P = g.p, r = g.xr; let R = g.riv;
   if (!R) {
-    if (P.s >= g.nextRiv && !P.inPark && !g.nar && P.v > 8 && g.tut < 0) {
+    if (P.s >= g.nextRiv && !P.inPark && !g.nar && P.v > 8 && (g.tut < 0 || g.tut >= TUT.length)) {
       const i = Math.floor(r() * RIV.length), lane = P.lane === 2 ? 3 : 2;
       R = g.riv = { i, name: RIV[i][0], s: P.s - 9, lane, x: LX(lane), v: P.v + 3, t: 0, led: 0, ah: 0, y: 0, lc: 2 + r() * 2, hitT: -9 }; ev(g, 'rival', R);
     }
@@ -1427,7 +1426,7 @@ function step(g, dt, inp) {
   // tutorial: cámara lenta hasta que el jugador haga el gesto correcto
   if (g.tutWait) {
     const w = g.tutWait, ok = w.need === 'jump' ? P.air : w.need === 'duck' ? P.crouch > 0 : w.need === 'deliver' ? w.ok : P.lane !== w.o.lane;
-    if (ok || w.o.s - P.s < -2) { g.tutWait = null; ev(g, 'tutOk'); } else dt *= 0.18;
+    if (ok || w.o.s - P.s < -2) { g.tutWait = null; ev(g, 'tutOk', w.need); } else dt *= 0.18;
   }
   if (inp) input(g, inp);
   P.inv = Math.max(0, P.inv - dt); P.stumble = Math.max(0, P.stumble - dt); P.crouch = Math.max(0, P.crouch - dt); P.tapT += dt; P.trT += dt;
@@ -1488,7 +1487,7 @@ function step(g, dt, inp) {
     if (o.t === 'gate') { const gy = gateY(o, g.t); o.y0 = gy - 0.08; o.y1 = gy + 0.08; }
     const os0 = o.s - o.hd, os1 = o.s + o.hd;
     if ((o.t === 'branch' || o.t === 'gate') && !o.passed && P.s - PHD > os1) { o.passed = 1; if (Math.abs(P.x - o.x) < o.hw && P.crouch > 0) { g.ducks++; ev(g, 'duckOk'); } }
-    if (g.tut !== -1 && o.tut !== undefined && !o.tdone && os0 > P.s && (os0 - P.s - PHD) / Math.max(1, P.v - (o.u || 0)) * P.v <= (TUT[o.tut].need === 'lane' ? P.v * 0.6 : P.v * 0.21 + 0.4)) { o.tdone = 1; g.tutWait = { need: TUT[o.tut].need, o }; ev(g, 'tut', o.tut); }
+    if (o.tut !== undefined && !o.tdone && os0 > P.s && (os0 - P.s - PHD) / Math.max(1, P.v - (o.u || 0)) * P.v <= (TUT[o.tut].need === 'lane' ? P.v * 0.6 : P.v * 0.21 + 0.4)) { o.tdone = 1; g.tutWait = { need: TUT[o.tut].need, o }; ev(g, 'tut', o.tut); }
     if (zB < os0 || zA > os1) continue;
     if (P.glide > 0 && P.y > 2.9) continue;
     if (Math.abs(P.x - o.x) >= o.hw + PHW) continue;
@@ -2360,7 +2359,7 @@ const RN = {
   },
   camera(g, mode, time, dt) {
     const P = g.p, c = this.cam, asp = R.w / R.h, k = clamp((1.05 - asp) / 0.55, 0, 1);
-    if (mode === 'garage') { const a = time * 0.45 + 0.6, rr = (g.veh.id === 'auto' || g.veh.id === 'camion' ? 7.5 : 4.9) + k * 0.6; c.ex = P.x + Math.sin(a) * rr; c.ez = Math.cos(a) * rr; c.ey = 1.7; c.cx = P.x; c.cy = -0.85 - k * 0.2; c.cz = 0; c.fov = 0.9 + k * 0.2; }
+    if (mode === 'garage') { const a = time * 0.45 + 0.6, rr = (g.veh.id === 'auto' || g.veh.id === 'camion' ? 7.5 : 4.9) + k * 0.6; c.ex = P.x + Math.sin(a) * rr; c.ez = Math.cos(a) * rr; c.ey = 1.7 + (rr > 7 ? 1.2 : 0); c.cx = P.x; c.cy = -0.85 - k * 0.2; c.cz = 0; c.fov = 0.9 + k * 0.2; }
     else if (mode === 'menu') { c.ex = P.x * 0.6 + 1.6; c.ey = 1.85 + P.y * 0.5; c.ez = 4.4 + k * 1.6; c.cx = P.x * 0.6; c.cy = 1.0 + P.y * 0.4; c.cz = -8; c.fov = 1.0 + k * 0.15; }
     else {
       this.camY = lerp(this.camY, P.y, Math.min(1, dt * 6));
@@ -2507,6 +2506,8 @@ const RN = {
     const P = g.p; if (!R.gl) return;
     this.zoneEnv(P.s);
     const E = this.env;
+    // en modo calle (moto, auto, camión) la vía es asfalto con líneas amarillas
+    if (g.street && mode !== 'garage') { lerp3(E.road[0], E.road[0], [0.2, 0.21, 0.24], 0.85); lerp3(E.road[3], E.road[3], [1, 1, 1], 0.7); lerp3(E.road[4], E.road[4], [1, 0.8, 0.15], 0.85); }
     // clima (lluvia) y túneles: oscurecen el ambiente
     const ed = Math.floor(Math.max(0, P.s) / 1000), u = P.s - ed * 1000, rt = mode === 'garage' ? 0 : RAINY(ed) ? clamp(Math.min(u, 1000 - u) / 60, 0, 1) : 0;
     this.rk = lerp(this.rk || 0, rt, Math.min(1, dt * 2)); const rk = this.rk;
@@ -3118,7 +3119,7 @@ function events(g) {
         break;
       }
       case 'tut': UI.tut(e.a); AU.sfx('tut'); break;
-      case 'tutOk': UI.tut(-1); if (g.tut >= TUT.length && S.tut) { S.tut = 0; SV.save(); } break;
+            case 'tutOk': UI.tut(-1); if (e.a === 'deliver' && S.tut) { S.tut = 0; SV.save(); UI.toast('¡Listo! Reparte las nuevas nuevas por todo Orbe', 'g'); } break;
       case 'revive': AU.sfx('revive'); break;
       case 'boost': AU.pumpLv = e.a; AU.sfx('pump'); break;
       case 'deliver': AU.sfx('deliver'); vib(15); UI.pop(DICO[e.a.k] + (e.a.q === 2 ? ' ¡PERFECTA! +' : ' ' + DEL[e.a.k][2] + ' +') + fmt(e.a.pts) + (g.dStreak > 1 ? ' · racha ×' + g.dStreak : '')); break;

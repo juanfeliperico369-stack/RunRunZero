@@ -46,7 +46,7 @@ const RN = {
   },
   camera(g, mode, time, dt) {
     const P = g.p, c = this.cam, asp = R.w / R.h, k = clamp((1.05 - asp) / 0.55, 0, 1);
-    if (mode === 'garage') { const a = time * 0.45 + 0.6, rr = (g.veh.id === 'auto' || g.veh.id === 'camion' ? 7.5 : 4.9) + k * 0.6; c.ex = P.x + Math.sin(a) * rr; c.ez = Math.cos(a) * rr; c.ey = 1.7; c.cx = P.x; c.cy = -0.85 - k * 0.2; c.cz = 0; c.fov = 0.9 + k * 0.2; }
+    if (mode === 'garage') { const a = time * 0.45 + 0.6, rr = (g.veh.id === 'auto' || g.veh.id === 'camion' ? 7.5 : 4.9) + k * 0.6; c.ex = P.x + Math.sin(a) * rr; c.ez = Math.cos(a) * rr; c.ey = 1.7 + (rr > 7 ? 1.2 : 0); c.cx = P.x; c.cy = -0.85 - k * 0.2; c.cz = 0; c.fov = 0.9 + k * 0.2; }
     else if (mode === 'menu') { c.ex = P.x * 0.6 + 1.6; c.ey = 1.85 + P.y * 0.5; c.ez = 4.4 + k * 1.6; c.cx = P.x * 0.6; c.cy = 1.0 + P.y * 0.4; c.cz = -8; c.fov = 1.0 + k * 0.15; }
     else {
       this.camY = lerp(this.camY, P.y, Math.min(1, dt * 6));
@@ -193,6 +193,8 @@ const RN = {
     const P = g.p; if (!R.gl) return;
     this.zoneEnv(P.s);
     const E = this.env;
+    // en modo calle (moto, auto, camión) la vía es asfalto con líneas amarillas
+    if (g.street && mode !== 'garage') { lerp3(E.road[0], E.road[0], [0.2, 0.21, 0.24], 0.85); lerp3(E.road[3], E.road[3], [1, 1, 1], 0.7); lerp3(E.road[4], E.road[4], [1, 0.8, 0.15], 0.85); }
     // clima (lluvia) y túneles: oscurecen el ambiente
     const ed = Math.floor(Math.max(0, P.s) / 1000), u = P.s - ed * 1000, rt = mode === 'garage' ? 0 : RAINY(ed) ? clamp(Math.min(u, 1000 - u) / 60, 0, 1) : 0;
     this.rk = lerp(this.rk || 0, rt, Math.min(1, dt * 2)); const rk = this.rk;

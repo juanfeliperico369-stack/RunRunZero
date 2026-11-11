@@ -186,7 +186,6 @@ function genRow(g) {
     else g.dels.push({ s, side: 1, k: 'rev', obj: 'casita', v: 0, done: 0, miss: 0, tut: 3 });
     g.tut++; g.genS = s + 32; coinLine(g, 3, s - 10, 5, 0.8); return;
   }
-  if (g.tut === TUT.length) g.tut = -1;
   if (s >= g.nextSeg && !g.nar && !g.park) { genSeg(g); if (g.genS !== s) return; }
   let nar = g.nar, park = g.park;
   if (nar && s > nar.b - 4) { g.nar = nar = null; g.genS = s + 12; return; }
@@ -425,7 +424,7 @@ function chaseStep(g, dt) {
 function rivalStep(g, dt, base) {
   const P = g.p, r = g.xr; let R = g.riv;
   if (!R) {
-    if (P.s >= g.nextRiv && !P.inPark && !g.nar && P.v > 8 && g.tut < 0) {
+    if (P.s >= g.nextRiv && !P.inPark && !g.nar && P.v > 8 && (g.tut < 0 || g.tut >= TUT.length)) {
       const i = Math.floor(r() * RIV.length), lane = P.lane === 2 ? 3 : 2;
       R = g.riv = { i, name: RIV[i][0], s: P.s - 9, lane, x: LX(lane), v: P.v + 3, t: 0, led: 0, ah: 0, y: 0, lc: 2 + r() * 2, hitT: -9 }; ev(g, 'rival', R);
     }
@@ -455,7 +454,7 @@ function step(g, dt, inp) {
   // tutorial: cámara lenta hasta que el jugador haga el gesto correcto
   if (g.tutWait) {
     const w = g.tutWait, ok = w.need === 'jump' ? P.air : w.need === 'duck' ? P.crouch > 0 : w.need === 'deliver' ? w.ok : P.lane !== w.o.lane;
-    if (ok || w.o.s - P.s < -2) { g.tutWait = null; ev(g, 'tutOk'); } else dt *= 0.18;
+    if (ok || w.o.s - P.s < -2) { g.tutWait = null; ev(g, 'tutOk', w.need); } else dt *= 0.18;
   }
   if (inp) input(g, inp);
   P.inv = Math.max(0, P.inv - dt); P.stumble = Math.max(0, P.stumble - dt); P.crouch = Math.max(0, P.crouch - dt); P.tapT += dt; P.trT += dt;
@@ -516,7 +515,7 @@ function step(g, dt, inp) {
     if (o.t === 'gate') { const gy = gateY(o, g.t); o.y0 = gy - 0.08; o.y1 = gy + 0.08; }
     const os0 = o.s - o.hd, os1 = o.s + o.hd;
     if ((o.t === 'branch' || o.t === 'gate') && !o.passed && P.s - PHD > os1) { o.passed = 1; if (Math.abs(P.x - o.x) < o.hw && P.crouch > 0) { g.ducks++; ev(g, 'duckOk'); } }
-    if (g.tut !== -1 && o.tut !== undefined && !o.tdone && os0 > P.s && (os0 - P.s - PHD) / Math.max(1, P.v - (o.u || 0)) * P.v <= (TUT[o.tut].need === 'lane' ? P.v * 0.6 : P.v * 0.21 + 0.4)) { o.tdone = 1; g.tutWait = { need: TUT[o.tut].need, o }; ev(g, 'tut', o.tut); }
+    if (o.tut !== undefined && !o.tdone && os0 > P.s && (os0 - P.s - PHD) / Math.max(1, P.v - (o.u || 0)) * P.v <= (TUT[o.tut].need === 'lane' ? P.v * 0.6 : P.v * 0.21 + 0.4)) { o.tdone = 1; g.tutWait = { need: TUT[o.tut].need, o }; ev(g, 'tut', o.tut); }
     if (zB < os0 || zA > os1) continue;
     if (P.glide > 0 && P.y > 2.9) continue;
     if (Math.abs(P.x - o.x) >= o.hw + PHW) continue;

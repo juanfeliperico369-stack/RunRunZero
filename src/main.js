@@ -78,7 +78,7 @@ function events(g) {
         break;
       }
       case 'tut': UI.tut(e.a); AU.sfx('tut'); break;
-      case 'tutOk': UI.tut(-1); if (g.tut >= TUT.length && S.tut) { S.tut = 0; SV.save(); } break;
+            case 'tutOk': UI.tut(-1); if (e.a === 'deliver' && S.tut) { S.tut = 0; SV.save(); UI.toast('¡Listo! Reparte las nuevas nuevas por todo Orbe', 'g'); } break;
       case 'revive': AU.sfx('revive'); break;
       case 'boost': AU.pumpLv = e.a; AU.sfx('pump'); break;
       case 'deliver': AU.sfx('deliver'); vib(15); UI.pop(DICO[e.a.k] + (e.a.q === 2 ? ' ¡PERFECTA! +' : ' ' + DEL[e.a.k][2] + ' +') + fmt(e.a.pts) + (g.dStreak > 1 ? ' · racha ×' + g.dStreak : '')); break;
