@@ -114,17 +114,19 @@ class MB {
 
 /* ---------- Renderizador ---------- */
 const VS = `attribute vec3 aP;attribute vec3 aN;attribute vec4 aC;attribute vec2 aT;
-uniform mat4 uM,uV,uP;uniform vec2 uBend;uniform vec4 uHill;uniform float uH0;uniform float uPal;uniform vec3 uTint,uTintE,uK0,uK1,uK2,uK3,uK4;
-varying vec3 vN;varying vec3 vC;varying float vE;varying vec2 vT;varying float vD;
-void main(){vec4 w=uM*vec4(aP,1.0);if(uHill.w>0.5){float sa=uHill.z-w.z;w.y+=clamp((sa-150.0)/250.0,0.0,1.0)*(6.0*sin(uHill.x-w.z*0.0105)+2.2*sin(uHill.y-w.z*0.027))-uH0;}vec4 v=uV*w;float z=min(v.z,0.0);v.x+=uBend.x*z*z;v.y+=uBend.y*z*z;
-gl_Position=uP*v;vN=(uM*vec4(aN,0.0)).xyz;vE=aC.a;vT=aT;vD=-v.z;
+uniform mat4 uM,uV,uP;uniform vec2 uBend;uniform vec4 uHill;uniform float uH0;uniform float uPal;uniform float uTime;uniform vec3 uTint,uTintE,uK0,uK1,uK2,uK3,uK4;
+varying vec3 vN;varying vec3 vC;varying float vE;varying vec2 vT;varying float vD;varying float vH;varying vec3 vW;varying float vPF;
+void main(){vec4 w=uM*vec4(aP,1.0);vH=w.y;vPF=uPal;if(uPal>0.5&&aC.r<0.06&&aP.y>0.9){float sw=sin(uTime*1.7+w.z*0.21+w.x*0.37)*0.045*aP.y;w.x+=sw;w.z+=sw*0.6;}if(uHill.w>0.5){float sa=uHill.z-w.z;w.y+=clamp((sa-150.0)/250.0,0.0,1.0)*(6.0*sin(uHill.x-w.z*0.0105)+2.2*sin(uHill.y-w.z*0.027))-uH0;}vec4 v=uV*w;float z=min(v.z,0.0);v.x+=uBend.x*z*z;v.y+=uBend.y*z*z;
+gl_Position=uP*v;vN=(uM*vec4(aN,0.0)).xyz;vE=aC.a;vT=aT;vD=-v.z;vW=w.xyz;
 float k=aC.r*4.0;vec3 pc=uK0*max(0.0,1.0-abs(k))+uK1*max(0.0,1.0-abs(k-1.0))+uK2*max(0.0,1.0-abs(k-2.0))+uK3*max(0.0,1.0-abs(k-3.0))+uK4*max(0.0,1.0-abs(k-4.0));
 vec3 dc=aC.rgb*mix(uTint,uTintE,step(0.5,aC.a));vC=mix(dc,pc*aC.g*uTint,uPal);}`;
-const FS = `precision mediump float;uniform sampler2D uTex;uniform vec3 uFog,uL;uniform float uAmb,uSun,uEmit,uAlpha,uCut;uniform vec2 uFogR;
-varying vec3 vN;varying vec3 vC;varying float vE;varying vec2 vT;varying float vD;
+const FS = `precision mediump float;uniform sampler2D uTex;uniform vec3 uFog,uL,uCam;uniform float uAmb,uSun,uEmit,uAlpha,uCut;uniform vec2 uFogR;
+varying vec3 vN;varying vec3 vC;varying float vE;varying vec2 vT;varying float vD;varying float vH;varying vec3 vW;varying float vPF;
 void main(){vec4 t=texture2D(uTex,vT);if(t.a<uCut)discard;vec3 base=vC*t.rgb;
-vec3 n=normalize(vN);if(!gl_FrontFacing)n=-n;float d=max(dot(n,uL),0.0);d=floor(d*4.0+0.5)/4.0;
-vec3 c=base*(uAmb*(0.72+0.28*n.y)+uSun*d);c=mix(c,base*1.3,vE*uEmit);
+vec3 n=normalize(vN);if(!gl_FrontFacing)n=-n;float d=max(dot(n,uL),0.0);d=mix(d,floor(d*3.0+0.5)/3.0,0.3);
+vec3 V=normalize(uCam-vW);float sp=pow(max(dot(reflect(-uL,n),V),0.0),18.0)*0.24*uSun*(1.0-0.75*vPF);float rim=pow(1.0-max(dot(n,V),0.0),3.0)*0.2;
+float ao=mix(mix(0.68,1.0,clamp(vH*1.3+0.2,0.0,1.0)),1.0,step(0.8,n.y));
+vec3 c=base*(uAmb*(0.72+0.28*n.y)+uSun*d)*ao+vec3(sp)+base*rim*uAmb;c=mix(c,base*1.3,vE*uEmit);
 float f=clamp((vD-uFogR.x)/(uFogR.y-uFogR.x),0.0,1.0);c=mix(c,uFog,f*f);gl_FragColor=vec4(c,t.a*uAlpha);}`;
 const SVS = `attribute vec2 aP;varying vec2 vU;void main(){vU=aP*0.5+0.5;gl_Position=vec4(aP,0.9999,1.0);}`;
 const SFS = `precision mediump float;varying vec2 vU;uniform vec3 uTop,uHor,uSunC,uSun;uniform float uStars,uAsp,uHy,uTime;
@@ -211,6 +213,7 @@ const R = {
     gl.uniform3fv(U.uFog, env.hor); gl.uniform2f(U.uFogR, env.fogR[0], env.fogR[1]);
     gl.uniform3fv(U.uL, env.L); gl.uniform1f(U.uAmb, env.amb); gl.uniform1f(U.uSun, env.sunI);
     gl.uniform1f(U.uEmit, env.emit); this.emit = env.emit; this._e = env.emit;
+    if (U.uCam) gl.uniform3f(U.uCam, cam.ex, cam.ey, cam.ez); if (U.uTime) gl.uniform1f(U.uTime, time);
     gl.uniform1f(U.uAlpha, 1); gl.uniform1f(U.uCut, 0.5); gl.uniform1f(U.uPal, 0);
     gl.uniform3fv(U.uTint, ONE); gl.uniform3fv(U.uTintE, ONE);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.tex); gl.uniform1i(U.uTex, 0);

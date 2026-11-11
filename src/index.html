@@ -26,14 +26,18 @@
 <div id="ui">
   <div id="rain"></div><div id="flash"></div>
   <div id="hud" hidden>
-    <div class="hl"><div id="hScore" class="hs">0</div><div class="hc"><span class="coin"></span><b id="hCoins">0</b></div><br><div class="hc dl" id="hDel" hidden></div><div id="hDist" class="hd">0 M</div><div id="hSlope" class="slope" hidden></div><div id="hWord" class="word"></div></div>
-    <div class="hr"><button id="bPause" data-act="pause" aria-label="Pausa">❚❚</button><div id="hMult" class="hm">×1</div><div id="hPow"></div></div>
+    <div class="hl"><div id="hScore" class="hs">0</div>
+      <div class="hrow"><div class="hc"><span class="coin"></span><b id="hCoins">0</b></div><div class="hc dl" id="hDel" hidden></div></div>
+      <div class="hinfo"><span id="hDist" class="hd">0 M</span><span id="hSlope" class="slope" hidden></span></div>
+      <div id="hWord" class="word"></div>
+    </div>
+    <div class="hr"><button id="bPause" data-act="pause" aria-label="Pausa"><svg viewBox="0 0 24 24"><rect x="6" y="5" width="4.2" height="14" rx="1.2"/><rect x="13.8" y="5" width="4.2" height="14" rx="1.2"/></svg></button><div id="hMult" class="hm">×1</div><div id="hPow"></div></div>
     <div class="htop"><div id="hLight" class="lt" hidden></div><div id="hPol" class="pol" hidden></div><div id="hWarn" class="warn" hidden></div><div id="hRiv" class="riv" hidden></div><div id="hCombo" class="combo" hidden></div></div>
-    <button id="bDelL" class="del l" hidden aria-label="Entregar a la izquierda"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="18"/></svg><span></span></button>
-    <button id="bDelR" class="del r" hidden aria-label="Entregar a la derecha"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="18"/></svg><span></span></button>
-    <button id="bBrake" class="brake" aria-label="Freno: mantén presionado"><span>■</span><small>FRENO</small></button>
-    <div class="enbar"><i><b id="enF"></b></i><small id="enL">ALIENTO</small></div>
-    <button id="bBoost" class="boost" aria-label="Impulso: toca seguido para acelerar"><i><b id="bbF"></b></i><span>⚡</span><small>IMPULSO</small></button>
+    <button id="bDelL" class="del l" hidden aria-label="Entregar a la izquierda"><svg class="rg" viewBox="0 0 40 40"><circle class="bg" cx="20" cy="20" r="18"/><circle class="fg" cx="20" cy="20" r="18"/></svg><span class="ic"></span><small></small></button>
+    <button id="bDelR" class="del r" hidden aria-label="Entregar a la derecha"><svg class="rg" viewBox="0 0 40 40"><circle class="bg" cx="20" cy="20" r="18"/><circle class="fg" cx="20" cy="20" r="18"/></svg><span class="ic"></span><small></small></button>
+    <div class="enbar"><div class="enl"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.6 6.6 4.6c2 0 3.4 1.1 4.2 2.4h2.4c.8-1.3 2.2-2.4 4.2-2.4 3.6 0 5.7 3.8 4.2 7.2C19.5 16.4 12 21 12 21z"/></svg><small id="enL">ALIENTO</small></div><i><b id="enF"></b></i></div>
+    <button id="bBrake" class="pad brake" aria-label="Freno: mantén presionado"><svg viewBox="0 0 48 48"><path d="M16 4h16l12 12v16L32 44H16L4 32V16z" fill="#fff"/><path d="M17.7 8h12.6L40 17.7v12.6L30.3 40H17.7L8 30.3V17.7z" fill="currentColor"/><text x="24" y="29" text-anchor="middle" font-size="11.5" font-weight="900" fill="#fff" font-family="Cuerpo,sans-serif">STOP</text></svg><small>FRENO</small></button>
+    <button id="bBoost" class="pad boost" aria-label="Impulso: toca seguido para acelerar"><svg class="rg" viewBox="0 0 40 40"><circle class="bg" cx="20" cy="20" r="18"/><circle class="fg" id="bbF" cx="20" cy="20" r="18"/></svg><svg class="bolt" viewBox="0 0 24 24"><path d="M13.6 1.5 4.2 13.4h6.3l-1.9 9.1 9.9-12.3h-6.4z"/></svg><small>IMPULSO</small></button>
     <div id="hPop"></div>
     <div id="hBanner"></div>
     <div id="hTut" class="tut" hidden></div>
@@ -66,7 +70,7 @@
         <button class="btn" data-act="share"><i>📲</i>Compartir</button>
         <button class="btn" data-act="go" data-arg="sSet"><i>⚙</i>Ajustes</button>
       </div>
-      <div class="ticker"><b>TITULAR</b><span id="cTick"></span></div>
+      <div class="ticker"><b>TITULAR</b><div class="tk"><span id="cTick"></span></div></div>
     </div>
     <div class="cfoot"><span class="mega">La revista sobre ruedas más actual</span><span class="adv">Edición<b><span id="cEd">Nº 1</span></b>sin fin</span></div>
   </section>
@@ -156,6 +160,8 @@
     <h3 class="h-serif" id="rdT" style="font-size:34px"></h3><div class="film" id="rdX"></div>
     <button class="btn" data-act="closeRead" style="margin-top:12px;width:100%">Cerrar</button>
   </div></div></div>
+
+  <div id="oMent" class="ov" data-act="closeMent"><div class="panel rd"><div class="pband"><span>EMSAY</span><span>PERFIL · GENTE DE ORBE</span></div><div class="pin" id="mpBody"></div></div></div>
 
   <div id="oConf" class="ov"><div class="panel"><div class="pband"><span>EMSAY</span><span>CONFIRMAR</span></div><div class="pin">
     <p id="cfT" style="font-weight:700"></p><div class="row" style="justify-content:flex-end"><button class="btn gh" data-act="cfNo">Cancelar</button><button class="btn red" data-act="cfYes">Sí</button></div>

@@ -26,16 +26,34 @@ const OT = {
   npc: { hw: 0.42, hd: 0.7, y0: 0, y1: 1.8, fatal: 1, need: 'block', moving: 1, hard: 1, name: 'otra persona' },
   car: { hw: 0.62, hd: 1.6, y0: 0, y1: 1.3, fatal: 1, need: 'block', moving: 1, hard: 1, name: 'un carro' },
   median: { hw: 0.2, hd: 50, y0: 0, y1: 0.9, fatal: 1, need: 'block', name: 'el separador de la bifurcación' },
-  pad: { hw: 0.62, hd: 1.1, y0: 0, y1: 0.04, need: 'free', name: 'un impulsor' }
+  pad: { hw: 0.62, hd: 1.1, y0: 0, y1: 0.04, need: 'free', name: 'un impulsor' },
+  manhole: { hw: 0.5, hd: 0.5, y0: -0.4, y1: 0.1, fatal: 1, ground: 1, need: 'jump', name: 'una alcantarilla destapada' },
+  crack: { hw: 0.74, hd: 0.28, y0: -0.1, y1: 0.06, minor: 1, ground: 1, need: 'jump', name: 'una grieta del pavimento' },
+  bump: { hw: 0.78, hd: 0.32, y0: 0, y1: 0.12, minor: 1, ground: 1, bump: 1, need: 'jump', name: 'un resalto a toda velocidad' },
+  trash: { hw: 0.52, hd: 0.42, y0: 0, y1: 0.7, minor: 1, need: 'jump', vault: 1, name: 'unas bolsas de basura' },
+  pbike: { hw: 0.32, hd: 0.85, y0: 0, y1: 1.0, fatal: 1, need: 'jump', vault: 1, name: 'una bici parqueada' },
+  container: { hw: 0.62, hd: 0.66, y0: 0, y1: 1.3, fatal: 1, land: 1, need: 'block', hard: 1, name: 'un contenedor de basura' },
+  sand: { hw: 0.78, hd: 1.6, y0: -0.1, y1: 0.05, ground: 1, sand: 1, need: 'jump', name: 'la arena' },
+  scaff: { hw: 0.8, hd: 0.45, y0: 1.15, y1: 2.9, fatal: 1, need: 'duck', name: 'un andamio de obra' }
 };
+/* cada barrio tiene obstáculos con lógica: ciudad (c), naturaleza (n) y playa (b) */
+const CAT = ZORD.map(i => ['c', 'c', 'c', 'c', 'c', 'n', 'c', 'b', 'n', 'n', 'c'][i]);
+const catAt = s => CAT[Math.floor(Math.max(0, s) / 1000) % ZONES.length];
+const POOL = {
+  c: { e: [['pothole', 1.2], ['puddle', 1], ['cone', 1], ['barrier', 1], ['trash', 1.6], ['pbike', 1.2], ['container', 0.9], ['stall', 1.6], ['kiosk', 0.6], ['scaff', 1.1], ['manhole', 0.6]],
+       m: [['pothole', 2], ['manhole', 1.5], ['crack', 1.3], ['bump', 1.4], ['cone', 1.2], ['barrier', 1.2], ['puddle', 0.8], ['bollard', 0.6]] },
+  n: { e: [['rock', 2], ['branch', 1.8], ['pothole', 1.4], ['puddle', 1.2], ['trash', 0.4], ['stall', 0.8], ['cone', 0.6]],
+       m: [['pothole', 2.2], ['rock', 0.8], ['puddle', 1], ['crack', 0.8], ['cone', 0.8], ['barrier', 0.8], ['bump', 0.6]] },
+  b: { e: [['sand', 2], ['trash', 1.2], ['stall', 2], ['puddle', 0.6], ['cone', 0.8], ['pbike', 1]],
+       m: [['sand', 1.6], ['pothole', 1.4], ['bump', 1], ['cone', 1], ['barrier', 0.8], ['crack', 0.5]] }
+};
+const STREETX = ['branch', 'scaff', 'stall', 'pbike', 'sand', 'trash', 'rock'];
 const NPCN = ['un ciclista', 'un corredor', 'una patinadora', 'un peatón', '', 'una moto'];
 /* talanquera: barra que sube y baja (de pie si está alta, agachado a media altura, saltando si está baja) */
 const gateY = (o, t) => o.fix || 0.95 + 1.45 * (0.5 + 0.5 * Math.sin(t * 1.7 + (o.ph || 0)));
 /* clima: algunas ediciones llueven (mismo resultado en lógica y render) */
 const RAINY = ed => ed > 0 && (Math.imul(ed + 7, 2654435761) >>> 0) % 4 === 1;
-const EDGE = [['rock', 2], ['pothole', 1.5], ['puddle', 1], ['cone', 1], ['barrier', 1.2], ['bollard', 1.5], ['branch', 1.7], ['stall', 1.7], ['kiosk', 0.8], ['gate', 0.5]];
-const MID = [['pothole', 2.2], ['puddle', 1], ['cone', 1.6], ['barrier', 1.4], ['bollard', 0.8], ['gate', 1], ['rock', 0.4]];
-const SOFT = [['pothole', 2], ['cone', 1.5], ['barrier', 1.5], ['bollard', 1.2], ['gate', 1], ['puddle', 0.8]];
+const SOFT = [['pothole', 2], ['cone', 1.5], ['barrier', 1.5], ['bollard', 1.2], ['bump', 1.2], ['crack', 1], ['puddle', 0.8]];
 const THRAW = [
   { near: [['tree', 3.5], ['pine', 1], ['bush', 2], ['lamp', 1.5], ['bench', 1], ['bill', 1]], far: [['bld', 3], ['tree', 4], ['hill', 3]] },
   { near: [['tree', 3], ['bush', 2.5], ['lamp', 1.5], ['bench', 1.5], ['bill', 1.5]], far: [['bld', 5], ['tree', 3], ['hill', 2]] },
@@ -181,7 +199,7 @@ function genRow(g) {
   let len = 0, coinLane = -1, kind;
   g.rows++;
   const rl = () => Math.floor(r() * NL), wRain = p => rain ? p.map(j => j[0] === 'puddle' ? ['puddle', 3.5] : j) : p;
-  const pool = l => { let p = wRain(l === 0 || l === 3 ? EDGE : MID); if (g.street) p = p.filter(j => j[0] !== 'branch' && j[0] !== 'gate'); return p; };
+  const P0 = POOL[catAt(s)], pool = l => { let p = wRain(l === 0 || l === 3 ? P0.e : P0.m); if (g.street) p = p.filter(j => !STREETX.includes(j[0])); return p; };
   const place = (t, l, ds = 0) => {
     if (s + ds < g.resv[l]) return false;
     if (t === 'branch') { addOb(g, 'branch', l, s + ds, { vis: { side: l < 2 ? -1 : 1, lanes: [l] } }); st[l] = 'duck'; }
@@ -195,8 +213,8 @@ function genRow(g) {
   // tutorial: una cosa a la vez
   if (g.tut >= 0 && g.tut < TUT.length) {
     const i = g.tut;
-    if (i === 0) addOb(g, 'rock', 2, s).tut = 0;
-    else if (i === 1) addOb(g, 'gate', 2, s, { fix: 1.3 }).tut = 1;
+    if (i === 0) addOb(g, 'barrier', 2, s).tut = 0;
+    else if (i === 1) addOb(g, 'scaff', 2, s).tut = 1;
     else if (i === 2) { const o = addNpc(g, 2, s, 3); if (o) o.tut = 2; }
     else g.dels.push({ s, side: 1, k: 'rev', obj: 'casita', v: 0, done: 0, miss: 0, tut: 3 });
     g.tut++; g.genS = s + 32; coinLine(g, 3, s - 10, 5, 0.8); return;
@@ -288,7 +306,7 @@ function genRow(g) {
   if (live.every(l => st[l] === 'block')) { g.bad++; g.badK = (g.badK || '') + g._kind + '@' + Math.round(s) + ' '; }
   // monedas guía (marcan el carril seguro)
   if (coinLane === -1 && r() < 0.78) {
-    const pref = LANES.filter(l => st[l] === 'free'), alt = LANES.filter(l => st[l] === 'jump' && g.obs.some(o => o.s === s && o.lane === l && o.t !== 'puddle'));
+    const pref = LANES.filter(l => st[l] === 'free'), alt = LANES.filter(l => st[l] === 'jump' && g.obs.some(o => o.s === s && o.lane === l && !['puddle', 'sand', 'crack', 'bump'].includes(o.t)));
     if (pref.length && (r() < 0.6 || !alt.length)) coinLine(g, pref[Math.floor(r() * pref.length)], s - 7, 6, 0.8);
     else if (alt.length) coinArc(g, alt[Math.floor(r() * alt.length)], s, v);
   }
@@ -549,7 +567,7 @@ function step(g, dt, inp) {
     }
     if (o.t === 'gate') { const gy = gateY(o, g.t); o.y0 = gy - 0.08; o.y1 = gy + 0.08; }
     const os0 = o.s - o.hd, os1 = o.s + o.hd;
-    if ((o.t === 'branch' || o.t === 'gate') && !o.passed && P.s - PHD > os1) { o.passed = 1; if (Math.abs(P.x - o.x) < o.hw && P.crouch > 0) { g.ducks++; ev(g, 'duckOk'); } }
+    if ((o.t === 'branch' || o.t === 'scaff') && !o.passed && P.s - PHD > os1) { o.passed = 1; if (Math.abs(P.x - o.x) < o.hw && P.crouch > 0) { g.ducks++; ev(g, 'duckOk'); } }
     if (o.tut !== undefined && !o.tdone && os0 > P.s && (os0 - P.s - PHD) / Math.max(1, P.v - (o.u || 0)) * P.v <= (TUT[o.tut].need === 'lane' ? P.v * 0.6 : P.v * 0.21 + 0.4)) { o.tdone = 1; g.tutWait = { need: TUT[o.tut].need, o }; ev(g, 'tut', o.tut); }
     if (zB < os0 || zA > os1) continue;
     if (P.glide > 0 && P.y > 2.9) continue;
@@ -570,7 +588,9 @@ function step(g, dt, inp) {
     if (o.T.ramp) { stumble(g, o, true); continue; }
     if (frontal) {
       if (g.vault && o.T.vault) { P.air = true; P.airT = 0; P.vy = Math.sqrt(2 * GRAV * (o.y1 + 0.55)); P.slow = Math.min(P.slow, 0.88); P.jumps = 1; P.trickHit = 1; P.crouch = 0; g.vaults++; ev(g, 'vault', o); }
-      else if (o.T.minor || (g.vault && o.T.ground)) { if (o.t === 'puddle' && V.id === 'inline') { ev(g, 'splash', o); continue; } stumble(g, o, false); if (o.t === 'cone') smash(g, o); }
+      else if (o.T.sand) { P.slow = Math.min(P.slow, 0.7); ev(g, 'sand', o); continue; }
+      else if (o.T.bump && P.v < 13) { if (!P.air) { P.air = true; P.airT = 0; P.vy = 3.2; P.trickHit = 1; } ev(g, 'bump', o); continue; }
+      else if (o.T.minor || (g.vault && o.T.ground)) { if (o.t === 'puddle' && V.id === 'inline') { ev(g, 'splash', o); continue; } stumble(g, o, false); if (o.t === 'cone' || o.t === 'trash') smash(g, o); }
       else die(g, o);
     } else if (V.id === 'uni' && moving) { const t = P.lane; P.lane = P.from; P.from = t; ev(g, 'lane'); }
     else stumble(g, o, moving);

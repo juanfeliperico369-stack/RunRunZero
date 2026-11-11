@@ -242,7 +242,7 @@ button:focus-visible{outline:3px solid var(--amb);outline-offset:2px}
 .banner .sp{display:inline-block;background:var(--paper);color:#111;border:5px solid #111;padding:8px 14px;font-size:clamp(12px,3.6vw,17px)}
 .banner .mega{font-size:clamp(34px,10vw,60px);color:#fff;text-shadow:3px 3px 0 #111;margin-top:6px}
 @keyframes ban{0%{opacity:0;transform:translate(-50%,-14px)}12%{opacity:1;transform:translate(-50%,0)}80%{opacity:1}100%{opacity:0}}
-.tut{position:absolute;left:50%;bottom:calc(var(--sb) + 22%);transform:translateX(-50%);text-align:center;width:min(92vw,480px)}
+.tut{position:absolute;left:50%;bottom:calc(var(--sb) + max(31%, 215px));transform:translateX(-50%);text-align:center;width:min(92vw,480px)}
 .tut b{display:inline-block;font-family:var(--fd);font-size:clamp(28px,8vw,44px);background:var(--red);color:#fff;border:4px solid #111;padding:6px 14px;box-shadow:5px 5px 0 #111;animation:pul .7s ease-in-out infinite alternate}
 .tut small{display:block;margin-top:10px;font-family:var(--fm);font-size:12px;text-shadow:1px 1px 0 #111}
 @keyframes pul{to{transform:scale(1.06)}}
@@ -292,20 +292,83 @@ button:focus-visible{outline:3px solid var(--amb);outline-offset:2px}
 @media(orientation:landscape) and (max-height:560px){.cover .cgrid{grid-template-columns:repeat(4,1fr)}.cover .t1{font-size:min(19vh,150px)}.cover .t2{font-size:min(14vh,110px)}}
 @media(min-width:700px){.cover .cgrid{grid-template-columns:repeat(4,1fr)}}
 
+/* ---- HUD v2.4: botones con relieve, barra de aliento horizontal y avisos sin superponerse ---- */
+.hl{left:12px;right:auto;max-width:62vw}
+.hrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.hrow .hc{margin-top:0}.hrow br{display:none}
+.hinfo{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px}.hinfo .hd{margin-top:0}.hinfo .slope{margin-top:0;font-size:15px}
+.word{margin-top:6px}
+#bPause{display:flex;align-items:center;justify-content:center;border-radius:14px;background:linear-gradient(#2b2f38,#16181d);border:3px solid #111;box-shadow:0 4px 0 #000,0 6px 12px rgba(0,0,0,.35)}
+#bPause svg{width:24px;height:24px;fill:#fff}
+.htop{top:calc(var(--st) + 178px);width:min(94vw,440px)}
+.htop>div{max-width:94vw}
+#hud .pad{position:absolute;bottom:calc(var(--sb) + 26px);width:94px;height:94px;border-radius:30px;border:3px solid rgba(0,0,0,.65);pointer-events:auto;touch-action:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:#fff;font-family:var(--fd);transition:transform .05s,box-shadow .05s;-webkit-user-select:none}
+#hud .pad small{font-size:13px;letter-spacing:.06em;text-shadow:0 1px 0 rgba(0,0,0,.45);position:relative}
+#hud .pad:before{content:"";position:absolute;left:8px;right:8px;top:6px;height:34%;border-radius:22px 22px 14px 14px;background:linear-gradient(rgba(255,255,255,.55),rgba(255,255,255,0));pointer-events:none}
+#hud .brake{left:16px;background:radial-gradient(circle at 50% 35%,#ff6b6b,#c0191c 62%,#7a0f12);box-shadow:0 7px 0 #5e0b0e,0 12px 20px rgba(0,0,0,.4);color:#c0191c}
+#hud .brake svg{width:46px;height:46px;position:relative;filter:drop-shadow(0 2px 0 rgba(0,0,0,.35))}
+#hud .brake small{color:#fff}
+#hud .brake.hit{transform:translateY(6px);box-shadow:0 1px 0 #5e0b0e,0 4px 8px rgba(0,0,0,.4)}
+#hud .boost{right:16px;left:auto;background:radial-gradient(circle at 50% 35%,#ffe27a,#ffb21e 60%,#d26a00);box-shadow:0 7px 0 #8a4a00,0 12px 20px rgba(0,0,0,.4);color:#111}
+#hud .boost .bolt{width:42px;height:42px;position:relative;fill:#fff;stroke:#5a2d00;stroke-width:1.4;stroke-linejoin:round;filter:drop-shadow(0 2px 0 rgba(0,0,0,.25))}
+#hud .boost small{color:#5a2d00;text-shadow:none}
+#hud .boost.hit{transform:translateY(6px);box-shadow:0 1px 0 #8a4a00,0 4px 8px rgba(0,0,0,.4)}
+#hud .pad .rg,#hud .del .rg{position:absolute;inset:-9px;width:calc(100% + 18px);height:calc(100% + 18px);transform:rotate(-90deg);pointer-events:none}
+.rg circle{fill:none;stroke-width:3.4;stroke-linecap:round}.rg .bg{stroke:rgba(0,0,0,.25)}.rg .fg{stroke:#fff;stroke-dasharray:113;stroke-dashoffset:var(--o,113);transition:stroke-dashoffset .08s}
+#hud .boost .rg .fg{stroke:#ff5a2a}
+.lh #hud .brake{left:auto;right:16px}.lh #hud .boost{right:auto;left:16px}
+.enbar{left:16px;right:auto;bottom:calc(var(--sb) + 140px);flex-direction:row;align-items:center;gap:6px;background:rgba(17,17,17,.62);border:2px solid #111;border-radius:12px;padding:4px 8px 4px 6px;box-shadow:0 3px 0 #000}
+.enbar .enl{display:flex;flex-direction:column;align-items:center;gap:0}
+.enbar .enl svg{width:16px;height:16px;fill:#ff4d6d}
+.enbar small{font-size:9px}
+.enbar i{width:118px;height:12px;border:2px solid #111;border-radius:7px;background:rgba(255,255,255,.12);box-shadow:none;overflow:hidden}
+.enbar i b{top:0;bottom:0;left:0;right:auto;width:0;height:auto;background:linear-gradient(90deg,#1fd16a,#7dff9d);border-radius:5px}
+.enbar.low i b{background:linear-gradient(90deg,#c0191c,#ff6b6b)}
+.lh .enbar{left:auto;right:16px}
+#hud .del{top:44%;width:78px;height:78px;border-radius:50%;background:radial-gradient(circle at 50% 35%,#fff,#e6e2d2);border:3px solid #111;box-shadow:0 6px 0 rgba(0,0,0,.55),0 10px 18px rgba(0,0,0,.35);flex-direction:column;gap:0;animation:none}
+#hud .del .ic{width:38px;height:38px;position:relative}#hud .del .ic svg{width:100%;height:100%}
+#hud .del small{position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);font-family:var(--fd);font-size:13px;white-space:nowrap;background:#111;color:#fff;padding:1px 7px;border-radius:8px}
+#hud .del .rg .fg{stroke:var(--dc,#0e6378)}
+#hud .del.ok{background:radial-gradient(circle at 50% 35%,#c9ffd9,#2dff6a);animation:pul .45s ease-in-out infinite alternate}
+#hud .del.ok small{background:#1a8a3a}
+#hud .del:active{transform:translateY(5px)}
+/* ---- portada: espacios entre títulos, aviso del día, titular y pie ---- */
+.cover .t1{line-height:.86;margin:2px 0 0}
+.cover .kick{margin:6px 0 6px;line-height:1.15;font-size:clamp(15px,4.4vw,22px)}
+.cover .t2{line-height:.86;margin:0}
+.evt{display:grid;grid-template-columns:auto 1fr;column-gap:8px;align-items:center;font-size:clamp(15px,4.6vw,19px);line-height:1.05;padding:6px 9px}
+.evt b{grid-row:span 2;align-self:stretch;display:flex;align-items:center;margin:0;padding:2px 8px}
+.evt span{grid-column:2;margin-top:2px;line-height:1.2}
+.ticker{gap:0}.ticker b{position:relative;z-index:2;box-shadow:6px 0 6px #111}
+.ticker .tk{flex:1;min-width:0;overflow:hidden;display:block}
+.cover .cbtns .btn{white-space:nowrap}.cover .cbtns .btn.big{font-size:clamp(22px,6.6vw,30px)}.cover .cbtns .btn.red{font-size:clamp(14px,4vw,17px);white-space:normal}
+.cfoot{align-items:center}.cfoot .mega{font-size:clamp(14px,4.2vw,22px);line-height:1.02;white-space:normal;min-width:0;flex:1}.cfoot .adv{flex:none}
+.pcard .nm{flex-wrap:wrap}.pcard{line-height:1.25}
+/* ---- mentores: perfiles con retrato ---- */
+.ment .av{background:#fff;padding:0;overflow:hidden}.ment .av svg{width:100%;height:100%;display:block}
+.mprof{display:grid;grid-template-columns:110px 1fr;gap:12px;align-items:center;margin-bottom:10px}
+.mprof .av{width:110px;height:110px;border:4px solid #111;box-shadow:4px 4px 0 #111;overflow:hidden;background:#fff}.mprof .av svg{width:100%;height:100%}
+.mprof .nm{font-family:var(--fd);font-size:30px;text-transform:uppercase;line-height:.92}.mprof .bz{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--red);margin-top:4px}
+.mquote{font-style:italic;font-weight:700;border-left:5px solid var(--red);padding:4px 10px;margin:10px 0}
+.mfacts{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:13px;margin:8px 0}.mfacts b{text-transform:uppercase;font-size:11px;letter-spacing:.08em}
+
 </style></head>
 <body><noscript>Run Scooter necesita JavaScript activado.</noscript>
 <canvas id="cv"></canvas>
 <div id="ui">
   <div id="rain"></div><div id="flash"></div>
   <div id="hud" hidden>
-    <div class="hl"><div id="hScore" class="hs">0</div><div class="hc"><span class="coin"></span><b id="hCoins">0</b></div><br><div class="hc dl" id="hDel" hidden></div><div id="hDist" class="hd">0 M</div><div id="hSlope" class="slope" hidden></div><div id="hWord" class="word"></div></div>
-    <div class="hr"><button id="bPause" data-act="pause" aria-label="Pausa">❚❚</button><div id="hMult" class="hm">×1</div><div id="hPow"></div></div>
+    <div class="hl"><div id="hScore" class="hs">0</div>
+      <div class="hrow"><div class="hc"><span class="coin"></span><b id="hCoins">0</b></div><div class="hc dl" id="hDel" hidden></div></div>
+      <div class="hinfo"><span id="hDist" class="hd">0 M</span><span id="hSlope" class="slope" hidden></span></div>
+      <div id="hWord" class="word"></div>
+    </div>
+    <div class="hr"><button id="bPause" data-act="pause" aria-label="Pausa"><svg viewBox="0 0 24 24"><rect x="6" y="5" width="4.2" height="14" rx="1.2"/><rect x="13.8" y="5" width="4.2" height="14" rx="1.2"/></svg></button><div id="hMult" class="hm">×1</div><div id="hPow"></div></div>
     <div class="htop"><div id="hLight" class="lt" hidden></div><div id="hPol" class="pol" hidden></div><div id="hWarn" class="warn" hidden></div><div id="hRiv" class="riv" hidden></div><div id="hCombo" class="combo" hidden></div></div>
-    <button id="bDelL" class="del l" hidden aria-label="Entregar a la izquierda"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="18"/></svg><span></span></button>
-    <button id="bDelR" class="del r" hidden aria-label="Entregar a la derecha"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="18"/></svg><span></span></button>
-    <button id="bBrake" class="brake" aria-label="Freno: mantén presionado"><span>■</span><small>FRENO</small></button>
-    <div class="enbar"><i><b id="enF"></b></i><small id="enL">ALIENTO</small></div>
-    <button id="bBoost" class="boost" aria-label="Impulso: toca seguido para acelerar"><i><b id="bbF"></b></i><span>⚡</span><small>IMPULSO</small></button>
+    <button id="bDelL" class="del l" hidden aria-label="Entregar a la izquierda"><svg class="rg" viewBox="0 0 40 40"><circle class="bg" cx="20" cy="20" r="18"/><circle class="fg" cx="20" cy="20" r="18"/></svg><span class="ic"></span><small></small></button>
+    <button id="bDelR" class="del r" hidden aria-label="Entregar a la derecha"><svg class="rg" viewBox="0 0 40 40"><circle class="bg" cx="20" cy="20" r="18"/><circle class="fg" cx="20" cy="20" r="18"/></svg><span class="ic"></span><small></small></button>
+    <div class="enbar"><div class="enl"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.6 6.6 4.6c2 0 3.4 1.1 4.2 2.4h2.4c.8-1.3 2.2-2.4 4.2-2.4 3.6 0 5.7 3.8 4.2 7.2C19.5 16.4 12 21 12 21z"/></svg><small id="enL">ALIENTO</small></div><i><b id="enF"></b></i></div>
+    <button id="bBrake" class="pad brake" aria-label="Freno: mantén presionado"><svg viewBox="0 0 48 48"><path d="M16 4h16l12 12v16L32 44H16L4 32V16z" fill="#fff"/><path d="M17.7 8h12.6L40 17.7v12.6L30.3 40H17.7L8 30.3V17.7z" fill="currentColor"/><text x="24" y="29" text-anchor="middle" font-size="11.5" font-weight="900" fill="#fff" font-family="Cuerpo,sans-serif">STOP</text></svg><small>FRENO</small></button>
+    <button id="bBoost" class="pad boost" aria-label="Impulso: toca seguido para acelerar"><svg class="rg" viewBox="0 0 40 40"><circle class="bg" cx="20" cy="20" r="18"/><circle class="fg" id="bbF" cx="20" cy="20" r="18"/></svg><svg class="bolt" viewBox="0 0 24 24"><path d="M13.6 1.5 4.2 13.4h6.3l-1.9 9.1 9.9-12.3h-6.4z"/></svg><small>IMPULSO</small></button>
     <div id="hPop"></div>
     <div id="hBanner"></div>
     <div id="hTut" class="tut" hidden></div>
@@ -338,7 +401,7 @@ button:focus-visible{outline:3px solid var(--amb);outline-offset:2px}
         <button class="btn" data-act="share"><i>📲</i>Compartir</button>
         <button class="btn" data-act="go" data-arg="sSet"><i>⚙</i>Ajustes</button>
       </div>
-      <div class="ticker"><b>TITULAR</b><span id="cTick"></span></div>
+      <div class="ticker"><b>TITULAR</b><div class="tk"><span id="cTick"></span></div></div>
     </div>
     <div class="cfoot"><span class="mega">La revista sobre ruedas más actual</span><span class="adv">Edición<b><span id="cEd">Nº 1</span></b>sin fin</span></div>
   </section>
@@ -428,6 +491,8 @@ button:focus-visible{outline:3px solid var(--amb);outline-offset:2px}
     <h3 class="h-serif" id="rdT" style="font-size:34px"></h3><div class="film" id="rdX"></div>
     <button class="btn" data-act="closeRead" style="margin-top:12px;width:100%">Cerrar</button>
   </div></div></div>
+
+  <div id="oMent" class="ov" data-act="closeMent"><div class="panel rd"><div class="pband"><span>EMSAY</span><span>PERFIL · GENTE DE ORBE</span></div><div class="pin" id="mpBody"></div></div></div>
 
   <div id="oConf" class="ov"><div class="panel"><div class="pband"><span>EMSAY</span><span>CONFIRMAR</span></div><div class="pin">
     <p id="cfT" style="font-weight:700"></p><div class="row" style="justify-content:flex-end"><button class="btn gh" data-act="cfNo">Cancelar</button><button class="btn red" data-act="cfYes">Sí</button></div>
@@ -555,17 +620,19 @@ class MB {
 
 /* ---------- Renderizador ---------- */
 const VS = `attribute vec3 aP;attribute vec3 aN;attribute vec4 aC;attribute vec2 aT;
-uniform mat4 uM,uV,uP;uniform vec2 uBend;uniform vec4 uHill;uniform float uH0;uniform float uPal;uniform vec3 uTint,uTintE,uK0,uK1,uK2,uK3,uK4;
-varying vec3 vN;varying vec3 vC;varying float vE;varying vec2 vT;varying float vD;
-void main(){vec4 w=uM*vec4(aP,1.0);if(uHill.w>0.5){float sa=uHill.z-w.z;w.y+=clamp((sa-150.0)/250.0,0.0,1.0)*(6.0*sin(uHill.x-w.z*0.0105)+2.2*sin(uHill.y-w.z*0.027))-uH0;}vec4 v=uV*w;float z=min(v.z,0.0);v.x+=uBend.x*z*z;v.y+=uBend.y*z*z;
-gl_Position=uP*v;vN=(uM*vec4(aN,0.0)).xyz;vE=aC.a;vT=aT;vD=-v.z;
+uniform mat4 uM,uV,uP;uniform vec2 uBend;uniform vec4 uHill;uniform float uH0;uniform float uPal;uniform float uTime;uniform vec3 uTint,uTintE,uK0,uK1,uK2,uK3,uK4;
+varying vec3 vN;varying vec3 vC;varying float vE;varying vec2 vT;varying float vD;varying float vH;varying vec3 vW;varying float vPF;
+void main(){vec4 w=uM*vec4(aP,1.0);vH=w.y;vPF=uPal;if(uPal>0.5&&aC.r<0.06&&aP.y>0.9){float sw=sin(uTime*1.7+w.z*0.21+w.x*0.37)*0.045*aP.y;w.x+=sw;w.z+=sw*0.6;}if(uHill.w>0.5){float sa=uHill.z-w.z;w.y+=clamp((sa-150.0)/250.0,0.0,1.0)*(6.0*sin(uHill.x-w.z*0.0105)+2.2*sin(uHill.y-w.z*0.027))-uH0;}vec4 v=uV*w;float z=min(v.z,0.0);v.x+=uBend.x*z*z;v.y+=uBend.y*z*z;
+gl_Position=uP*v;vN=(uM*vec4(aN,0.0)).xyz;vE=aC.a;vT=aT;vD=-v.z;vW=w.xyz;
 float k=aC.r*4.0;vec3 pc=uK0*max(0.0,1.0-abs(k))+uK1*max(0.0,1.0-abs(k-1.0))+uK2*max(0.0,1.0-abs(k-2.0))+uK3*max(0.0,1.0-abs(k-3.0))+uK4*max(0.0,1.0-abs(k-4.0));
 vec3 dc=aC.rgb*mix(uTint,uTintE,step(0.5,aC.a));vC=mix(dc,pc*aC.g*uTint,uPal);}`;
-const FS = `precision mediump float;uniform sampler2D uTex;uniform vec3 uFog,uL;uniform float uAmb,uSun,uEmit,uAlpha,uCut;uniform vec2 uFogR;
-varying vec3 vN;varying vec3 vC;varying float vE;varying vec2 vT;varying float vD;
+const FS = `precision mediump float;uniform sampler2D uTex;uniform vec3 uFog,uL,uCam;uniform float uAmb,uSun,uEmit,uAlpha,uCut;uniform vec2 uFogR;
+varying vec3 vN;varying vec3 vC;varying float vE;varying vec2 vT;varying float vD;varying float vH;varying vec3 vW;varying float vPF;
 void main(){vec4 t=texture2D(uTex,vT);if(t.a<uCut)discard;vec3 base=vC*t.rgb;
-vec3 n=normalize(vN);if(!gl_FrontFacing)n=-n;float d=max(dot(n,uL),0.0);d=floor(d*4.0+0.5)/4.0;
-vec3 c=base*(uAmb*(0.72+0.28*n.y)+uSun*d);c=mix(c,base*1.3,vE*uEmit);
+vec3 n=normalize(vN);if(!gl_FrontFacing)n=-n;float d=max(dot(n,uL),0.0);d=mix(d,floor(d*3.0+0.5)/3.0,0.3);
+vec3 V=normalize(uCam-vW);float sp=pow(max(dot(reflect(-uL,n),V),0.0),18.0)*0.24*uSun*(1.0-0.75*vPF);float rim=pow(1.0-max(dot(n,V),0.0),3.0)*0.2;
+float ao=mix(mix(0.68,1.0,clamp(vH*1.3+0.2,0.0,1.0)),1.0,step(0.8,n.y));
+vec3 c=base*(uAmb*(0.72+0.28*n.y)+uSun*d)*ao+vec3(sp)+base*rim*uAmb;c=mix(c,base*1.3,vE*uEmit);
 float f=clamp((vD-uFogR.x)/(uFogR.y-uFogR.x),0.0,1.0);c=mix(c,uFog,f*f);gl_FragColor=vec4(c,t.a*uAlpha);}`;
 const SVS = `attribute vec2 aP;varying vec2 vU;void main(){vU=aP*0.5+0.5;gl_Position=vec4(aP,0.9999,1.0);}`;
 const SFS = `precision mediump float;varying vec2 vU;uniform vec3 uTop,uHor,uSunC,uSun;uniform float uStars,uAsp,uHy,uTime;
@@ -652,6 +719,7 @@ const R = {
     gl.uniform3fv(U.uFog, env.hor); gl.uniform2f(U.uFogR, env.fogR[0], env.fogR[1]);
     gl.uniform3fv(U.uL, env.L); gl.uniform1f(U.uAmb, env.amb); gl.uniform1f(U.uSun, env.sunI);
     gl.uniform1f(U.uEmit, env.emit); this.emit = env.emit; this._e = env.emit;
+    if (U.uCam) gl.uniform3f(U.uCam, cam.ex, cam.ey, cam.ez); if (U.uTime) gl.uniform1f(U.uTime, time);
     gl.uniform1f(U.uAlpha, 1); gl.uniform1f(U.uCut, 0.5); gl.uniform1f(U.uPal, 0);
     gl.uniform3fv(U.uTint, ONE); gl.uniform3fv(U.uTintE, ONE);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.tex); gl.uniform1i(U.uTex, 0);
@@ -860,14 +928,14 @@ const TIPS = [
 
 /* Mentores: personajes especiales que enseñan habilidades (por un favor o pagando la clase) */
 const MENT = [
-  { id: 'kiko', name: 'Kiko Parkour', perk: 'parkour', hab: 'Parkour', desc: 'Doble salto a pie y en todo vehículo de fuerza.', favor: 'Recorre 8.000 m a pie', key: 'footM', n: 8000, price: 3000, col: '#ff5a2a' },
-  { id: 'pati', name: 'La Patinadora', perk: 'derrape', hab: 'Derrape', desc: 'Cambias de carril 20 % más rápido.', favor: 'Pasa rozando a 60 personas', key: 'near', n: 60, price: 3500, col: '#a42cff' },
-  { id: 'correo', name: 'Doña Correo', perk: 'brazo', hab: 'Brazo de cartero', desc: 'Entregas perfectas más fáciles y desde más lejos.', favor: 'Haz 80 entregas perfectas', key: 'perf', n: 80, price: 4000, col: '#0e6378' },
-  { id: 'tito', name: 'Entrenador Tito', perk: 'pulmon', hab: 'Pulmón de acero', desc: '+30 % de aliento y lo recuperas más rápido.', favor: 'Usa el impulso 1.500 veces', key: 'boosts', n: 1500, price: 4500, col: '#c49a2c' },
-  { id: 'freno', name: 'Maestra Freno', perk: 'freno', hab: 'Freno fino', desc: 'Frenas 40 % más rápido y los perros no te persiguen.', favor: 'Respeta 25 semáforos en rojo', key: 'civic', n: 25, price: 3500, col: '#c0191c' },
-  { id: 'ollie', name: 'Ollie', perk: 'trucos', hab: 'Trucos de calle', desc: 'Trucos y barandas valen el doble.', favor: 'Desliza 1.200 m por barandas', key: 'grind', n: 1200, price: 5000, col: '#2dffb3' },
-  { id: 'gus', name: 'Don Gustavo', perk: 'ojo', hab: 'Ojo de editor', desc: 'Aparecen más páginas perdidas y letras.', favor: 'Recupera 30 páginas', key: 'pages', n: 30, price: 6000, col: '#e8e4c4' },
-  { id: 'cometa', name: 'Capitana Cometa', perk: '', veh: 'jetpack', hab: 'Te regala su Jetpack', desc: 'El vehículo más especial de Orbe.', favor: 'Gana 15 duelos a rivales', key: 'duels', n: 15, price: 60000, col: '#39c8ff' }
+  { id: 'kiko', look: { skin: '#8a5a3a', hair: 'corto', hc: '#141010', acc: 'banda', shirt: '#ff5a2a' }, barrio: 'Pequeña Lagos', vfav: 'A pie (y por las paredes)', frase: 'Si hay muro, hay camino.', bio: 'Creció saltando bancas en Pequeña Lagos y hoy entrena a los repartidores más jóvenes. Dicen que una vez entregó el periódico subiendo por el andamio de la torre del reloj. Enseña a caer bien antes que a saltar alto.', name: 'Kiko Parkour', perk: 'parkour', hab: 'Parkour', desc: 'Doble salto a pie y en todo vehículo de fuerza.', favor: 'Recorre 8.000 m a pie', key: 'footM', n: 8000, price: 3000, col: '#ff5a2a' },
+  { id: 'pati', look: { skin: '#c98e62', hair: 'moño', hc: '#a42cff', acc: 'gafas', shirt: '#a42cff' }, barrio: 'Avenida Neón', vfav: 'Patines en línea', frase: '¡Esto no es una carrera, es una conversación!', bio: 'Patina la Avenida Neón cada noche desde hace quince años. Fue la primera en llevar EMSAY sobre ruedas y nunca ha perdido una página. Le encanta conversar mientras derrapa entre la gente sin rozar a nadie.', name: 'La Patinadora', perk: 'derrape', hab: 'Derrape', desc: 'Cambias de carril 20 % más rápido.', favor: 'Pasa rozando a 60 personas', key: 'near', n: 60, price: 3500, col: '#a42cff' },
+  { id: 'correo', look: { skin: '#e0b089', hair: 'canoso', hc: '#d8d8d8', acc: 'gorra', shirt: '#0e6378' }, barrio: 'Centro de Orbe', vfav: 'Triciclo de carga', frase: 'Una carta a tiempo vale por dos.', bio: 'Jefa de correspondencia de EMSAY desde antes de que existiera la ciclovía. Conoce de memoria cada buzón de Orbe y el nombre de cada perro de cada casita. Su lanzamiento de sobres es leyenda en la redacción.', name: 'Doña Correo', perk: 'brazo', hab: 'Brazo de cartero', desc: 'Entregas perfectas más fáciles y desde más lejos.', favor: 'Haz 80 entregas perfectas', key: 'perf', n: 80, price: 4000, col: '#0e6378' },
+  { id: 'tito', look: { skin: '#5a3a24', hair: 'calvo', hc: '#111', acc: 'silbato', shirt: '#c49a2c' }, barrio: 'Sabana Dorada', vfav: 'Bicicleta', frase: 'Respira, pedalea, repite.', bio: 'Exmaratonista y entrenador de la selección de Orbe. Corre al lado de sus alumnos con un silbato y un termo de aguapanela. Asegura que el aliento se entrena como cualquier músculo, un metro a la vez.', name: 'Entrenador Tito', perk: 'pulmon', hab: 'Pulmón de acero', desc: '+30 % de aliento y lo recuperas más rápido.', favor: 'Usa el impulso 1.500 veces', key: 'boosts', n: 1500, price: 4500, col: '#c49a2c' },
+  { id: 'freno', look: { skin: '#f0c9a8', hair: 'coleta', hc: '#5a3a1e', acc: 'casco', shirt: '#c0191c' }, barrio: 'Puente del Río Mundo', vfav: 'Monopatín eléctrico', frase: 'Frenar a tiempo también es ganar.', bio: 'Instructora de seguridad vial y fan número uno de los semáforos. Ha enseñado a medio Orbe a bajar las cuestas sin desbocarse. Los perros del barrio la saludan porque siempre pasa despacio frente a sus casas.', name: 'Maestra Freno', perk: 'freno', hab: 'Freno fino', desc: 'Frenas 40 % más rápido y los perros no te persiguen.', favor: 'Respeta 25 semáforos en rojo', key: 'civic', n: 25, price: 3500, col: '#c0191c' },
+  { id: 'ollie', look: { skin: '#c98e62', hair: 'corto', hc: '#e0b84a', acc: 'gorra2', shirt: '#2dffb3' }, barrio: 'Barrio Sakura', vfav: 'Skate', frase: 'Cada baranda es una página en blanco.', bio: 'Skater del Barrio Sakura que convirtió el parque del Kilómetro Cero en su sala de clases. Inventó tres trucos que llevan su nombre y los regala a quien le haga un buen deslizamiento.', name: 'Ollie', perk: 'trucos', hab: 'Trucos de calle', desc: 'Trucos y barandas valen el doble.', favor: 'Desliza 1.200 m por barandas', key: 'grind', n: 1200, price: 5000, col: '#2dffb3' },
+  { id: 'gus', look: { skin: '#d9a47e', hair: 'canoso', hc: '#e6e6e6', acc: 'boina', shirt: '#1b4459', must: 1 }, barrio: 'Kilómetro Cero', vfav: 'Bicicleta antigua', frase: 'La revista nunca fue mía. Es de quien la reparte.', bio: 'Fundador de EMSAY. Desapareció hace diez años el día que inauguraron la ciclovía y desde entonces deja notas en los márgenes de las páginas perdidas. Algunos dicen que aún reparte en algún carril de Orbe.', name: 'Don Gustavo', perk: 'ojo', hab: 'Ojo de editor', desc: 'Aparecen más páginas perdidas y letras.', favor: 'Recupera 30 páginas', key: 'pages', n: 30, price: 6000, col: '#e8e4c4' },
+  { id: 'cometa', look: { skin: '#a8754e', hair: 'coleta', hc: '#141010', acc: 'aviador', shirt: '#39c8ff' }, barrio: 'Puerto Nórdico', vfav: 'Jetpack', frase: '¿Atajo? Mejor por arriba.', bio: 'Inventora y piloto del único jetpack de reparto del mundo. Entrega los pedidos urgentes del Puerto Nórdico volando sobre los tejados. Solo le presta su invento a quien gane suficientes duelos en la ciclovía.', name: 'Capitana Cometa', perk: '', veh: 'jetpack', hab: 'Te regala su Jetpack', desc: 'El vehículo más especial de Orbe.', favor: 'Gana 15 duelos a rivales', key: 'duels', n: 15, price: 60000, col: '#39c8ff' }
 ];
 /* Nombres de trucos por vehículo: [salto, truco 1, truco 2] */
 const TRK = {
@@ -1041,16 +1109,34 @@ const OT = {
   npc: { hw: 0.42, hd: 0.7, y0: 0, y1: 1.8, fatal: 1, need: 'block', moving: 1, hard: 1, name: 'otra persona' },
   car: { hw: 0.62, hd: 1.6, y0: 0, y1: 1.3, fatal: 1, need: 'block', moving: 1, hard: 1, name: 'un carro' },
   median: { hw: 0.2, hd: 50, y0: 0, y1: 0.9, fatal: 1, need: 'block', name: 'el separador de la bifurcación' },
-  pad: { hw: 0.62, hd: 1.1, y0: 0, y1: 0.04, need: 'free', name: 'un impulsor' }
+  pad: { hw: 0.62, hd: 1.1, y0: 0, y1: 0.04, need: 'free', name: 'un impulsor' },
+  manhole: { hw: 0.5, hd: 0.5, y0: -0.4, y1: 0.1, fatal: 1, ground: 1, need: 'jump', name: 'una alcantarilla destapada' },
+  crack: { hw: 0.74, hd: 0.28, y0: -0.1, y1: 0.06, minor: 1, ground: 1, need: 'jump', name: 'una grieta del pavimento' },
+  bump: { hw: 0.78, hd: 0.32, y0: 0, y1: 0.12, minor: 1, ground: 1, bump: 1, need: 'jump', name: 'un resalto a toda velocidad' },
+  trash: { hw: 0.52, hd: 0.42, y0: 0, y1: 0.7, minor: 1, need: 'jump', vault: 1, name: 'unas bolsas de basura' },
+  pbike: { hw: 0.32, hd: 0.85, y0: 0, y1: 1.0, fatal: 1, need: 'jump', vault: 1, name: 'una bici parqueada' },
+  container: { hw: 0.62, hd: 0.66, y0: 0, y1: 1.3, fatal: 1, land: 1, need: 'block', hard: 1, name: 'un contenedor de basura' },
+  sand: { hw: 0.78, hd: 1.6, y0: -0.1, y1: 0.05, ground: 1, sand: 1, need: 'jump', name: 'la arena' },
+  scaff: { hw: 0.8, hd: 0.45, y0: 1.15, y1: 2.9, fatal: 1, need: 'duck', name: 'un andamio de obra' }
 };
+/* cada barrio tiene obstáculos con lógica: ciudad (c), naturaleza (n) y playa (b) */
+const CAT = ZORD.map(i => ['c', 'c', 'c', 'c', 'c', 'n', 'c', 'b', 'n', 'n', 'c'][i]);
+const catAt = s => CAT[Math.floor(Math.max(0, s) / 1000) % ZONES.length];
+const POOL = {
+  c: { e: [['pothole', 1.2], ['puddle', 1], ['cone', 1], ['barrier', 1], ['trash', 1.6], ['pbike', 1.2], ['container', 0.9], ['stall', 1.6], ['kiosk', 0.6], ['scaff', 1.1], ['manhole', 0.6]],
+       m: [['pothole', 2], ['manhole', 1.5], ['crack', 1.3], ['bump', 1.4], ['cone', 1.2], ['barrier', 1.2], ['puddle', 0.8], ['bollard', 0.6]] },
+  n: { e: [['rock', 2], ['branch', 1.8], ['pothole', 1.4], ['puddle', 1.2], ['trash', 0.4], ['stall', 0.8], ['cone', 0.6]],
+       m: [['pothole', 2.2], ['rock', 0.8], ['puddle', 1], ['crack', 0.8], ['cone', 0.8], ['barrier', 0.8], ['bump', 0.6]] },
+  b: { e: [['sand', 2], ['trash', 1.2], ['stall', 2], ['puddle', 0.6], ['cone', 0.8], ['pbike', 1]],
+       m: [['sand', 1.6], ['pothole', 1.4], ['bump', 1], ['cone', 1], ['barrier', 0.8], ['crack', 0.5]] }
+};
+const STREETX = ['branch', 'scaff', 'stall', 'pbike', 'sand', 'trash', 'rock'];
 const NPCN = ['un ciclista', 'un corredor', 'una patinadora', 'un peatón', '', 'una moto'];
 /* talanquera: barra que sube y baja (de pie si está alta, agachado a media altura, saltando si está baja) */
 const gateY = (o, t) => o.fix || 0.95 + 1.45 * (0.5 + 0.5 * Math.sin(t * 1.7 + (o.ph || 0)));
 /* clima: algunas ediciones llueven (mismo resultado en lógica y render) */
 const RAINY = ed => ed > 0 && (Math.imul(ed + 7, 2654435761) >>> 0) % 4 === 1;
-const EDGE = [['rock', 2], ['pothole', 1.5], ['puddle', 1], ['cone', 1], ['barrier', 1.2], ['bollard', 1.5], ['branch', 1.7], ['stall', 1.7], ['kiosk', 0.8], ['gate', 0.5]];
-const MID = [['pothole', 2.2], ['puddle', 1], ['cone', 1.6], ['barrier', 1.4], ['bollard', 0.8], ['gate', 1], ['rock', 0.4]];
-const SOFT = [['pothole', 2], ['cone', 1.5], ['barrier', 1.5], ['bollard', 1.2], ['gate', 1], ['puddle', 0.8]];
+const SOFT = [['pothole', 2], ['cone', 1.5], ['barrier', 1.5], ['bollard', 1.2], ['bump', 1.2], ['crack', 1], ['puddle', 0.8]];
 const THRAW = [
   { near: [['tree', 3.5], ['pine', 1], ['bush', 2], ['lamp', 1.5], ['bench', 1], ['bill', 1]], far: [['bld', 3], ['tree', 4], ['hill', 3]] },
   { near: [['tree', 3], ['bush', 2.5], ['lamp', 1.5], ['bench', 1.5], ['bill', 1.5]], far: [['bld', 5], ['tree', 3], ['hill', 2]] },
@@ -1196,7 +1282,7 @@ function genRow(g) {
   let len = 0, coinLane = -1, kind;
   g.rows++;
   const rl = () => Math.floor(r() * NL), wRain = p => rain ? p.map(j => j[0] === 'puddle' ? ['puddle', 3.5] : j) : p;
-  const pool = l => { let p = wRain(l === 0 || l === 3 ? EDGE : MID); if (g.street) p = p.filter(j => j[0] !== 'branch' && j[0] !== 'gate'); return p; };
+  const P0 = POOL[catAt(s)], pool = l => { let p = wRain(l === 0 || l === 3 ? P0.e : P0.m); if (g.street) p = p.filter(j => !STREETX.includes(j[0])); return p; };
   const place = (t, l, ds = 0) => {
     if (s + ds < g.resv[l]) return false;
     if (t === 'branch') { addOb(g, 'branch', l, s + ds, { vis: { side: l < 2 ? -1 : 1, lanes: [l] } }); st[l] = 'duck'; }
@@ -1210,8 +1296,8 @@ function genRow(g) {
   // tutorial: una cosa a la vez
   if (g.tut >= 0 && g.tut < TUT.length) {
     const i = g.tut;
-    if (i === 0) addOb(g, 'rock', 2, s).tut = 0;
-    else if (i === 1) addOb(g, 'gate', 2, s, { fix: 1.3 }).tut = 1;
+    if (i === 0) addOb(g, 'barrier', 2, s).tut = 0;
+    else if (i === 1) addOb(g, 'scaff', 2, s).tut = 1;
     else if (i === 2) { const o = addNpc(g, 2, s, 3); if (o) o.tut = 2; }
     else g.dels.push({ s, side: 1, k: 'rev', obj: 'casita', v: 0, done: 0, miss: 0, tut: 3 });
     g.tut++; g.genS = s + 32; coinLine(g, 3, s - 10, 5, 0.8); return;
@@ -1303,7 +1389,7 @@ function genRow(g) {
   if (live.every(l => st[l] === 'block')) { g.bad++; g.badK = (g.badK || '') + g._kind + '@' + Math.round(s) + ' '; }
   // monedas guía (marcan el carril seguro)
   if (coinLane === -1 && r() < 0.78) {
-    const pref = LANES.filter(l => st[l] === 'free'), alt = LANES.filter(l => st[l] === 'jump' && g.obs.some(o => o.s === s && o.lane === l && o.t !== 'puddle'));
+    const pref = LANES.filter(l => st[l] === 'free'), alt = LANES.filter(l => st[l] === 'jump' && g.obs.some(o => o.s === s && o.lane === l && !['puddle', 'sand', 'crack', 'bump'].includes(o.t)));
     if (pref.length && (r() < 0.6 || !alt.length)) coinLine(g, pref[Math.floor(r() * pref.length)], s - 7, 6, 0.8);
     else if (alt.length) coinArc(g, alt[Math.floor(r() * alt.length)], s, v);
   }
@@ -1564,7 +1650,7 @@ function step(g, dt, inp) {
     }
     if (o.t === 'gate') { const gy = gateY(o, g.t); o.y0 = gy - 0.08; o.y1 = gy + 0.08; }
     const os0 = o.s - o.hd, os1 = o.s + o.hd;
-    if ((o.t === 'branch' || o.t === 'gate') && !o.passed && P.s - PHD > os1) { o.passed = 1; if (Math.abs(P.x - o.x) < o.hw && P.crouch > 0) { g.ducks++; ev(g, 'duckOk'); } }
+    if ((o.t === 'branch' || o.t === 'scaff') && !o.passed && P.s - PHD > os1) { o.passed = 1; if (Math.abs(P.x - o.x) < o.hw && P.crouch > 0) { g.ducks++; ev(g, 'duckOk'); } }
     if (o.tut !== undefined && !o.tdone && os0 > P.s && (os0 - P.s - PHD) / Math.max(1, P.v - (o.u || 0)) * P.v <= (TUT[o.tut].need === 'lane' ? P.v * 0.6 : P.v * 0.21 + 0.4)) { o.tdone = 1; g.tutWait = { need: TUT[o.tut].need, o }; ev(g, 'tut', o.tut); }
     if (zB < os0 || zA > os1) continue;
     if (P.glide > 0 && P.y > 2.9) continue;
@@ -1585,7 +1671,9 @@ function step(g, dt, inp) {
     if (o.T.ramp) { stumble(g, o, true); continue; }
     if (frontal) {
       if (g.vault && o.T.vault) { P.air = true; P.airT = 0; P.vy = Math.sqrt(2 * GRAV * (o.y1 + 0.55)); P.slow = Math.min(P.slow, 0.88); P.jumps = 1; P.trickHit = 1; P.crouch = 0; g.vaults++; ev(g, 'vault', o); }
-      else if (o.T.minor || (g.vault && o.T.ground)) { if (o.t === 'puddle' && V.id === 'inline') { ev(g, 'splash', o); continue; } stumble(g, o, false); if (o.t === 'cone') smash(g, o); }
+      else if (o.T.sand) { P.slow = Math.min(P.slow, 0.7); ev(g, 'sand', o); continue; }
+      else if (o.T.bump && P.v < 13) { if (!P.air) { P.air = true; P.airT = 0; P.vy = 3.2; P.trickHit = 1; } ev(g, 'bump', o); continue; }
+      else if (o.T.minor || (g.vault && o.T.ground)) { if (o.t === 'puddle' && V.id === 'inline') { ev(g, 'splash', o); continue; } stumble(g, o, false); if (o.t === 'cone' || o.t === 'trash') smash(g, o); }
       else die(g, o);
     } else if (V.id === 'uni' && moving) { const t = P.lane; P.lane = P.from; P.from = t; ev(g, 'lane'); }
     else stumble(g, o, moving);
@@ -2097,6 +2185,23 @@ const MOD = {
   sitter(v) { const m = new MB(), c = hex(['#ff5a2a', '#a42cff', '#2dbd5a', '#39a0ff'][v]), sk = hex(['#c98e62', '#6b4428', '#f0c9a8', '#a8754e'][v]), p = hex('#1b4459');
     m.box(0, 0.28, 0, 0.36, 0.5, 0.24, c); m.ico(0, 0.7, 0, 0.15, sk); m.hemi(0, 0.74, 0.02, 0.16, 8, 2, hex('#2b2112'));
     for (const sx of [-1, 1]) { m.box(sx * 0.1, 0.06, -0.22, 0.14, 0.12, 0.46, p); m.box(sx * 0.1, 0.06, -0.48, 0.14, 0.14, 0.12, WH); m.at(sx * 0.24, 0.45, -0.02, 0, 0.5, 0, 1, 1, 1, q => q.box(0, -0.2, 0, 0.1, 0.4, 0.1, c)); } return m; },
+  /* ---- obstáculos con lógica (v2.4): alcantarilla, grieta, resalto, basura, bici parqueada, contenedor, arena y andamio ---- */
+  manhole() { const m = new MB(), dk = hex('#0a0a0c'), ir = hex('#55585e'); m.cyl(0, 0.004, 0, 0.46, 0.012, 14, dk); for (let i = 0; i < 14; i++) { const a = i / 14 * 6.283; m.box(Math.cos(a) * 0.5, 0.025, Math.sin(a) * 0.5, 0.16, 0.05, 0.12, ir); }
+    m.at(0.62, 0.07, 0.15, 0.6, 0, 0.32, 1, 1, 1, q => { q.cyl(0, 0, 0, 0.44, 0.05, 14, hex('#3d4048')); for (const z of [-0.2, 0, 0.2]) q.box(0, 0.055, z, 0.7, 0.012, 0.05, hex('#6a6e76')); }); return m; },
+  crack() { const m = new MB(), dk = hex('#121214'); let x = -0.76, z = 0; while (x < 0.76) { const nx = Math.min(0.76, x + 0.18 + Math.random() * 0.12), nz = (Math.random() - 0.5) * 0.36; m.at((x + nx) / 2, 0.012, (z + nz) / 2, Math.atan2(-(nz - z), nx - x), 0, 0, 1, 1, 1, q => q.box(0, 0, 0, Math.hypot(nx - x, nz - z) + 0.02, 0.008, 0.07, dk)); if (Math.random() < 0.4) m.box(nx, 0.012, nz + 0.12, 0.05, 0.008, 0.2, dk); x = nx; z = nz; } m.box(0.2, 0.02, -0.15, 0.1, 0.04, 0.08, hex('#4a4d54')); m.box(-0.35, 0.02, 0.18, 0.08, 0.03, 0.06, hex('#4a4d54')); return m; },
+  bump() { const m = new MB(); for (let i = 0; i < 6; i++) { const c = i % 2 ? hex('#111') : hex('#ffc23a'); m.box(-0.66 + i * 0.264, 0.05, 0, 0.264, 0.1, 0.5, c, i % 2 ? 0 : 0.3); m.box(-0.66 + i * 0.264, 0.105, 0, 0.26, 0.02, 0.3, c); } return m; },
+  trash() { const m = new MB(), r = rngOf(51), b = hex('#1c1d22'), b2 = hex('#2a2c33'); m.ico(-0.2, 0.3, 0.05, 0.32, b, 0, 0.95, r, 0.3); m.ico(0.25, 0.26, -0.1, 0.28, b2, 0, 0.95, r, 0.3); m.ico(0.05, 0.22, 0.28, 0.24, hex('#2f6e3c'), 0, 0.9, r, 0.3);
+    for (const [x, y, z] of [[-0.2, 0.64, 0.05], [0.25, 0.55, -0.1]]) m.box(x, y, z, 0.08, 0.12, 0.08, b); m.box(0.42, 0.12, 0.3, 0.3, 0.24, 0.26, hex('#c9935e')); m.box(0.42, 0.25, 0.3, 0.32, 0.02, 0.06, hex('#d8c070')); return m; },
+  pbike() { const m = MOD.veh('bike', '#2f9fd1', 0); m.box(0.1, 0.18, 0.1, 0.02, 0.36, 0.02, hex('#8a8f96')); return m; },
+  container() { const m = new MB(), g1 = hex('#2f6e3c'), g2 = hex('#245a30'); m.box(0, 0.62, 0, 1.18, 1.0, 1.15, g1); m.box(0, 1.15, 0.03, 1.22, 0.08, 1.22, g2); m.box(0, 1.2, -0.62, 1.1, 0.06, 0.08, hex('#111'));
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) wheelX(m, sx * 0.48, 0.08, sz * 0.45, 0.08, 0.06, hex('#111'), 8);
+    m.tri([-0.15, 0.55, 0.578], [0.15, 0.55, 0.578], [0, 0.82, 0.578], hex('#f4f1e6'), 0.5); m.box(0, 0.3, 0.58, 1.0, 0.06, 0.01, hex('#f4f1e6')); return m; },
+  sand() { const m = new MB(), r = rngOf(61), sd = hex('#e8cf8f'); m.at(0, 0, 0, 0, 0, 0, 1, 1, 2.0, q => q.cyl(0, 0.004, 0, 0.82, 0.016, 12, sd)); for (let i = 0; i < 8; i++) m.ico((r() - 0.5) * 1.2, 0.02, (r() - 0.5) * 2.6, 0.18 + r() * 0.16, hex('#d9bd78'), 0, 0.28, r, 0.4); m.box(0.3, 0.02, 0.5, 0.12, 0.015, 0.22, hex('#ff5a2a')); return m; },
+  scaff() { const m = new MB(), tb = hex('#9aa0aa'), y = hex('#ffc23a'), net = hex('#ff6a1a');
+    for (const sx of [-1, 1]) { for (const sz of [-0.42, 0.42]) m.box(sx * 0.86, 1.5, sz, 0.07, 3.0, 0.07, tb); m.box(sx * 0.86, 2.4, 0, 0.06, 0.06, 0.92, tb); m.box(sx * 0.86, 0.12, 0, 0.12, 0.06, 1.0, hex('#5b4636')); m.quad([sx * 0.9, 1.45, 0.42], [sx * 0.9, 1.45, -0.42], [sx * 0.9, 2.85, -0.42], [sx * 0.9, 2.85, 0.42], net, 0.15); }
+    m.box(0, 1.2, 0.42, 1.8, 0.07, 0.07, tb); m.box(0, 1.2, -0.42, 1.8, 0.07, 0.07, tb); for (const z of [-0.3, 0, 0.3]) m.box(0, 2.88, z, 1.8, 0.05, 0.26, hex('#b5824a'));
+    for (let i = 0; i < 7; i++) m.box(-0.78 + i * 0.26, 1.08, 0.44, 0.26, 0.11, 0.015, i % 2 ? hex('#111') : y, i % 2 ? 0 : 0.35);
+    m.box(0, 1.75, 0.45, 1.6, 0.42, 0.02, hex('#0e6378')); m.quad([-0.7, 1.58, 0.462], [0.7, 1.58, 0.462], [0.7, 1.92, 0.462], [-0.7, 1.92, 0.462], WH, 0.4, ATR.sign[7]); return m; },
   medseg() { const m = new MB(), g1 = hex('#3f8a4f'), g2 = hex('#2f6e3c'); m.box(0, 0.12, 0, 0.42, 0.24, 4, hex('#c9c2a8')); m.box(0, 0.12, 0, 0.44, 0.04, 4.01, hex('#ffc23a'), 0.4); m.box(0, 0.5, 0, 0.32, 0.55, 3.6, g1); for (const z of [-1.2, 0, 1.2]) m.ico(0, 0.82, z, 0.24, g2, 0, 0.8); return m; },
   forkSign() { const m = new MB(); for (const x of [-1.9, 1.9]) m.box(x, 1.6, 0, 0.14, 3.2, 0.14, DK); m.box(0, 3.25, 0.02, 4.0, 1.05, 0.1, DK); m.quad([-1.95, 2.75, 0.08], [1.95, 2.75, 0.08], [1.95, 3.73, 0.08], [-1.95, 3.73, 0.08], WH, 0.6, ATR.fork); return m; },
   chev() { const m = new MB(); m.quad([-0.45, 0.02, 0.85], [0.45, 0.02, 0.85], [0.45, 0.02, -0.85], [-0.45, 0.02, -0.85], [1, 1, 1], 1, ATR.arrow); return m; },
@@ -2424,7 +2529,8 @@ const RN = {
     for (const k of ['road', 'tree', 'pine', 'bush', 'lamp', 'bench', 'hill', 'billFrame', 'gateFrame', 'rock', 'cone', 'barrier', 'pothole', 'puddle', 'kiosk', 'coin', 'gift', 'clue', 'magnet', 'shield', 'turbo', 'x2', 'cube', 'shadow', 'ink', 'flowers', 'wing', 'bfly', 'bird', 'bwing', 'rabbit', 'palm', 'parasol', 'sea', 'mount', 'fence', 'coffee', 'rail', 'boat', 'buzon', 'flag', 'door', 'rarm', 'mag', 'tunnel', 'portal']) mo[k] = mk(MOD[k]());
     mo.runB = [0, 1, 2, 3].map(c => mk(MOD.npcRun(c, 0))); mo.skB = [0, 1, 2, 3].map(c => mk(MOD.npcRun(c, 1))); mo.runL = mk(MOD.npcLeg(0)); mo.skL = mk(MOD.npcLeg(1));
     mo.kite = [0, 1, 2].map(v => mk(MOD.kite(v))); mo.balloon = [0, 1].map(v => mk(MOD.balloon(v)));
-    for (const k of ['tlight', 'wallseg', 'railseg', 'posterWall', 'bundle', 'envelope', 'paper', 'xroad', 'parkArch', 'quarter', 'policia', 'ducks', 'medseg', 'forkSign', 'chev', 'fountain', 'playground', 'pond']) mo[k] = mk(MOD[k]());
+    for (const k of ['tlight', 'wallseg', 'railseg', 'posterWall', 'bundle', 'envelope', 'paper', 'xroad', 'parkArch', 'quarter', 'policia', 'ducks', 'medseg', 'forkSign', 'chev', 'fountain', 'playground', 'pond', 'manhole', 'crack', 'bump', 'trash', 'pbike', 'container', 'sand', 'scaff']) mo[k] = mk(MOD[k]());
+    this.NEWO = new Set(['manhole', 'crack', 'bump', 'trash', 'pbike', 'container', 'sand', 'scaff']);
     mo.picnic = [0, 1, 2].map(v => mk(MOD.picnic(v))); mo.sitter = [0, 1, 2, 3].map(v => mk(MOD.sitter(v)));
     mo.shop = [0, 1, 2].map(v => mk(MOD.shop(v))); mo.stall = [0, 1, 2].map(v => mk(MOD.stall(v))); mo.person = [0, 1, 2, 3].map(v => mk(MOD.person(v))); mo.poster = [0, 1, 2, 3].map(v => mk(MOD.poster(v)));
     mo.carNpc = [0, 1, 2, 3].map(v => mk(MOD.carNpc(v))); mo.motoNpc = [0, 1, 2, 3].map(v => mk(MOD.motoNpc(v)));
@@ -2471,6 +2577,7 @@ const RN = {
       c.fov = (lerp(58, 66, k) + clamp(P.v - 14, 0, 30) * 0.28 + (P.turbo > 0 ? 6 : 0)) * Math.PI / 180;
     }
     if (mode !== 'garage') { this.slS = lerp(this.slS || 0, this.sl || 0, Math.min(1, dt * 4)); c.cy += this.slS * 10; }
+    c.ey -= (this.land || 0) * 0.22;
     if (this.shake > 0) { c.ex += (Math.random() - 0.5) * this.shake; c.ey += (Math.random() - 0.5) * this.shake; this.shake = Math.max(0, this.shake - dt * 2.5); }
     // horizonte en pantalla (para el degradado del cielo)
     const E = this.env; M4.persp(R.P, c.fov, asp, 0.1, 400); M4.look(R.V, c.ex, c.ey, c.ez, c.cx, c.cy, c.cz);
@@ -2491,7 +2598,9 @@ const RN = {
     else if (e.k === 'crash') { this.emit(16, P.x, 0.8, P.s, hex('#e8e4c4'), 8, 0.15, 1, 5); this.shake = 0.9; }
     else if (e.k === 'clue') this.emit(14, P.x, 1.2, P.s + 1, hex('#2dffb3'), 5, 0.1, 0.9, 4, 0.2);
     else if (e.k === 'power' || e.k === 'gift') this.emit(10, P.x, 1.4, P.s + 0.5, hex(e.k === 'gift' ? '#ff2fb3' : '#39c8ff'), 3, 0.06, 0.45, 3.5, 0.4);
-    else if (e.k === 'land' && e.a > 0.35) this.emit(5, P.x, 0.1, P.s, hex('#cfc4a8'), 3, 0.1, 0.4, 1.5);
+    else if (e.k === 'land') { this.land = Math.min(1, 0.35 + e.a); if (e.a > 0.35) this.emit(6, P.x, 0.1, P.s, hex('#cfc4a8'), 3, 0.1, 0.4, 1.5); }
+    else if (e.k === 'sand' && Math.random() < 0.5) this.emit(3, P.x, 0.1, P.s, hex('#e8cf8f'), 2.5, 0.08, 0.4, 1.5);
+    else if (e.k === 'bump') this.land = 0.5;
     else if (e.k === 'deliver') { const d = e.a; this.proj.push({ x0: P.x + d.side * 0.3, y0: P.y + 1.4, s0: P.s, x1: d.side * (d.obj === 'kiosko' ? 3.8 : 4.35), y1: d.obj === 'muro' ? 1.5 : 1.3, s1: d.s, t: 0, T: d.T, m: d.k === 'per' ? 'paper' : d.k === 'cor' ? 'envelope' : d.k === 'kio' ? 'bundle' : 'mag' }); this.throwT = 0.32; this.throwSide = d.side; }
     else if (e.k === 'grind' || e.k === 'grindOn') this.emit(6, P.x, P.y + 0.05, P.s, hex('#ffc23a'), 4, 0.06, 0.35, 2.5);
     else if (e.k === 'vault') this.emit(5, P.x, 0.4, P.s, hex('#cfc4a8'), 3, 0.09, 0.4, 2);
@@ -2520,6 +2629,7 @@ const RN = {
     if (P.inv > 0 && P.alive && Math.floor(time * 14) % 2) return;
     const rx = pitch - dead * 0.2 + Math.atan(this.sl || 0) + (big ? -brk * 0.03 : 0);
     if (flip) { M4.trs(B, P.x, P.y + 0.95, 0, spin, rx + flip, roll); M4.trs(A, 0, -0.95, 0); M4.mul(B, B, A); } else M4.trs(B, P.x, P.y, 0, spin, rx, roll);
+    const sq = this.land || 0; if (sq > 0.01) { this.land = Math.max(0, sq - dt * 4.5); M4.trs(A, 0, 0, 0, 0, 0, 0, 1 + 0.1 * sq, 1 - 0.16 * sq, 1 + 0.1 * sq); M4.mul(B, B, A); }
     // vehículo
     const sk = id === 'quad' || id === 'inline';
     if (!sk && pl.veh) { M4.trs(A, 0, 0, -slide, vspin, 0, vflip + dead * 0.6); M4.mul(M, B, A); R.draw(pl.veh, M); }
@@ -2689,7 +2799,7 @@ const RN = {
     for (const o of g.obs) {
       if (!o.alive && !o.fly) continue;
       const z = zs(o.s); if (z < FAR - o.hd || z > 14 + o.hd) continue;
-      let m, kx = 0.8, ry = 0;
+      let m, kx = this.NEWO.has(o.t) ? 1 : 0.8, ry = 0;
       if (o.t === 'branch') { if (!o.vis) continue; M4.trs(M, 0, 0, z); R.draw(this.branch(o.vis), M); continue; }
       if (o.t === 'gate' && !o.fly) { M4.trs(M, o.x, 0, z, 0, 0, 0, 0.8, 1, 1); R.draw(mo.gatepost, M); M4.trs(M, o.x, gateY(o, g.t), z, 0, 0, 0, 0.8, 1, 1); R.draw(mo.gatebar, M); continue; }
       if (o.t === 'pad') { if (!o.used) for (const dz of [-0.9, 0.9]) { M4.trs(M, o.x, 0, z + dz, 0, 0, 0, 0.9 + 0.1 * Math.sin(time * 9 + dz)); R.draw(mo.chev, M, ONE, this.CA.o, 1); } continue; }
@@ -2779,8 +2889,12 @@ const RN = {
       const k = p.sz * (0.4 + 0.6 * p.life / p.max); M4.trs(M, p.x, p.y, zs(p.s), 0, 0, 0, k * p.sx, k, k * p.sz2); R.draw(mo.cube, M, ONE, p.col, 1);
     }
     if ((P.turbo > 0 || P.boost > 0.4) && mode === 'play') for (let i = 0; i < (P.turbo > 0 ? 3 : 1); i++) this.parts.push({ x: P.x + (Math.random() - 0.5) * 9, y: Math.random() * 5, s: P.s + 6 + Math.random() * 12, vx: 0, vy: 0, vs: 0, life: 0.12, max: 0.12, col: hex('#ffffff'), sz: 0.05, gr: 0, sx: 1, sz2: 40 });
+    if (mode === 'play' && P.brake && P.v > 4 && !P.air && Math.random() < 0.7) this.emit(1, P.x + (Math.random() - 0.5) * 0.3, 0.06, P.s - 0.25, hex(g.veh.kind === 'h' ? '#cfc4a8' : '#ffd27a'), 1.5, g.veh.kind === 'h' ? 0.1 : 0.05, 0.35, 1);
     // sombras
     R.blend(true, 0.42);
+    for (const o of g.obs) { if (!o.alive || o.fly || o.T.moving || o.T.ground || o.y1 < 0.5 || o.t === 'wall' || o.t === 'median' || o.t === 'rail' || o.t === 'branch' || o.t === 'scaff') continue; const z = zs(o.s); if (z < -70 || z > 10) continue; M4.trs(M, o.x + 0.25, 0, z - 0.2, 0, 0, 0, o.hw * 2.6, 1, Math.min(o.hd, 3) * 2.6); R.draw(mo.shadow, M, ONE, ONE, 0); }
+    for (const c of g.crs) { if (c.done) continue; const z = zs(c.s); if (z > -60 && z < 10) { M4.trs(M, c.x, 0, z, 0, 0, 0, c.kind === 'duck' ? 2 : 0.9, 1, 0.8); R.draw(mo.shadow, M, ONE, ONE, 0); } }
+    if (g.riv) { const z = zs(g.riv.s); if (z > -70 && z < 10) { M4.trs(M, g.riv.x, 0, z, 0, 0, 0, 1, 1, 1.6); R.draw(mo.shadow, M, ONE, ONE, 0); } }
     M4.trs(M, P.x, (P.gy || 0), 0, 0, 0, 0, 1.1 / (1 + Math.max(0, P.y - (P.gy || 0)) * 0.4)); R.draw(mo.shadow, M, ONE, ONE, 0);
     for (const o of g.obs) if (o.T.moving && o.alive && !o.fly) { const z = zs(o.s); if (z > -80 && z < 10) { M4.trs(M, o.x, 0, z, 0, 0, 0, 1.2, 1, 2); R.draw(mo.shadow, M, ONE, ONE, 0); } }
     R.blend(false);
@@ -2927,7 +3041,7 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const fmt = n => Math.round(n).toLocaleString('es-CO');
 const dayKey = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-const VERSION = '2.3.0', SKEY = 'runscooter.v1';
+const VERSION = '2.4.0', SKEY = 'runscooter.v1';
 const MREW = [100, 200, 350, 550, 800], MXP = [150, 300, 500, 800, 1200], DAILY = [100, 150, 200, 's1', 300, 400, 's3'];
 
 const SV = {
@@ -2972,6 +3086,36 @@ const perksOf = S => { const k = {}; for (const m of MENT) if (S.ment[m.id] && m
 const mentProg = (S, m) => m.key === 'pages' ? S.clues : (S.cnt[m.key] || 0);
 const VUP = [['v', 'Velocidad', 2, 'Motor y ruedas: +2 % de velocidad por nivel'], ['b', 'Impulso', 6, 'Más empuje en cada toque de ⚡'], ['h', 'Manejo', 5, 'Cambios de carril más rápidos']];
 const vupCost = (v, lv) => Math.round(Math.max(250, v.price * 0.1) * (lv + 1) / 50) * 50;
+/* íconos dibujados de las entregas */
+const DSVG = {
+  per: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="1.5" fill="#f4f1e6" stroke="#111" stroke-width="1.6"/><rect x="5.5" y="7.5" width="13" height="2.6" fill="#111"/><rect x="5.5" y="11.5" width="6" height="5" fill="#8a8f96"/><path d="M13.5 12h5M13.5 14h5M13.5 16h4" stroke="#111" stroke-width="1.2"/></svg>',
+  rev: '<svg viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="1.2" fill="#39c8ff" stroke="#111" stroke-width="1.6"/><rect x="7" y="4.5" width="10" height="3" fill="#111"/><circle cx="12" cy="13" r="3.6" fill="#ffc23a" stroke="#111" stroke-width="1.2"/><path d="M7.5 18.5h9" stroke="#111" stroke-width="1.4"/></svg>',
+  cor: '<svg viewBox="0 0 24 24"><rect x="2.5" y="5.5" width="19" height="13" rx="1.5" fill="#ffc23a" stroke="#111" stroke-width="1.6"/><path d="M3 6.5l9 6.5 9-6.5" fill="none" stroke="#111" stroke-width="1.6"/><circle cx="18" cy="15.5" r="1.6" fill="#c0191c"/></svg>',
+  pos: '<svg viewBox="0 0 24 24"><rect x="5" y="3.5" width="14" height="18" fill="#ff2fb3" stroke="#111" stroke-width="1.6"/><circle cx="12" cy="3.6" r="1.7" fill="#c0191c" stroke="#111"/><path d="M8 9h8M8 12.5h8M8 16h5" stroke="#fff" stroke-width="1.8"/></svg>',
+  kio: '<svg viewBox="0 0 24 24"><path d="M3.5 8 12 4l8.5 4v9L12 21l-8.5-4z" fill="#c9935e" stroke="#111" stroke-width="1.6" stroke-linejoin="round"/><path d="M3.5 8 12 12l8.5-4M12 12v9" fill="none" stroke="#111" stroke-width="1.4"/><path d="M7.5 6l8.5 4" stroke="#2dffb3" stroke-width="2.2"/></svg>'
+};
+const DNAME = { per: 'Periódico', rev: 'Revista', cor: 'Correo', pos: 'Póster', kio: 'Paquete' };
+/* retratos de los mentores (SVG generado) */
+function avatar(m) {
+  const L = m.look || {}, sk = L.skin || '#c98e62', hc = L.hc || '#222', sh = L.shirt || m.col, h = L.hair || 'corto', a = L.acc || '';
+  let s = `<svg viewBox="0 0 64 64"><rect width="64" height="64" fill="${m.col}"/><circle cx="52" cy="10" r="16" fill="rgba(255,255,255,.22)"/>`;
+  s += `<path d="M10 64c2-12 10-17 22-17s20 5 22 17z" fill="${sh}" stroke="#111" stroke-width="1.5"/><path d="M27 47h10l-5 7z" fill="#fff" opacity=".85"/><rect x="28" y="40" width="8" height="9" fill="${sk}"/>`;
+  if (h === 'coleta') s += `<path d="M44 22c8 2 9 14 4 20-1-7-3-12-6-14z" fill="${hc}" stroke="#111" stroke-width="1"/>`;
+  if (h === 'moño') s += `<circle cx="32" cy="9" r="6.5" fill="${hc}" stroke="#111" stroke-width="1"/>`;
+  s += `<ellipse cx="18.5" cy="30" rx="3" ry="4" fill="${sk}"/><ellipse cx="45.5" cy="30" rx="3" ry="4" fill="${sk}"/><ellipse cx="32" cy="29" rx="13.5" ry="15.5" fill="${sk}" stroke="#111" stroke-width="1.5"/>`;
+  if (h === 'corto' || h === 'coleta' || h === 'moño') s += `<path d="M18.5 27c-1-11 6-17 13.5-17s14.5 6 13.5 17c-3-5-8-7-13.5-7s-10.5 2-13.5 7z" fill="${hc}" stroke="#111" stroke-width="1"/>`;
+  if (h === 'canoso') s += `<path d="M18 31c-1-5 0-9 3-11M46 31c1-5 0-9-3-11" stroke="${hc}" stroke-width="5" stroke-linecap="round" fill="none"/>`;
+  s += `<ellipse cx="26.5" cy="30" rx="2" ry="2.4" fill="#111"/><ellipse cx="37.5" cy="30" rx="2" ry="2.4" fill="#111"/><path d="M26 37.5c3.5 3 8.5 3 12 0" stroke="#111" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
+  if (L.must) s += `<path d="M24.5 35.5c3-2.5 5.5-2 7.5-.5 2-1.5 4.5-2 7.5.5-3 .5-5 1.5-7.5.6-2.5.9-4.5-.1-7.5-.6z" fill="${hc}" stroke="#111" stroke-width=".8"/>`;
+  if (a === 'gafas') s += `<g fill="rgba(57,200,255,.35)" stroke="#111" stroke-width="1.6"><rect x="21" y="26.5" width="9" height="7" rx="2.5"/><rect x="34" y="26.5" width="9" height="7" rx="2.5"/></g><path d="M30 29h4" stroke="#111" stroke-width="1.6"/>`;
+  if (a === 'aviador') s += `<path d="M18 22c3-11 25-11 28 0" fill="#7a4a1e" stroke="#111" stroke-width="1.4"/><g fill="#9ee8ff" stroke="#111" stroke-width="1.4"><circle cx="26" cy="22" r="4.5"/><circle cx="38" cy="22" r="4.5"/></g>`;
+  if (a === 'banda') s += `<rect x="18.5" y="19" width="27" height="4.5" rx="2" fill="#fff" stroke="#111" stroke-width="1"/>`;
+  if (a === 'gorra' || a === 'gorra2') s += `<path d="M18 22c0-9 6-13 14-13s14 4 14 13z" fill="${a === 'gorra' ? '#0e6378' : '#111'}" stroke="#111" stroke-width="1.2"/><path d="M${a === 'gorra' ? '30 21h20' : '14 21h20'}" stroke="#111" stroke-width="3" stroke-linecap="round"/>`;
+  if (a === 'boina') s += `<ellipse cx="31" cy="15" rx="16" ry="6" fill="#c0191c" stroke="#111" stroke-width="1.2"/><circle cx="31" cy="9.5" r="1.6" fill="#111"/>`;
+  if (a === 'casco') s += `<path d="M17 25c0-12 7-17 15-17s15 5 15 17z" fill="#ffc23a" stroke="#111" stroke-width="1.4"/><path d="M24 10v14M32 8v16M40 10v14" stroke="#111" stroke-width="1" opacity=".5"/>`;
+  if (a === 'silbato') s += `<path d="M30 47l4 6" stroke="#ffc23a" stroke-width="2"/><rect x="31" y="51" width="7" height="4" rx="1.5" fill="#c0c4cc" stroke="#111"/>`;
+  return s + '</svg>';
+}
 const KIND = { h: 'Fuerza', e: 'Eléctrico', m: 'Motor', f: 'Especial' }, ENL = { h: 'ALIENTO', e: 'BATERÍA', m: 'GASOLINA', f: 'COMBUSTIBLE' }, DICO = { per: '📰', rev: '📖', cor: '✉', pos: '🖼', kio: '📦' }, DCOLS = { per: '#8a8f96', rev: '#39c8ff', cor: '#ffc23a', pos: '#ff2fb3', kio: '#2dffb3' };
 const priceTxt = it => it.ach ? '🏆 Logro: ' + (ACH.find(a => a[0] === it.ach) || ['', ''])[1] : it.st ? '✦ ' + it.st : '◉ ' + fmt(it.p || 0);
 function checkAch(g) {
@@ -3016,10 +3160,19 @@ const UI = {
     const S = SV.S; $('mtWallet').innerHTML = this.wallet();
     $('mtBody').innerHTML = MENT.map(m => {
       const ok = S.ment[m.id], pr = mentProg(S, m), done = pr >= m.n;
-      return `<div class="ment${ok ? ' ok' : ''}"><div class="av" style="background:${m.col}">${esc(m.name.replace(/^(Don|Doña|La|Capitana|Maestra|Entrenador) /, '')[0])}</div><div class="nm">${esc(m.name)}</div><div class="hb">${esc(m.hab)}</div><div class="ds">${esc(m.desc)}</div>
+      return `<div class="ment${ok ? ' ok' : ''}"><button class="av" data-act="mprof" data-arg="${m.id}" aria-label="Perfil de ${esc(m.name)}">${avatar(m)}</button><div class="nm">${esc(m.name)}</div><div class="hb">${esc(m.hab)} · ${esc(m.barrio || '')}</div><div class="ds">${esc(m.desc)}</div>
         <div class="fv">Favor: ${esc(m.favor)} · ${fmt(Math.min(pr, m.n))} / ${fmt(m.n)}</div><div class="bar2"><i><b style="width:${clamp(pr / m.n * 100, 0, 100).toFixed(0)}%"></b></i></div>
-        <div class="row">${ok ? '<b>✔ Aprendido</b>' : `<button class="btn pri" data-act="ment" data-arg="${m.id}:f"${done ? '' : ' disabled'}>${done ? '¡Reclamar favor!' : 'Favor pendiente'}</button><button class="btn" data-act="ment" data-arg="${m.id}:p">Pagar ◉ ${fmt(m.price)}</button>`}</div></div>`;
+        <div class="row"><button class="btn gh" data-act="mprof" data-arg="${m.id}">Ver perfil</button>${ok ? '<b>✔ Aprendido</b>' : `<button class="btn pri" data-act="ment" data-arg="${m.id}:f"${done ? '' : ' disabled'}>${done ? '¡Reclamar!' : 'Favor pendiente'}</button><button class="btn" data-act="ment" data-arg="${m.id}:p">◉ ${fmt(m.price)}</button>`}</div></div>`;
     }).join('');
+  },
+  mprof(id) {
+    const S = SV.S, m = MENT.find(x => x.id === id); if (!m) return; this.mcur = id;
+    const ok = S.ment[m.id], pr = mentProg(S, m), done = pr >= m.n;
+    $('mpBody').innerHTML = `<div class="mprof"><div class="av">${avatar(m)}</div><div><div class="nm">${esc(m.name)}</div><div class="bz">${esc(m.barrio || 'Orbe')}</div></div></div>
+      <p class="mquote">«${esc(m.frase || '')}»</p><p style="line-height:1.45;margin:0 0 8px">${esc(m.bio || '')}</p>
+      <div class="mfacts"><b>Enseña</b><span>${esc(m.hab)} · ${esc(m.desc)}</span><b>Su vehículo</b><span>${esc(m.vfav || '')}</span><b>Favor</b><span>${esc(m.favor)} (${fmt(Math.min(pr, m.n))} / ${fmt(m.n)})</span><b>Clase</b><span>◉ ${fmt(m.price)}</span></div>
+      <div class="row" style="margin-top:10px">${ok ? '<b>✔ Ya aprendiste su habilidad</b>' : `<button class="btn pri" data-act="ment" data-arg="${m.id}:f"${done ? '' : ' disabled'}>${done ? '¡Reclamar favor!' : 'Favor pendiente'}</button><button class="btn" data-act="ment" data-arg="${m.id}:p">Pagar ◉ ${fmt(m.price)}</button>`}<button class="btn gh" data-act="closeMent">Cerrar</button></div>`;
+    this.ov('oMent', 1);
   },
   garage() {
     const S = SV.S; $('gWallet').innerHTML = this.wallet();
@@ -3112,9 +3265,9 @@ const UI = {
     const wd = SV.S.word, wg = wd.day === dayKey() ? wd.got : ''; if (wg !== H.w) { H.w = wg; $('hWord').innerHTML = 'EMSAY'.split('').map((ch, i) => `<i class="${i < wg.length ? 'on' : ''}">${ch}</i>`).join(''); }
     const dl = g.deliv + ':' + g.dStreak; if (dl !== H.dl) { H.dl = dl; const el = $('hDel'); el.hidden = !g.deliv; el.innerHTML = `✉ <b>${g.deliv}</b>${g.dStreak > 1 ? ' <small>racha ×' + g.dStreak + '</small>' : ''}`; }
     if (d !== H.d) { H.d = d; $('hDist').textContent = fmt(d) + ' M · ED. ' + (g.edition + 1); }
-    const b = Math.round(P.boost * 20); if (b !== H.b) { H.b = b; $('bbF').style.height = (b * 5) + '%'; }
+    const b = Math.round(P.boost * 40); if (b !== H.b) { H.b = b; $('bbF').style.setProperty('--o', (113 * (1 - b / 40)).toFixed(1)); }
     const sl = Math.round(P.sl * 100); if (sl !== H.sl) { H.sl = sl; const el = $('hSlope'); el.hidden = Math.abs(sl) < 3; el.className = 'slope ' + (sl > 0 ? 'up' : 'dn'); el.textContent = (sl > 0 ? '▲ SUBIDA ' : '▼ BAJADA ') + Math.abs(sl) + ' %'; }
-    const en = Math.round(P.en / Math.max(g.enMax, 0.01) * 25); if (en !== H.en) { H.en = en; $('enF').style.height = (en * 4) + '%'; $('enF').parentNode.parentNode.classList.toggle('low', en < 5); }
+    const en = Math.round(P.en / Math.max(g.enMax, 0.01) * 25); if (en !== H.en) { H.en = en; $('enF').style.width = (en * 4) + '%'; $('enF').parentNode.parentNode.classList.toggle('low', en < 5); }
     // avisos: semáforo, policía, animales, bajada, vía angosta, rival y estilo
     let lt = '', ltc = '', pol = '', warn = '', riv = '', combo = g.combo > 1.05 ? 'ESTILO ×' + g.combo.toFixed(1) : '';
     for (const X of g.xs) { const dC = X.s - P.s; if (X.pass || dC > 95 || dC < 0) continue; const st = lightAt(X, g.t); ltc = st === 2 ? 'r' : st === 1 ? 'y' : ''; lt = (st === 2 ? 'ROJO · FRENA' : st === 1 ? 'AMARILLO' : 'VERDE · SIGUE') + ' · ' + Math.round(dC / 5) * 5 + ' m'; }
@@ -3132,7 +3285,7 @@ const UI = {
     for (const sd of [-1, 1]) {
       let d = null; for (const q of g.dels) { if (q.done || q.miss || q.side !== sd) continue; const a = q.s - P.s; if (a < -2.5 || a > 22) continue; if (!d || q.s < d.s) d = q; }
       const el = $(sd < 0 ? 'bDelL' : 'bDelR'), key = d ? d.k + (d.s - P.s >= 2 && d.s - P.s <= 9.5 ? '!' : '') : '';
-      if (key !== el._k) { el._k = key; el.hidden = !d; if (d) { el.lastChild.textContent = DICO[d.k]; el.style.setProperty('--dc', DCOLS[d.k]); el.classList.toggle('ok', key.endsWith('!')); } }
+      if (key !== el._k) { el._k = key; el.hidden = !d; if (d) { el.querySelector('.ic').innerHTML = DSVG[d.k]; el.querySelector('small').textContent = key.endsWith('!') ? '¡YA!' : DNAME[d.k]; el.style.setProperty('--dc', DCOLS[d.k]); el.classList.toggle('ok', key.endsWith('!')); } }
       if (d) el.style.setProperty('--o', (113 * clamp((d.s - P.s) / 22, 0, 1)).toFixed(0));
     }
     const m = '×' + (g.mult * (P.x2 > 0 ? 2 : 1) * (g.veh.id === 'bike' ? 1.15 : 1) * (1 + 0.5 * P.boost)).toFixed(2).replace(/\.?0+$/, '');
@@ -3419,12 +3572,14 @@ function act(a, arg, el) {
     case 'cfNo': UI.ov('oConf', 0); confirmFn = null; if (UI.preview) { UI.preview = null; refreshPlayer(); UI.garage(); } break;
     case 'daily': claimDaily(); break;
     case 'stab': UI.stab = arg; UI.story(); break;
+    case 'mprof': UI.mprof(arg); break;
+    case 'closeMent': if (el && (el.id === 'oMent' || el.closest('button'))) UI.ov('oMent', 0); break;
     case 'vup': { const V = VEHI[S.veh], VU = S.vup[S.veh] || (S.vup[S.veh] = {}), lv = VU[arg] || 0; if (lv >= 5) break; const pr = vupCost(V, lv); if (S.coins >= pr) { S.coins -= pr; VU[arg] = lv + 1; SV.save(); AU.sfx('buy'); UI.garage(); } else UI.toast('Te faltan ◉ ' + fmt(pr - S.coins)); break; }
     case 'mus': S.set.mus = arg; SV.save(); AU.style = arg; UI.settings(); break;
     case 'heal': if (S.inj > 0 && S.coins >= 250) { S.coins -= 250; S.inj--; SV.save(); AU.sfx('buy'); UI.garage(); } else UI.toast(S.inj ? 'Te faltan ◉ ' + (250 - S.coins) + ' para el botiquín' : 'No tienes lesiones'); break;
     case 'ment': {
       const [id, how] = String(arg).split(':'), m = MENT.find(x => x.id === id); if (!m || S.ment[id]) break;
-      const learn = () => { S.ment[id] = 1; if (m.veh) { S.owned[m.veh] = 1; } checkAch(null); SV.save(); AU.sfx('rank'); UI.ment(); UI.toast('🎓 ' + m.name + ': ' + m.hab + (m.veh ? ' · ¡' + VEHI[m.veh].name + ' en tu garaje!' : ' aprendida'), 'g'); };
+      const learn = () => { if ($('oMent').classList.contains('on')) setTimeout(() => UI.mprof(id), 0); S.ment[id] = 1; if (m.veh) { S.owned[m.veh] = 1; } checkAch(null); SV.save(); AU.sfx('rank'); UI.ment(); UI.toast('🎓 ' + m.name + ': ' + m.hab + (m.veh ? ' · ¡' + VEHI[m.veh].name + ' en tu garaje!' : ' aprendida'), 'g'); };
       if (how === 'f') { if (mentProg(S, m) >= m.n) learn(); }
       else if (S.coins >= m.price) confirmBox(`¿Pagar ◉ ${fmt(m.price)} a ${m.name} por «${m.hab}»?`, () => { S.coins -= m.price; learn(); }); else UI.toast('Te faltan ◉ ' + fmt(m.price - S.coins));
       break;

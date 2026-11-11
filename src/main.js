@@ -237,12 +237,14 @@ function act(a, arg, el) {
     case 'cfNo': UI.ov('oConf', 0); confirmFn = null; if (UI.preview) { UI.preview = null; refreshPlayer(); UI.garage(); } break;
     case 'daily': claimDaily(); break;
     case 'stab': UI.stab = arg; UI.story(); break;
+    case 'mprof': UI.mprof(arg); break;
+    case 'closeMent': if (el && (el.id === 'oMent' || el.closest('button'))) UI.ov('oMent', 0); break;
     case 'vup': { const V = VEHI[S.veh], VU = S.vup[S.veh] || (S.vup[S.veh] = {}), lv = VU[arg] || 0; if (lv >= 5) break; const pr = vupCost(V, lv); if (S.coins >= pr) { S.coins -= pr; VU[arg] = lv + 1; SV.save(); AU.sfx('buy'); UI.garage(); } else UI.toast('Te faltan ◉ ' + fmt(pr - S.coins)); break; }
     case 'mus': S.set.mus = arg; SV.save(); AU.style = arg; UI.settings(); break;
     case 'heal': if (S.inj > 0 && S.coins >= 250) { S.coins -= 250; S.inj--; SV.save(); AU.sfx('buy'); UI.garage(); } else UI.toast(S.inj ? 'Te faltan ◉ ' + (250 - S.coins) + ' para el botiquín' : 'No tienes lesiones'); break;
     case 'ment': {
       const [id, how] = String(arg).split(':'), m = MENT.find(x => x.id === id); if (!m || S.ment[id]) break;
-      const learn = () => { S.ment[id] = 1; if (m.veh) { S.owned[m.veh] = 1; } checkAch(null); SV.save(); AU.sfx('rank'); UI.ment(); UI.toast('🎓 ' + m.name + ': ' + m.hab + (m.veh ? ' · ¡' + VEHI[m.veh].name + ' en tu garaje!' : ' aprendida'), 'g'); };
+      const learn = () => { if ($('oMent').classList.contains('on')) setTimeout(() => UI.mprof(id), 0); S.ment[id] = 1; if (m.veh) { S.owned[m.veh] = 1; } checkAch(null); SV.save(); AU.sfx('rank'); UI.ment(); UI.toast('🎓 ' + m.name + ': ' + m.hab + (m.veh ? ' · ¡' + VEHI[m.veh].name + ' en tu garaje!' : ' aprendida'), 'g'); };
       if (how === 'f') { if (mentProg(S, m) >= m.n) learn(); }
       else if (S.coins >= m.price) confirmBox(`¿Pagar ◉ ${fmt(m.price)} a ${m.name} por «${m.hab}»?`, () => { S.coins -= m.price; learn(); }); else UI.toast('Te faltan ◉ ' + fmt(m.price - S.coins));
       break;

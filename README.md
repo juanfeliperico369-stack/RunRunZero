@@ -25,6 +25,10 @@ EMSAY, la editorial del momento, necesita repartir sus revistas, periódicos, co
 - **Mejoras por vehículo** (velocidad, impulso y manejo) y trucos con nombre propio para cada vehículo.
 - Banda sonora rock y electrónica generada por código.
 - Portada estilo revista con todos los botones en la misma pantalla; el título se ajusta solo al ancho del celular.
+- **Obstáculos con lógica de calle** según la zona: alcantarillas destapadas, grietas, reductores de velocidad, canecas, bicis parqueadas, contenedores de escombros, arena de obra y andamios (agáchate). Sin talanqueras.
+- **Perfiles de mentores** con retrato, barrio, frase, historia, vehículo favorito y favor pendiente.
+- Iluminación con brillo especular, contorno, oclusión ambiental y viento en los árboles; sombras bajo obstáculos y gente; aterrizajes con peso y polvo al frenar.
+- HUD rediseñado: aliento horizontal a la izquierda, botones FRENO/IMPULSO nuevos con aro de carga.
 
 ## Fórmulas
 - Velocidad: `v = (14 + 21·(1 − e^(−s/2600)))·vehículo·pendiente + impulso` m/s, con turbo ×1,4. Impulso máximo = vehículo × mejoras × (0,6 + 0,4·físico/100).

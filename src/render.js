@@ -10,7 +10,8 @@ const RN = {
     for (const k of ['road', 'tree', 'pine', 'bush', 'lamp', 'bench', 'hill', 'billFrame', 'gateFrame', 'rock', 'cone', 'barrier', 'pothole', 'puddle', 'kiosk', 'coin', 'gift', 'clue', 'magnet', 'shield', 'turbo', 'x2', 'cube', 'shadow', 'ink', 'flowers', 'wing', 'bfly', 'bird', 'bwing', 'rabbit', 'palm', 'parasol', 'sea', 'mount', 'fence', 'coffee', 'rail', 'boat', 'buzon', 'flag', 'door', 'rarm', 'mag', 'tunnel', 'portal']) mo[k] = mk(MOD[k]());
     mo.runB = [0, 1, 2, 3].map(c => mk(MOD.npcRun(c, 0))); mo.skB = [0, 1, 2, 3].map(c => mk(MOD.npcRun(c, 1))); mo.runL = mk(MOD.npcLeg(0)); mo.skL = mk(MOD.npcLeg(1));
     mo.kite = [0, 1, 2].map(v => mk(MOD.kite(v))); mo.balloon = [0, 1].map(v => mk(MOD.balloon(v)));
-    for (const k of ['tlight', 'wallseg', 'railseg', 'posterWall', 'bundle', 'envelope', 'paper', 'xroad', 'parkArch', 'quarter', 'policia', 'ducks', 'medseg', 'forkSign', 'chev', 'fountain', 'playground', 'pond']) mo[k] = mk(MOD[k]());
+    for (const k of ['tlight', 'wallseg', 'railseg', 'posterWall', 'bundle', 'envelope', 'paper', 'xroad', 'parkArch', 'quarter', 'policia', 'ducks', 'medseg', 'forkSign', 'chev', 'fountain', 'playground', 'pond', 'manhole', 'crack', 'bump', 'trash', 'pbike', 'container', 'sand', 'scaff']) mo[k] = mk(MOD[k]());
+    this.NEWO = new Set(['manhole', 'crack', 'bump', 'trash', 'pbike', 'container', 'sand', 'scaff']);
     mo.picnic = [0, 1, 2].map(v => mk(MOD.picnic(v))); mo.sitter = [0, 1, 2, 3].map(v => mk(MOD.sitter(v)));
     mo.shop = [0, 1, 2].map(v => mk(MOD.shop(v))); mo.stall = [0, 1, 2].map(v => mk(MOD.stall(v))); mo.person = [0, 1, 2, 3].map(v => mk(MOD.person(v))); mo.poster = [0, 1, 2, 3].map(v => mk(MOD.poster(v)));
     mo.carNpc = [0, 1, 2, 3].map(v => mk(MOD.carNpc(v))); mo.motoNpc = [0, 1, 2, 3].map(v => mk(MOD.motoNpc(v)));
@@ -57,6 +58,7 @@ const RN = {
       c.fov = (lerp(58, 66, k) + clamp(P.v - 14, 0, 30) * 0.28 + (P.turbo > 0 ? 6 : 0)) * Math.PI / 180;
     }
     if (mode !== 'garage') { this.slS = lerp(this.slS || 0, this.sl || 0, Math.min(1, dt * 4)); c.cy += this.slS * 10; }
+    c.ey -= (this.land || 0) * 0.22;
     if (this.shake > 0) { c.ex += (Math.random() - 0.5) * this.shake; c.ey += (Math.random() - 0.5) * this.shake; this.shake = Math.max(0, this.shake - dt * 2.5); }
     // horizonte en pantalla (para el degradado del cielo)
     const E = this.env; M4.persp(R.P, c.fov, asp, 0.1, 400); M4.look(R.V, c.ex, c.ey, c.ez, c.cx, c.cy, c.cz);
@@ -77,7 +79,9 @@ const RN = {
     else if (e.k === 'crash') { this.emit(16, P.x, 0.8, P.s, hex('#e8e4c4'), 8, 0.15, 1, 5); this.shake = 0.9; }
     else if (e.k === 'clue') this.emit(14, P.x, 1.2, P.s + 1, hex('#2dffb3'), 5, 0.1, 0.9, 4, 0.2);
     else if (e.k === 'power' || e.k === 'gift') this.emit(10, P.x, 1.4, P.s + 0.5, hex(e.k === 'gift' ? '#ff2fb3' : '#39c8ff'), 3, 0.06, 0.45, 3.5, 0.4);
-    else if (e.k === 'land' && e.a > 0.35) this.emit(5, P.x, 0.1, P.s, hex('#cfc4a8'), 3, 0.1, 0.4, 1.5);
+    else if (e.k === 'land') { this.land = Math.min(1, 0.35 + e.a); if (e.a > 0.35) this.emit(6, P.x, 0.1, P.s, hex('#cfc4a8'), 3, 0.1, 0.4, 1.5); }
+    else if (e.k === 'sand' && Math.random() < 0.5) this.emit(3, P.x, 0.1, P.s, hex('#e8cf8f'), 2.5, 0.08, 0.4, 1.5);
+    else if (e.k === 'bump') this.land = 0.5;
     else if (e.k === 'deliver') { const d = e.a; this.proj.push({ x0: P.x + d.side * 0.3, y0: P.y + 1.4, s0: P.s, x1: d.side * (d.obj === 'kiosko' ? 3.8 : 4.35), y1: d.obj === 'muro' ? 1.5 : 1.3, s1: d.s, t: 0, T: d.T, m: d.k === 'per' ? 'paper' : d.k === 'cor' ? 'envelope' : d.k === 'kio' ? 'bundle' : 'mag' }); this.throwT = 0.32; this.throwSide = d.side; }
     else if (e.k === 'grind' || e.k === 'grindOn') this.emit(6, P.x, P.y + 0.05, P.s, hex('#ffc23a'), 4, 0.06, 0.35, 2.5);
     else if (e.k === 'vault') this.emit(5, P.x, 0.4, P.s, hex('#cfc4a8'), 3, 0.09, 0.4, 2);
@@ -106,6 +110,7 @@ const RN = {
     if (P.inv > 0 && P.alive && Math.floor(time * 14) % 2) return;
     const rx = pitch - dead * 0.2 + Math.atan(this.sl || 0) + (big ? -brk * 0.03 : 0);
     if (flip) { M4.trs(B, P.x, P.y + 0.95, 0, spin, rx + flip, roll); M4.trs(A, 0, -0.95, 0); M4.mul(B, B, A); } else M4.trs(B, P.x, P.y, 0, spin, rx, roll);
+    const sq = this.land || 0; if (sq > 0.01) { this.land = Math.max(0, sq - dt * 4.5); M4.trs(A, 0, 0, 0, 0, 0, 0, 1 + 0.1 * sq, 1 - 0.16 * sq, 1 + 0.1 * sq); M4.mul(B, B, A); }
     // vehículo
     const sk = id === 'quad' || id === 'inline';
     if (!sk && pl.veh) { M4.trs(A, 0, 0, -slide, vspin, 0, vflip + dead * 0.6); M4.mul(M, B, A); R.draw(pl.veh, M); }
@@ -275,7 +280,7 @@ const RN = {
     for (const o of g.obs) {
       if (!o.alive && !o.fly) continue;
       const z = zs(o.s); if (z < FAR - o.hd || z > 14 + o.hd) continue;
-      let m, kx = 0.8, ry = 0;
+      let m, kx = this.NEWO.has(o.t) ? 1 : 0.8, ry = 0;
       if (o.t === 'branch') { if (!o.vis) continue; M4.trs(M, 0, 0, z); R.draw(this.branch(o.vis), M); continue; }
       if (o.t === 'gate' && !o.fly) { M4.trs(M, o.x, 0, z, 0, 0, 0, 0.8, 1, 1); R.draw(mo.gatepost, M); M4.trs(M, o.x, gateY(o, g.t), z, 0, 0, 0, 0.8, 1, 1); R.draw(mo.gatebar, M); continue; }
       if (o.t === 'pad') { if (!o.used) for (const dz of [-0.9, 0.9]) { M4.trs(M, o.x, 0, z + dz, 0, 0, 0, 0.9 + 0.1 * Math.sin(time * 9 + dz)); R.draw(mo.chev, M, ONE, this.CA.o, 1); } continue; }
@@ -365,8 +370,12 @@ const RN = {
       const k = p.sz * (0.4 + 0.6 * p.life / p.max); M4.trs(M, p.x, p.y, zs(p.s), 0, 0, 0, k * p.sx, k, k * p.sz2); R.draw(mo.cube, M, ONE, p.col, 1);
     }
     if ((P.turbo > 0 || P.boost > 0.4) && mode === 'play') for (let i = 0; i < (P.turbo > 0 ? 3 : 1); i++) this.parts.push({ x: P.x + (Math.random() - 0.5) * 9, y: Math.random() * 5, s: P.s + 6 + Math.random() * 12, vx: 0, vy: 0, vs: 0, life: 0.12, max: 0.12, col: hex('#ffffff'), sz: 0.05, gr: 0, sx: 1, sz2: 40 });
+    if (mode === 'play' && P.brake && P.v > 4 && !P.air && Math.random() < 0.7) this.emit(1, P.x + (Math.random() - 0.5) * 0.3, 0.06, P.s - 0.25, hex(g.veh.kind === 'h' ? '#cfc4a8' : '#ffd27a'), 1.5, g.veh.kind === 'h' ? 0.1 : 0.05, 0.35, 1);
     // sombras
     R.blend(true, 0.42);
+    for (const o of g.obs) { if (!o.alive || o.fly || o.T.moving || o.T.ground || o.y1 < 0.5 || o.t === 'wall' || o.t === 'median' || o.t === 'rail' || o.t === 'branch' || o.t === 'scaff') continue; const z = zs(o.s); if (z < -70 || z > 10) continue; M4.trs(M, o.x + 0.25, 0, z - 0.2, 0, 0, 0, o.hw * 2.6, 1, Math.min(o.hd, 3) * 2.6); R.draw(mo.shadow, M, ONE, ONE, 0); }
+    for (const c of g.crs) { if (c.done) continue; const z = zs(c.s); if (z > -60 && z < 10) { M4.trs(M, c.x, 0, z, 0, 0, 0, c.kind === 'duck' ? 2 : 0.9, 1, 0.8); R.draw(mo.shadow, M, ONE, ONE, 0); } }
+    if (g.riv) { const z = zs(g.riv.s); if (z > -70 && z < 10) { M4.trs(M, g.riv.x, 0, z, 0, 0, 0, 1, 1, 1.6); R.draw(mo.shadow, M, ONE, ONE, 0); } }
     M4.trs(M, P.x, (P.gy || 0), 0, 0, 0, 0, 1.1 / (1 + Math.max(0, P.y - (P.gy || 0)) * 0.4)); R.draw(mo.shadow, M, ONE, ONE, 0);
     for (const o of g.obs) if (o.T.moving && o.alive && !o.fly) { const z = zs(o.s); if (z > -80 && z < 10) { M4.trs(M, o.x, 0, z, 0, 0, 0, 1.2, 1, 2); R.draw(mo.shadow, M, ONE, ONE, 0); } }
     R.blend(false);

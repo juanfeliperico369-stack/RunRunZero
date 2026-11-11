@@ -3,7 +3,7 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const fmt = n => Math.round(n).toLocaleString('es-CO');
 const dayKey = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-const VERSION = '2.3.0', SKEY = 'runscooter.v1';
+const VERSION = '2.4.0', SKEY = 'runscooter.v1';
 const MREW = [100, 200, 350, 550, 800], MXP = [150, 300, 500, 800, 1200], DAILY = [100, 150, 200, 's1', 300, 400, 's3'];
 
 const SV = {
@@ -48,6 +48,36 @@ const perksOf = S => { const k = {}; for (const m of MENT) if (S.ment[m.id] && m
 const mentProg = (S, m) => m.key === 'pages' ? S.clues : (S.cnt[m.key] || 0);
 const VUP = [['v', 'Velocidad', 2, 'Motor y ruedas: +2 % de velocidad por nivel'], ['b', 'Impulso', 6, 'Más empuje en cada toque de ⚡'], ['h', 'Manejo', 5, 'Cambios de carril más rápidos']];
 const vupCost = (v, lv) => Math.round(Math.max(250, v.price * 0.1) * (lv + 1) / 50) * 50;
+/* íconos dibujados de las entregas */
+const DSVG = {
+  per: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="1.5" fill="#f4f1e6" stroke="#111" stroke-width="1.6"/><rect x="5.5" y="7.5" width="13" height="2.6" fill="#111"/><rect x="5.5" y="11.5" width="6" height="5" fill="#8a8f96"/><path d="M13.5 12h5M13.5 14h5M13.5 16h4" stroke="#111" stroke-width="1.2"/></svg>',
+  rev: '<svg viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="1.2" fill="#39c8ff" stroke="#111" stroke-width="1.6"/><rect x="7" y="4.5" width="10" height="3" fill="#111"/><circle cx="12" cy="13" r="3.6" fill="#ffc23a" stroke="#111" stroke-width="1.2"/><path d="M7.5 18.5h9" stroke="#111" stroke-width="1.4"/></svg>',
+  cor: '<svg viewBox="0 0 24 24"><rect x="2.5" y="5.5" width="19" height="13" rx="1.5" fill="#ffc23a" stroke="#111" stroke-width="1.6"/><path d="M3 6.5l9 6.5 9-6.5" fill="none" stroke="#111" stroke-width="1.6"/><circle cx="18" cy="15.5" r="1.6" fill="#c0191c"/></svg>',
+  pos: '<svg viewBox="0 0 24 24"><rect x="5" y="3.5" width="14" height="18" fill="#ff2fb3" stroke="#111" stroke-width="1.6"/><circle cx="12" cy="3.6" r="1.7" fill="#c0191c" stroke="#111"/><path d="M8 9h8M8 12.5h8M8 16h5" stroke="#fff" stroke-width="1.8"/></svg>',
+  kio: '<svg viewBox="0 0 24 24"><path d="M3.5 8 12 4l8.5 4v9L12 21l-8.5-4z" fill="#c9935e" stroke="#111" stroke-width="1.6" stroke-linejoin="round"/><path d="M3.5 8 12 12l8.5-4M12 12v9" fill="none" stroke="#111" stroke-width="1.4"/><path d="M7.5 6l8.5 4" stroke="#2dffb3" stroke-width="2.2"/></svg>'
+};
+const DNAME = { per: 'Periódico', rev: 'Revista', cor: 'Correo', pos: 'Póster', kio: 'Paquete' };
+/* retratos de los mentores (SVG generado) */
+function avatar(m) {
+  const L = m.look || {}, sk = L.skin || '#c98e62', hc = L.hc || '#222', sh = L.shirt || m.col, h = L.hair || 'corto', a = L.acc || '';
+  let s = `<svg viewBox="0 0 64 64"><rect width="64" height="64" fill="${m.col}"/><circle cx="52" cy="10" r="16" fill="rgba(255,255,255,.22)"/>`;
+  s += `<path d="M10 64c2-12 10-17 22-17s20 5 22 17z" fill="${sh}" stroke="#111" stroke-width="1.5"/><path d="M27 47h10l-5 7z" fill="#fff" opacity=".85"/><rect x="28" y="40" width="8" height="9" fill="${sk}"/>`;
+  if (h === 'coleta') s += `<path d="M44 22c8 2 9 14 4 20-1-7-3-12-6-14z" fill="${hc}" stroke="#111" stroke-width="1"/>`;
+  if (h === 'moño') s += `<circle cx="32" cy="9" r="6.5" fill="${hc}" stroke="#111" stroke-width="1"/>`;
+  s += `<ellipse cx="18.5" cy="30" rx="3" ry="4" fill="${sk}"/><ellipse cx="45.5" cy="30" rx="3" ry="4" fill="${sk}"/><ellipse cx="32" cy="29" rx="13.5" ry="15.5" fill="${sk}" stroke="#111" stroke-width="1.5"/>`;
+  if (h === 'corto' || h === 'coleta' || h === 'moño') s += `<path d="M18.5 27c-1-11 6-17 13.5-17s14.5 6 13.5 17c-3-5-8-7-13.5-7s-10.5 2-13.5 7z" fill="${hc}" stroke="#111" stroke-width="1"/>`;
+  if (h === 'canoso') s += `<path d="M18 31c-1-5 0-9 3-11M46 31c1-5 0-9-3-11" stroke="${hc}" stroke-width="5" stroke-linecap="round" fill="none"/>`;
+  s += `<ellipse cx="26.5" cy="30" rx="2" ry="2.4" fill="#111"/><ellipse cx="37.5" cy="30" rx="2" ry="2.4" fill="#111"/><path d="M26 37.5c3.5 3 8.5 3 12 0" stroke="#111" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
+  if (L.must) s += `<path d="M24.5 35.5c3-2.5 5.5-2 7.5-.5 2-1.5 4.5-2 7.5.5-3 .5-5 1.5-7.5.6-2.5.9-4.5-.1-7.5-.6z" fill="${hc}" stroke="#111" stroke-width=".8"/>`;
+  if (a === 'gafas') s += `<g fill="rgba(57,200,255,.35)" stroke="#111" stroke-width="1.6"><rect x="21" y="26.5" width="9" height="7" rx="2.5"/><rect x="34" y="26.5" width="9" height="7" rx="2.5"/></g><path d="M30 29h4" stroke="#111" stroke-width="1.6"/>`;
+  if (a === 'aviador') s += `<path d="M18 22c3-11 25-11 28 0" fill="#7a4a1e" stroke="#111" stroke-width="1.4"/><g fill="#9ee8ff" stroke="#111" stroke-width="1.4"><circle cx="26" cy="22" r="4.5"/><circle cx="38" cy="22" r="4.5"/></g>`;
+  if (a === 'banda') s += `<rect x="18.5" y="19" width="27" height="4.5" rx="2" fill="#fff" stroke="#111" stroke-width="1"/>`;
+  if (a === 'gorra' || a === 'gorra2') s += `<path d="M18 22c0-9 6-13 14-13s14 4 14 13z" fill="${a === 'gorra' ? '#0e6378' : '#111'}" stroke="#111" stroke-width="1.2"/><path d="M${a === 'gorra' ? '30 21h20' : '14 21h20'}" stroke="#111" stroke-width="3" stroke-linecap="round"/>`;
+  if (a === 'boina') s += `<ellipse cx="31" cy="15" rx="16" ry="6" fill="#c0191c" stroke="#111" stroke-width="1.2"/><circle cx="31" cy="9.5" r="1.6" fill="#111"/>`;
+  if (a === 'casco') s += `<path d="M17 25c0-12 7-17 15-17s15 5 15 17z" fill="#ffc23a" stroke="#111" stroke-width="1.4"/><path d="M24 10v14M32 8v16M40 10v14" stroke="#111" stroke-width="1" opacity=".5"/>`;
+  if (a === 'silbato') s += `<path d="M30 47l4 6" stroke="#ffc23a" stroke-width="2"/><rect x="31" y="51" width="7" height="4" rx="1.5" fill="#c0c4cc" stroke="#111"/>`;
+  return s + '</svg>';
+}
 const KIND = { h: 'Fuerza', e: 'Eléctrico', m: 'Motor', f: 'Especial' }, ENL = { h: 'ALIENTO', e: 'BATERÍA', m: 'GASOLINA', f: 'COMBUSTIBLE' }, DICO = { per: '📰', rev: '📖', cor: '✉', pos: '🖼', kio: '📦' }, DCOLS = { per: '#8a8f96', rev: '#39c8ff', cor: '#ffc23a', pos: '#ff2fb3', kio: '#2dffb3' };
 const priceTxt = it => it.ach ? '🏆 Logro: ' + (ACH.find(a => a[0] === it.ach) || ['', ''])[1] : it.st ? '✦ ' + it.st : '◉ ' + fmt(it.p || 0);
 function checkAch(g) {
@@ -92,10 +122,19 @@ const UI = {
     const S = SV.S; $('mtWallet').innerHTML = this.wallet();
     $('mtBody').innerHTML = MENT.map(m => {
       const ok = S.ment[m.id], pr = mentProg(S, m), done = pr >= m.n;
-      return `<div class="ment${ok ? ' ok' : ''}"><div class="av" style="background:${m.col}">${esc(m.name.replace(/^(Don|Doña|La|Capitana|Maestra|Entrenador) /, '')[0])}</div><div class="nm">${esc(m.name)}</div><div class="hb">${esc(m.hab)}</div><div class="ds">${esc(m.desc)}</div>
+      return `<div class="ment${ok ? ' ok' : ''}"><button class="av" data-act="mprof" data-arg="${m.id}" aria-label="Perfil de ${esc(m.name)}">${avatar(m)}</button><div class="nm">${esc(m.name)}</div><div class="hb">${esc(m.hab)} · ${esc(m.barrio || '')}</div><div class="ds">${esc(m.desc)}</div>
         <div class="fv">Favor: ${esc(m.favor)} · ${fmt(Math.min(pr, m.n))} / ${fmt(m.n)}</div><div class="bar2"><i><b style="width:${clamp(pr / m.n * 100, 0, 100).toFixed(0)}%"></b></i></div>
-        <div class="row">${ok ? '<b>✔ Aprendido</b>' : `<button class="btn pri" data-act="ment" data-arg="${m.id}:f"${done ? '' : ' disabled'}>${done ? '¡Reclamar favor!' : 'Favor pendiente'}</button><button class="btn" data-act="ment" data-arg="${m.id}:p">Pagar ◉ ${fmt(m.price)}</button>`}</div></div>`;
+        <div class="row"><button class="btn gh" data-act="mprof" data-arg="${m.id}">Ver perfil</button>${ok ? '<b>✔ Aprendido</b>' : `<button class="btn pri" data-act="ment" data-arg="${m.id}:f"${done ? '' : ' disabled'}>${done ? '¡Reclamar!' : 'Favor pendiente'}</button><button class="btn" data-act="ment" data-arg="${m.id}:p">◉ ${fmt(m.price)}</button>`}</div></div>`;
     }).join('');
+  },
+  mprof(id) {
+    const S = SV.S, m = MENT.find(x => x.id === id); if (!m) return; this.mcur = id;
+    const ok = S.ment[m.id], pr = mentProg(S, m), done = pr >= m.n;
+    $('mpBody').innerHTML = `<div class="mprof"><div class="av">${avatar(m)}</div><div><div class="nm">${esc(m.name)}</div><div class="bz">${esc(m.barrio || 'Orbe')}</div></div></div>
+      <p class="mquote">«${esc(m.frase || '')}»</p><p style="line-height:1.45;margin:0 0 8px">${esc(m.bio || '')}</p>
+      <div class="mfacts"><b>Enseña</b><span>${esc(m.hab)} · ${esc(m.desc)}</span><b>Su vehículo</b><span>${esc(m.vfav || '')}</span><b>Favor</b><span>${esc(m.favor)} (${fmt(Math.min(pr, m.n))} / ${fmt(m.n)})</span><b>Clase</b><span>◉ ${fmt(m.price)}</span></div>
+      <div class="row" style="margin-top:10px">${ok ? '<b>✔ Ya aprendiste su habilidad</b>' : `<button class="btn pri" data-act="ment" data-arg="${m.id}:f"${done ? '' : ' disabled'}>${done ? '¡Reclamar favor!' : 'Favor pendiente'}</button><button class="btn" data-act="ment" data-arg="${m.id}:p">Pagar ◉ ${fmt(m.price)}</button>`}<button class="btn gh" data-act="closeMent">Cerrar</button></div>`;
+    this.ov('oMent', 1);
   },
   garage() {
     const S = SV.S; $('gWallet').innerHTML = this.wallet();
@@ -188,9 +227,9 @@ const UI = {
     const wd = SV.S.word, wg = wd.day === dayKey() ? wd.got : ''; if (wg !== H.w) { H.w = wg; $('hWord').innerHTML = 'EMSAY'.split('').map((ch, i) => `<i class="${i < wg.length ? 'on' : ''}">${ch}</i>`).join(''); }
     const dl = g.deliv + ':' + g.dStreak; if (dl !== H.dl) { H.dl = dl; const el = $('hDel'); el.hidden = !g.deliv; el.innerHTML = `✉ <b>${g.deliv}</b>${g.dStreak > 1 ? ' <small>racha ×' + g.dStreak + '</small>' : ''}`; }
     if (d !== H.d) { H.d = d; $('hDist').textContent = fmt(d) + ' M · ED. ' + (g.edition + 1); }
-    const b = Math.round(P.boost * 20); if (b !== H.b) { H.b = b; $('bbF').style.height = (b * 5) + '%'; }
+    const b = Math.round(P.boost * 40); if (b !== H.b) { H.b = b; $('bbF').style.setProperty('--o', (113 * (1 - b / 40)).toFixed(1)); }
     const sl = Math.round(P.sl * 100); if (sl !== H.sl) { H.sl = sl; const el = $('hSlope'); el.hidden = Math.abs(sl) < 3; el.className = 'slope ' + (sl > 0 ? 'up' : 'dn'); el.textContent = (sl > 0 ? '▲ SUBIDA ' : '▼ BAJADA ') + Math.abs(sl) + ' %'; }
-    const en = Math.round(P.en / Math.max(g.enMax, 0.01) * 25); if (en !== H.en) { H.en = en; $('enF').style.height = (en * 4) + '%'; $('enF').parentNode.parentNode.classList.toggle('low', en < 5); }
+    const en = Math.round(P.en / Math.max(g.enMax, 0.01) * 25); if (en !== H.en) { H.en = en; $('enF').style.width = (en * 4) + '%'; $('enF').parentNode.parentNode.classList.toggle('low', en < 5); }
     // avisos: semáforo, policía, animales, bajada, vía angosta, rival y estilo
     let lt = '', ltc = '', pol = '', warn = '', riv = '', combo = g.combo > 1.05 ? 'ESTILO ×' + g.combo.toFixed(1) : '';
     for (const X of g.xs) { const dC = X.s - P.s; if (X.pass || dC > 95 || dC < 0) continue; const st = lightAt(X, g.t); ltc = st === 2 ? 'r' : st === 1 ? 'y' : ''; lt = (st === 2 ? 'ROJO · FRENA' : st === 1 ? 'AMARILLO' : 'VERDE · SIGUE') + ' · ' + Math.round(dC / 5) * 5 + ' m'; }
@@ -208,7 +247,7 @@ const UI = {
     for (const sd of [-1, 1]) {
       let d = null; for (const q of g.dels) { if (q.done || q.miss || q.side !== sd) continue; const a = q.s - P.s; if (a < -2.5 || a > 22) continue; if (!d || q.s < d.s) d = q; }
       const el = $(sd < 0 ? 'bDelL' : 'bDelR'), key = d ? d.k + (d.s - P.s >= 2 && d.s - P.s <= 9.5 ? '!' : '') : '';
-      if (key !== el._k) { el._k = key; el.hidden = !d; if (d) { el.lastChild.textContent = DICO[d.k]; el.style.setProperty('--dc', DCOLS[d.k]); el.classList.toggle('ok', key.endsWith('!')); } }
+      if (key !== el._k) { el._k = key; el.hidden = !d; if (d) { el.querySelector('.ic').innerHTML = DSVG[d.k]; el.querySelector('small').textContent = key.endsWith('!') ? '¡YA!' : DNAME[d.k]; el.style.setProperty('--dc', DCOLS[d.k]); el.classList.toggle('ok', key.endsWith('!')); } }
       if (d) el.style.setProperty('--o', (113 * clamp((d.s - P.s) / 22, 0, 1)).toFixed(0));
     }
     const m = '×' + (g.mult * (P.x2 > 0 ? 2 : 1) * (g.veh.id === 'bike' ? 1.15 : 1) * (1 + 0.5 * P.boost)).toFixed(2).replace(/\.?0+$/, '');
