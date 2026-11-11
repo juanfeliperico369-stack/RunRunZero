@@ -19,6 +19,7 @@ EMSAY, la editorial del momento, necesita repartir sus revistas, periódicos, co
 - **Policía**: con vehículos eléctricos o de motor, si excedes el límite te persigue: acelera a fondo o frena y cambia de carril. Los perros también persiguen.
 - **Rivales** que te pasan y te quitan entregas; **mentores** que enseñan habilidades por un favor o pagando.
 - 17 vehículos: a pie, patines quad y en línea, skate, longboard, monopatín, monociclo, bicicleta, triciclo, bici eléctrica, monopatín eléctrico, monociclo eléctrico, scooter eléctrico, moto, auto, camión con cuadrilla y jetpack.
+- **Parques** (zonas libres): fuente, juegos infantiles, lago con patos, picnics, gente descansando y rampas de skate; trucos ×2 y recarga de energía. Si frenas hasta detenerte, descansas: energía al máximo y te curas una lesión.
 - **Bifurcaciones**: un separador divide la vía en dos rutas; la de entregas va marcada con flechas doradas y la otra tiene impulsores, barandas y rampas.
 - **Evento del día** en Orbe (Feria del Libro, Maratón, Carnaval, Jueves de Correo, Festival de Cometas, Mercado de las Pulgas, Edición dominical) con su bonificación.
 - **Mejoras por vehículo** (velocidad, impulso y manejo) y trucos con nombre propio para cada vehículo.

@@ -60,6 +60,7 @@ function events(g) {
       case 'jump': case 'jump2': case 'land': case 'duck': case 'lane': case 'smash': case 'pEnd': case 'shield': AU.sfx(e.k); break;
       case 'trick': AU.sfx('trick'); UI.pop('🛹 ' + e.a.name + ' +' + fmt(e.a.pts)); break;
       case 'pad': AU.sfx('power'); UI.pop('⚡ ¡IMPULSOR! +energía'); break;
+      case 'rest': { AU.sfx('power'); let t = '🌳 Descansaste: energía al máximo'; if (S.inj > 0) { S.inj--; SV.save(); t += ' y te curaste una lesión'; } UI.toast(t, 'c'); break; }
       case 'stumble': AU.sfx('stumble'); vib(40); break;
       case 'crash': AU.sfx('crash'); vib([60, 40, 90]); break;
       case 'power': AU.sfx('power'); UI.toast({ magnet: '∩ IMÁN', turbo: '⚡ TURBO', x2: '×2 PUNTOS', shield: '⛑ CASCO PROTECTOR', glide: '☂ PARAGUAS PLANEADOR: ¡a volar!' }[e.a] || 'PODER', 'g'); break;
@@ -98,7 +99,7 @@ function events(g) {
       case 'rival': AU.sfx('zone'); UI.toast('🏁 ' + e.a.name + ' viene a pasarte: usa ⚡ y no lo dejes', 'm'); break;
       case 'rivPass': AU.sfx('dmiss'); UI.pop('🏁 ' + e.a.name + ' te pasó · −' + Math.round(40 * g.mult), 'miss'); break;
       case 'rivWin': AU.sfx('rank'); UI.pop('🏁 ¡Pasaste a ' + e.a.name + '! +' + Math.round(250 * g.mult)); break;
-      case 'rivLost': UI.toast('🏁 ' + e.a.name + ' se escapó con ' + g.stolen + ' entrega(s)'); break;
+      case 'rivLost': UI.toast('🏁 ' + e.a.name + ' se escapó' + (e.a.st ? ' con ' + e.a.st + ' entrega(s) tuya(s)' : '')); break;
       case 'chase': if (e.a === 'pol') { AU.sfx('siren'); UI.toast('🚓 ¡Exceso de velocidad! Acelera a fondo o frena y cambia de carril', 'm'); } else { AU.sfx('bark'); UI.toast('🐕 ¡Te persigue un perro! Acelera o frena para calmarlo', 'm'); } break;
       case 'polEsc': AU.sfx('rank'); UI.pop('🚓 ¡Lo perdiste! +' + Math.round(300 * g.mult)); break;
       case 'polDodge': AU.sfx('rank'); UI.pop('🚓 ¡Maniobra evasiva! +' + Math.round(400 * g.mult)); break;

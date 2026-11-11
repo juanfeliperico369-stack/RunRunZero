@@ -3,7 +3,7 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const fmt = n => Math.round(n).toLocaleString('es-CO');
 const dayKey = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-const VERSION = '2.1.0', SKEY = 'runscooter.v1';
+const VERSION = '2.2.0', SKEY = 'runscooter.v1';
 const MREW = [100, 200, 350, 550, 800], MXP = [150, 300, 500, 800, 1200], DAILY = [100, 150, 200, 's1', 300, 400, 's3'];
 
 const SV = {
@@ -193,8 +193,9 @@ const UI = {
     if (g.pol) pol = g.pol.k === 'pol' ? '🚓 POLICÍA A ' + Math.round(g.pol.d) + ' m' : '🐕 ¡PERRO! acelera o frena';
     for (const c of g.crs) if (!c.done && c.s - P.s > 0 && c.s - P.s < 60 && c.t0 >= 0) warn = '⚠ ANIMAL CRUZANDO';
     if (!warn && P.over > 0.4) warn = '⚠ ¡FRENA EN LA BAJADA!';
-    if (!warn && g.nar && g.nar.a - P.s > 0 && g.nar.a - P.s < 55) warn = '⚠ VÍA ANGOSTA · carril' + (g.nar.open.length > 1 ? 'es ' : ' ') + g.nar.open.map(l => l + 1).join(' y ');
-    if (!warn && P.inPark) warn = '🛹 ZONA LIBRE · trucos ×2';
+    const nN = g.nars.find(n => n.a - P.s > 0 && n.a - P.s < 55);
+    if (!warn && nN) warn = '⚠ VÍA ANGOSTA · carril' + (nN.open.length > 1 ? 'es ' : ' ') + nN.open.map(l => l + 1).join(' y ');
+    if (!warn && P.inPark) warn = g.rested ? '🌳 PARQUE · trucos ×2' : '🌳 PARQUE · trucos ×2 · frena para descansar';
     if (!warn) { const f = g.forks.find(f => f.a - P.s > -4 && f.a - P.s < 75); if (f) warn = f.dl ? '⑂ ⚡ IMPULSO ◀ · ▶ ✉ ENTREGAS' : '⑂ ✉ ENTREGAS ◀ · ▶ ⚡ IMPULSO'; }
     if (g.riv) { const gp = g.riv.s - P.s; riv = '🏁 ' + g.riv.name + (gp > 0 ? ' +' + Math.round(gp) + ' m' : ' detrás'); }
     const top = lt + '|' + ltc + '|' + pol + '|' + warn + '|' + riv + '|' + combo;

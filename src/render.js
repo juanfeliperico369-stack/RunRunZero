@@ -10,7 +10,8 @@ const RN = {
     for (const k of ['road', 'tree', 'pine', 'bush', 'lamp', 'bench', 'hill', 'billFrame', 'gateFrame', 'rock', 'cone', 'barrier', 'pothole', 'puddle', 'kiosk', 'coin', 'gift', 'clue', 'magnet', 'shield', 'turbo', 'x2', 'cube', 'shadow', 'ink', 'flowers', 'wing', 'bfly', 'bird', 'bwing', 'rabbit', 'palm', 'parasol', 'sea', 'mount', 'fence', 'coffee', 'rail', 'boat', 'buzon', 'flag', 'door', 'rarm', 'mag', 'tunnel', 'portal']) mo[k] = mk(MOD[k]());
     mo.runB = [0, 1, 2, 3].map(c => mk(MOD.npcRun(c, 0))); mo.skB = [0, 1, 2, 3].map(c => mk(MOD.npcRun(c, 1))); mo.runL = mk(MOD.npcLeg(0)); mo.skL = mk(MOD.npcLeg(1));
     mo.kite = [0, 1, 2].map(v => mk(MOD.kite(v))); mo.balloon = [0, 1].map(v => mk(MOD.balloon(v)));
-    for (const k of ['tlight', 'wallseg', 'railseg', 'posterWall', 'bundle', 'envelope', 'paper', 'xroad', 'parkArch', 'quarter', 'policia', 'ducks', 'medseg', 'forkSign', 'chev']) mo[k] = mk(MOD[k]());
+    for (const k of ['tlight', 'wallseg', 'railseg', 'posterWall', 'bundle', 'envelope', 'paper', 'xroad', 'parkArch', 'quarter', 'policia', 'ducks', 'medseg', 'forkSign', 'chev', 'fountain', 'playground', 'pond']) mo[k] = mk(MOD[k]());
+    mo.picnic = [0, 1, 2].map(v => mk(MOD.picnic(v))); mo.sitter = [0, 1, 2, 3].map(v => mk(MOD.sitter(v)));
     mo.shop = [0, 1, 2].map(v => mk(MOD.shop(v))); mo.stall = [0, 1, 2].map(v => mk(MOD.stall(v))); mo.person = [0, 1, 2, 3].map(v => mk(MOD.person(v))); mo.poster = [0, 1, 2, 3].map(v => mk(MOD.poster(v)));
     mo.carNpc = [0, 1, 2, 3].map(v => mk(MOD.carNpc(v))); mo.motoNpc = [0, 1, 2, 3].map(v => mk(MOD.motoNpc(v)));
     mo.dogA = mk(MOD.pet('m1', '#c9935e')); mo.dogT = mk(MOD.petTail('m1', '#c9935e')); mo.catA = mk(MOD.pet('m2', '#3a3a46')); mo.catT = mk(MOD.petTail('m2', '#3a3a46')); this.cars = [];
@@ -215,7 +216,7 @@ const RN = {
     for (const sc of g.scen) {
       if (sc.k === 'ped') { const zz = zs(sc.s + sc.mv * (g.t - sc.t0)); if (zz > FAR && zz < 12) peds.push(sc, zz); continue; }
       const z = zs(sc.s); if (z < FAR || z > 14) continue;
-      if (sc.nr && (g.xs.some(X => Math.abs(X.s - sc.s) < 9) || g.shops.some(q => q.side === sc.side && Math.abs(q.s - sc.s) < 5) || g.dels.some(d => d.side === sc.side && Math.abs(d.s - sc.s) < 3.5))) continue;
+      if (sc.nr && (g.xs.some(X => Math.abs(X.s - sc.s) < 9) || g.parks.some(p => sc.s > p[0] - 6 && sc.s < p[1] + 6) || g.shops.some(q => q.side === sc.side && Math.abs(q.s - sc.s) < 5) || g.dels.some(d => d.side === sc.side && Math.abs(d.s - sc.s) < 3.5))) continue;
       let m = null, kx = sc.sc, ky = sc.sc, ry = sc.ry, sh = [sc.sh, sc.sh, sc.sh];
       switch (sc.k) {
         case 'bld': m = mo.bld[sc.v][sc.pi - 2]; ky = sc.h; break;
@@ -228,6 +229,14 @@ const RN = {
       if (!m) continue;
       M4.trs(M, sc.x, 0, z, ry, 0, 0, kx, ky, kx); R.draw(m, M, sh);
     }
+    // parques: arboleda, bancas, faroles y flores (con la paleta de la edición)
+    const PH = (a, b) => { const x = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453; return x - Math.floor(x); };
+    for (const p of g.parks) { if (zs(p[1]) > 20 || zs(p[0]) < FAR - 200) continue;
+      for (let q = p[0] - 2; q < p[1] + 4; q += 7) { const z = zs(q); if (z < FAR || z > 16) continue;
+        for (const sd of [-1, 1]) { const h = PH(q, sd); const k = h < 0.42 ? 'tree' : h < 0.55 ? 'pine' : h < 0.7 ? 'bush' : h < 0.82 ? 'flowers' : 'lamp'; const far = sd * (11.5 + PH(q + 3, sd) * 9);
+          M4.trs(M, sd * (h > 0.82 ? 5.6 : 6.4 + h * 1.5), 0, z, k === 'lamp' ? (sd > 0 ? 0 : Math.PI) : h * 6.28, 0, 0, 0.9 + h * 0.4); R.draw(mo[k], M, ONE);
+          if (PH(q, sd + 5) < 0.6) { M4.trs(M, far, 0, zs(q + 3), h * 6.28, 0, 0, 1 + PH(q, 9) * 0.6); R.draw(PH(q, sd + 7) < 0.7 ? mo.tree : mo.pine, M, ONE); }
+          if (PH(q, sd + 2) < 0.3) { M4.trs(M, sd * 5.0, 0, zs(q + 2), sd > 0 ? 0 : Math.PI, 0, 0, 1); R.draw(mo.bench, M, ONE); } } } }
     R.pal(false);
     for (const p of panels) { M4.trs(M, p[1], 0, p[2], p[3]); R.draw(p[0], M); }
     for (let i = 0; i < peds.length; i += 2) { const sc = peds[i], ph = time * 5.5 + sc.s; M4.trs(M, sc.x, 0.16, peds[i + 1], sc.mv > 0 ? 0 : Math.PI, 0, 0, 0.95); R.draw(mo.runB[sc.v], M); for (const sx of [-1, 1]) { M4.trs(this.A, sx * 0.1, 0.95, 0, 0, 0.42 * Math.sin(ph) * sx, 0); M4.mul(this.B, M, this.A); R.draw(mo.runL, this.B); } }
@@ -251,7 +260,17 @@ const RN = {
       for (let q = f.a - 36; q < f.b; q += 9) { const zq = zs(q); if (zq < FAR || zq > 12) continue; M4.trs(M, dx, 0, zq, 0, 0, 0, pulse); R.draw(mo.chev, M, ONE, CA.d, 1); if (q < f.a) { M4.trs(M, -dx, 0, zq, 0, 0, 0, 0.8); R.draw(mo.chev, M, ONE, CA.o, 1); } }
       for (const sd of [-1, 1]) { const zz = zs(f.a - 14); if (zz > FAR && zz < 14) { M4.trs(M, sd * 1.6, 3.6 + Math.sin(time * 3) * 0.15, zz, time * 2, 0, 0, 0.42); R.draw(mo.cube, M, ONE, (sd > 0) === !!f.dl ? CA.d : CA.o, 1); } }
     }
-    for (const p of g.parks) { const z = zs(p[0]); if (z > FAR - 160 && z < 20) { if (z > FAR) { M4.trs(M, 0, 0, z); R.draw(mo.parkArch, M); } for (let q = p[0] + 16; q < p[1]; q += 32) { const zq = zs(q); if (zq < FAR || zq > 14) continue; for (const sd of [-1, 1]) { M4.trs(M, sd * 7.2, 0, zq, sd > 0 ? -Math.PI / 2 : Math.PI / 2); R.draw(mo.quarter, M); } } } }
+    // parques: fuente, juegos infantiles, lago con patos, picnics, gente descansando y rampas de skate
+    for (const p of g.parks) { const z = zs(p[0]); if (!(z > FAR - 200 && zs(p[1]) < 20)) continue;
+      if (z > FAR && z < 20) { M4.trs(M, 0, 0, z); R.draw(mo.parkArch, M); M4.trs(M, 0, 0, zs(p[1])); R.draw(mo.parkArch, M); }
+      let i = 0; for (let q = p[0] + 14; q < p[1] - 6; q += 24, i++) { const zq = zs(q); if (zq < FAR - 6 || zq > 18) continue;
+        for (const sd of [-1, 1]) { const k = (i * 2 + (sd > 0 ? 1 : 0) + Math.floor(p[0])) % 6, ry = sd > 0 ? -Math.PI / 2 : Math.PI / 2, X = sd * 7.9;
+          if (k === 0) { M4.trs(M, X, 0, zq); R.draw(mo.fountain, M); for (let j = 0; j < 2; j++) { M4.trs(M, X - sd * 2.2, 0.45, zq + (j ? 1.4 : -1.4), ry); R.draw(mo.sitter[(i + j) % 4], M); } }
+          else if (k === 1) { M4.trs(M, sd * 8.9, 0, zq, ry); R.draw(mo.playground, M); M4.trs(M, sd * 6.5, 0, zq + 2.5, ry + Math.sin(time + i) * 0.5); R.draw(mo.runB[i % 4], M); }
+          else if (k === 2) { M4.trs(M, sd * 10.2, 0, zq); R.draw(mo.pond, M); M4.trs(M, sd * 10.2 + Math.sin(time * 0.4 + i) * 1.4, 0.02, zq + Math.cos(time * 0.4 + i) * 2.2, time * 0.4 + i, 0, 0, 0.9); R.draw(mo.ducks, M); }
+          else if (k === 3) { M4.trs(M, sd * 6.9, 0, zq, i); R.draw(mo.picnic[i % 3], M); for (let j = 0; j < 2; j++) { M4.trs(M, sd * 6.9 + (j ? 0.7 : -0.7), 0.04, zq + (j ? 0.4 : -0.3), j ? -1.2 : 1.6); R.draw(mo.sitter[(i + j + 1) % 4], M); } }
+          else if (k === 4) { M4.trs(M, sd * 6.9, 0, zq, ry); R.draw(mo.quarter, M); }
+          else { for (let j = 0; j < 3; j++) { M4.trs(M, sd * (6.1 + j * 0.8), 0, zq + j * 0.7, sd > 0 ? Math.PI * 0.8 : -Math.PI * 0.2); R.draw(mo.person[(i + j) % 4], M); } } } } }
     // obstáculos (los modelos de carril se estrechan a 0,8 para carriles de 1,6 m)
     for (const o of g.obs) {
       if (!o.alive && !o.fly) continue;

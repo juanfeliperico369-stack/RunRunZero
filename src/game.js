@@ -60,7 +60,8 @@ const TUT = [
 const vEst = (g, s) => (14 + 21 * (1 - Math.exp(-s / 2600))) * (g.vs || g.veh.spd);
 /* ¿se puede pasar de un carril a otro? (las bifurcaciones y los tramos angostos lo impiden) */
 const forkAt = (g, s) => g.forks.find(f => s > f.a - 2 && s < f.b);
-const laneOk = (g, from, to, s) => { const f = forkAt(g, s); if (f && (from < 2) !== (to < 2)) return false; return !(g.nar && s > g.nar.a - 2 && s < g.nar.b && !g.nar.open.includes(to)); };
+const narAt = (g, s) => g.nars.find(n => s > n.a - 2 && s < n.b), parkAt = (g, s) => g.parks.some(p => s > p[0] && s < p[1]);
+const laneOk = (g, from, to, s) => { const f = forkAt(g, s); if (f && (from < 2) !== (to < 2)) return false; const n = narAt(g, s); return !(n && !n.open.includes(to)); };
 /* Relieve: subidas y bajadas (el mismo perfil usa el shader) */
 const HILL = s => { const e = clamp((s - 150) / 250, 0, 1); return e * (6.0 * Math.sin(s * 0.0105) + 2.2 * Math.sin(s * 0.027 + 1.7)); };
 const HILLD = s => HILL(s + 0.5) - HILL(s - 0.5);
@@ -148,6 +149,8 @@ function addNpc(g, lane, s, nk) {
 /* cruce con semáforo, tramo angosto o zona libre de trucos */
 function genSeg(g) {
   const r = g.rng, s = g.genS, kinds = g.street ? ['cross', 'fork', 'narrow', 'cross'] : ['cross', 'fork', 'narrow', 'cross', 'park', 'fork'], k = kinds[g.segI % kinds.length];
+  const tunB = (a, b) => g.tuns.find(t => b > t[0] - 15 && a < t[1] + 15);
+  if (k === 'park' || k === 'cross') { const tb = tunB(s, s + 240); if (tb) { g.nextSeg = tb[1] + 25; return; } }
   if (k === 'fork') {
     const a = s + 44, L = 150 + r() * 80, b = a + L;
     if (g.resv[1] > a - 4 || g.resv[2] > a - 4) { g.nextSeg = Math.max(g.resv[1], g.resv[2]) + 6; return; }
@@ -168,7 +171,7 @@ function genSeg(g) {
     g.nar = { a, b, open }; g.nars.push(g.nar); g.sideBusy[0] = g.sideBusy[1] = Math.max(g.sideBusy[0], a);
     g.genS = a + 8; g.nextSeg = b + 380 + r() * 260; g.segI++; return;
   }
-  const a = s + 22, b = a + 150; g.park = [a, b]; g.parks.push(g.park); g.genS = a + 6; g.nextSeg = b + 420 + r() * 260; g.segI++;
+  const a = s + 22, b = a + 190; g.park = [a, b]; g.parks.push(g.park); g.genS = a + 6; g.nextSeg = b + 420 + r() * 260; g.segI++;
 }
 
 function genRow(g) {
@@ -226,10 +229,12 @@ function genRow(g) {
     const fl = D.filter(q => st[q] === 'free'); if (fl.length) coinLine(g, fl[Math.floor(r() * fl.length)], s - 6, 5, 0.8);
     coinLane = -2;
   } else if (park) {
-    g._kind = 'parque'; const k = pickW(r, [['jramp', 4], ['rail', 4], ['cones', 1], ['coins', 1]]), l = rl();
+    g._kind = 'parque'; const k = pickW(r, [['jramp', 4], ['rail', 4], ['cones', 1], ['coins', 1], ['walk', 1.6]]), l = rl();
+    if (k === 'walk') { if (addNpc(g, l, s, 3)) st[l] = 'block'; else coinLine(g, l, s - 4, 6, 0.8); }
     if (k === 'jramp') { addOb(g, 'jramp', l, s); st[l] = 'ramp'; const vy = 0.275 * v, T = (vy + Math.sqrt(vy * vy + 2 * GRAV * 1.1)) / GRAV; for (let i = 1; i <= 6; i++) { const t = i / 7 * T; addCoin(g, l, s + 2 + v * t, 1.8 + vy * t - GRAV * t * t / 2); } len = v * T + 4; }
     else if (k === 'rail') { const L = 16 + r() * 10; addOb(g, 'rail', l, s + L / 2, { hd: L / 2 }); coinLine(g, l, s + 1.5, Math.floor(L / 2.4) - 1, 1.35); len = L; }
     else if (k === 'cones') { place('cone', l); place('cone', (l + 2) % NL); }
+    else if (k === 'walk') { /* paseantes */ }
     else coinLine(g, l, s - 4, 8, 0.8);
     coinLane = -2;
   } else {
@@ -319,7 +324,7 @@ function genRow(g) {
 function genScen(g) {
   const r = g.srng, s = g.scenS, zi = Math.floor(Math.max(0, s) / 1000) % ZONES.length, th = THEMES[zi];
   const Z0 = ZONES[zi], inTun = x => g.tuns.some(t => x >= t[0] - 8 && x <= t[1] + 8);
-  if (Z0.tun && s > 300 && !inTun(s + 40) && s > (g.tuns.length ? g.tuns[g.tuns.length - 1][1] : 0) + 160 && r() < 0.06) { const a = s + 12, b = a + 70 + r() * 80; g.tuns.push([a, b]); for (const ps of [a, b]) g.scen.push({ k: 'portal', s: ps, x: 0, side: 1, ry: 0, sc: 1, v: 0, sh: 1, z: zi }); }
+  if (Z0.tun && s > 300 && !inTun(s + 40) && !g.parks.some(p => p[1] > s - 20 && p[0] < s + 175) && !g.xs.some(X => X.s > s - 20 && X.s < s + 175) && s > (g.tuns.length ? g.tuns[g.tuns.length - 1][1] : 0) + 160 && r() < 0.06) { const a = s + 12, b = a + 70 + r() * 80; g.tuns.push([a, b]); for (const ps of [a, b]) g.scen.push({ k: 'portal', s: ps, x: 0, side: 1, ry: 0, sc: 1, v: 0, sh: 1, z: zi }); }
   if (g.tuns.length > 4) g.tuns.shift();
   const tn = g.tuns.find(t => s + 6 >= t[0] && s + 6 <= t[1]);
   if (tn) { g.scen.push({ k: 'tunnel', s: s + 6, x: 0, side: 1, ry: 0, sc: 1, v: 0, sh: 1, z: zi }); g.scenS += 6 + r() * 5; return; }
@@ -425,7 +430,7 @@ function revive(g) {
   const P = g.p;
   for (const o of g.obs) if (o.t !== 'wall' && o.s + o.hd > P.s - 3 && o.s - o.hd < P.s + 40) o.alive = 0;
   for (const c of g.crs) if (c.s < P.s + 40) c.done = 1;
-  if (g.nar && !g.nar.open.includes(P.lane)) P.lane = g.nar.open[0];
+  const nr = narAt(g, P.s); if (nr && !nr.open.includes(P.lane)) P.lane = nr.open[0];
   P.alive = true; P.inv = 2.5; P.stumble = 0; P.slow = 1; P.vy = 0; P.air = false; P.y = 0; P.gv = 0; P.crouch = 0; P.brake = 0; P.over = 0; g.pol = null; g.overT = -3;
   P.v = vEst(g, P.s) * 0.55; P.x = LX(P.lane); g.revives++; ev(g, 'revive');
 }
@@ -448,7 +453,7 @@ function chaseStep(g, dt) {
 function rivalStep(g, dt, base) {
   const P = g.p, r = g.xr; let R = g.riv;
   if (!R) {
-    if (P.s >= g.nextRiv && !P.inPark && !g.nar && P.v > 8 && (g.tut < 0 || g.tut >= TUT.length)) {
+    if (P.s >= g.nextRiv && !P.inPark && !narAt(g, P.s + 30) && P.v > 8 && (g.tut < 0 || g.tut >= TUT.length)) {
       const i = Math.floor(r() * RIV.length), lane = P.lane === 2 ? 3 : 2;
       R = g.riv = { i, name: RIV[i][0], s: P.s - 9, lane, x: LX(lane), v: P.v + 3, t: 0, led: 0, ah: 0, y: 0, lc: 2 + r() * 2, hitT: -9 }; ev(g, 'rival', R);
     }
@@ -467,7 +472,7 @@ function rivalStep(g, dt, base) {
   R.y += (hop - R.y) * Math.min(1, dt * 10);
   if (R.ah) {
     for (const c of g.coins) if (c.alive && !c.mag && c.lane === R.lane && Math.abs(c.s - R.s) < 1 && c.y < 2.5) c.alive = 0;
-    for (const d of g.dels) if (!d.done && !d.miss && R.s > d.s && gap > 0) { d.miss = 1; d.stolen = 1; g.stolen++; g.dStreak = 0; ev(g, 'dstolen', R); }
+    for (const d of g.dels) if (!d.done && !d.miss && R.s > d.s && gap > 0) { d.miss = 1; d.stolen = 1; g.stolen++; R.st = (R.st || 0) + 1; g.dStreak = 0; ev(g, 'dstolen', R); }
   }
   if (Math.abs(gap) < 1.3 && Math.abs(R.x - P.x) < 0.8 && P.y < 1 && R.y < 0.6 && g.t - R.hitT > 1.2 && P.inv <= 0 && P.turbo <= 0) { R.hitT = g.t; stumble(g, { T: { name: R.name }, pat: 'rival' }, Math.abs(LX(P.lane) - P.x) > 0.02); if (!P.alive) return; }
   if (R.ah && gap < -1.5) { g.riv = null; g.nextRiv = P.s + (g.race ? 380 : 800) + r() * (g.race ? 250 : 600); g.duels++; g.score += 250 * g.mult * g.combo; style(g, 0.3); ev(g, 'rivWin', R); }
@@ -489,9 +494,11 @@ function step(g, dt, inp) {
   for (const k of ['magnet', 'turbo', 'x2', 'glide']) if (P[k] > 0) { P[k] -= dt; if (P[k] <= 0) { P[k] = 0; if (k === 'turbo') P.inv = Math.max(P.inv, 1.5); if (k === 'glide') { P.inv = Math.max(P.inv, 1.4); P.vy = 0; P.airT = 0; P.trickHit = 1; } ev(g, 'pEnd', k); } }
   if (V.id === 'auto' && !P.shield && (P.shT = (P.shT || 0) + dt) > 45) { P.shT = 0; P.shield = 1; }
   // energía (aliento / batería): la gasta el impulso y se recupera sola
-  const sl = P.sl = HILLD(P.s), hum = V.kind === 'h', inPark = g.park && P.s > g.park[0] && P.s < g.park[1]; P.inPark = inPark ? 1 : 0;
+  const sl = P.sl = HILLD(P.s), hum = V.kind === 'h', inPark = parkAt(g, P.s); P.inPark = inPark ? 1 : 0;
   let rg = P.tapT < 0.6 ? 0 : g.enRegen * (inPark ? 3 : 1) * (hum && sl < -0.03 ? 1.5 : 1); if (!hum && (P.brake || sl < -0.03)) rg += 0.1;
   P.en = Math.min(g.enMax, P.en + rg * dt);
+  // descanso en el parque: detente unos segundos para recuperar energía (y curar una lesión)
+  if (inPark && P.v < 1.2 && !P.air) { if ((g.restT = (g.restT || 0) + dt) > 2.5 && !g.rested) { g.rested = 1; P.en = g.enMax; ev(g, 'rest'); } } else g.restT = 0;
   // velocidad: v = (14 + 21·(1 − e^(−s/2600)))·vehículo·pendiente + impulso
   const base = vEst(g, P.s); P.slow = Math.min(1, P.slow + dt * 0.35); P.boost = Math.max(0, P.boost - dt * 0.24);
   const tv = (base * hillK(g, sl) + g.bmax * P.boost) * (P.turbo > 0 ? 1.4 : 1) * P.slow;
@@ -662,7 +669,7 @@ function aiLane(g, l, h) {
     if (!o.alive || o.fly || o.lane !== l || o.t === 'median' || o.t === 'pad' || (o.t === 'puddle' && g.veh.id === 'inline')) continue;
     let front = o.s - o.hd - (P.s + PHD); const back = o.s + o.hd - (P.s - PHD);
     if (back < 0) continue;
-    if (o.T.moving) { const rel = P.v - o.u; if (rel <= 0.5) { if (front > 2.5) continue; } else if (front > 0) front = front / rel * P.v; }
+    if (o.T.moving) { const rel = P.v - o.u; if (rel <= 0.5) { if (front > 2.5) continue; } else if (front > 0) front = front / rel * Math.max(P.v, 6); }
     if (front > h) continue;
     let need = o.T.need;
     if (o.t === 'gate') { const gy = gateY(o, g.t + Math.max(0, front) / Math.max(P.v, 1) + 0.06); need = gy >= 1.92 ? 'free' : gy >= 1.14 ? 'duck' : 'jump'; if (need === 'free') continue; }
@@ -711,7 +718,7 @@ function aiThink(g, skill = 1) {
   if (bl !== P.lane && !laneOk(g, P.lane, P.lane + Math.sign(bl - P.lane), P.s + P.v * 0.4)) bl = P.lane;
   if (bl !== P.lane) { const nx = P.lane + Math.sign(bl - P.lane), m = info[nx]; if (nx !== bl && m && m.need === 'block' && m.front < P.v * 0.3) bl = P.lane; }
   const cur = info[bl === P.lane ? P.lane : P.lane + Math.sign(bl - P.lane)];
-  if (cur && cur.need === 'block' && (cur.crit || cur.o.T.moving || P.v > 3) && cur.front < dStop + 1.5 && cost[bl] > 50) brake = true;
+  if (cur && cur.need === 'block' && (cur.crit || (cur.o.T.moving && cur.o.u > 0) || P.v > 3) && cur.front < dStop + 1.5 && cost[bl] > 50) brake = true;
   if (brake !== !!P.brake) return brake ? 'K' : 'k';
   const tx = LX(P.lane);
   if (bl !== P.lane && Math.abs(P.x - tx) < 0.3) return bl < P.lane ? 'L' : 'R';
