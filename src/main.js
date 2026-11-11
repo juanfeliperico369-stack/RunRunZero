@@ -334,7 +334,8 @@ function boot() {
   const cv = $('cv'); let ok = false;
   try { ok = R.init(cv); } catch (e) { ERR.push('webgl: ' + e.message); }
   if (!ok) { document.body.insertAdjacentHTML('beforeend', '<div class="nogl"><div><h1 class="mega" style="font-size:60px;color:#1d4e79">RUN SCOOTER</h1><p>Tu navegador no tiene WebGL activado. Prueba con Chrome, Safari o Firefox actualizados.</p></div></div>'); return; }
-  applyQuality(); window.addEventListener('resize', applyQuality); document.body.classList.toggle('lh', !!SV.S.set.lh);
+  applyQuality(); window.addEventListener('resize', () => { applyQuality(); if (UI.cur === 'sCover') UI.fit(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => UI.fit()); document.body.classList.toggle('lh', !!SV.S.set.lh);
   RN.init(); AU.set(SV.S.set.sfx, SV.S.set.music);
   const atlas = () => { try { R.texture(makeAtlas()); } catch (e) { ERR.push('atlas: ' + e.message); } };
   const fl = document.fonts && document.fonts.load ? Promise.all([document.fonts.load('40px "Titulos"'), document.fonts.load('800 40px "Cuerpo"')]) : Promise.resolve();

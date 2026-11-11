@@ -24,6 +24,7 @@ EMSAY, la editorial del momento, necesita repartir sus revistas, periódicos, co
 - **Evento del día** en Orbe (Feria del Libro, Maratón, Carnaval, Jueves de Correo, Festival de Cometas, Mercado de las Pulgas, Edición dominical) con su bonificación.
 - **Mejoras por vehículo** (velocidad, impulso y manejo) y trucos con nombre propio para cada vehículo.
 - Banda sonora rock y electrónica generada por código.
+- Portada estilo revista con todos los botones en la misma pantalla; el título se ajusta solo al ancho del celular.
 
 ## Fórmulas
 - Velocidad: `v = (14 + 21·(1 − e^(−s/2600)))·vehículo·pendiente + impulso` m/s, con turbo ×1,4. Impulso máximo = vehículo × mejoras × (0,6 + 0,4·físico/100).

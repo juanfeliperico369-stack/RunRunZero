@@ -3,7 +3,7 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const fmt = n => Math.round(n).toLocaleString('es-CO');
 const dayKey = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-const VERSION = '2.2.0', SKEY = 'runscooter.v1';
+const VERSION = '2.3.0', SKEY = 'runscooter.v1';
 const MREW = [100, 200, 350, 550, 800], MXP = [150, 300, 500, 800, 1200], DAILY = [100, 150, 200, 's1', 300, 400, 's3'];
 
 const SV = {
@@ -76,14 +76,18 @@ const UI = {
   bars(S) { return `<div class="bar2"><span>Físico</span><i><b style="width:${S.fit.toFixed(0)}%"></b></i><span>${S.fit.toFixed(0)}</span></div><div class="bar2 sk"><span>Habilidad</span><i><b style="width:${S.skill.toFixed(0)}%"></b></i><span>${S.skill.toFixed(0)}</span></div>`; },
   cover() {
     const S = SV.S, rk = rankOf(S.xp), wg = S.word.day === dayKey() ? S.word.got : '';
-    $('cCard').innerHTML = `<div class="rk">${rk + 1}</div><div class="nm">${esc(RANKS[rk])} · ${esc(VEHI[S.veh].name)}<span>◉ ${fmt(S.coins)} · ✦ ${S.stars}</span></div>${this.bars(S)}<div style="grid-column:span 2;display:flex;justify-content:space-between;gap:8px"><span>Mejor ${fmt(S.best)} · 🔤 ${'EMSAY'.split('').map((c, i) => i < wg.length ? c : '_').join('')}</span><span class="${S.inj ? 'inj' : ''}">${S.inj ? '🩹'.repeat(S.inj) + ' lesión' : 'Sin lesiones'}</span></div>`;
+    $('cCard').innerHTML = `<div class="rk">${rk + 1}</div><div class="nm">${esc(RANKS[rk])} · ${esc(VEHI[S.veh].name)}<span>◉ ${fmt(S.coins)} · ✦ ${S.stars}</span></div>${this.bars(S)}<div style="grid-column:span 2;display:flex;justify-content:space-between;gap:8px"><span>Mejor ${fmt(S.best)} · Letras ${'EMSAY'.split('').map((c, i) => i < wg.length ? c : '·').join('')}</span><span class="${S.inj ? 'inj' : ''}">${S.inj ? '🩹'.repeat(S.inj) + ' lesión' : 'Sin lesiones'}</span></div>`;
     const E = evToday(); $('cEvt').innerHTML = `<b>HOY</b> ${esc(E.name)} · <span>${esc(E.desc)}</span>`;
     const news = STORY.filter((p, i) => i < S.clues && (p[2] === 'n' || p[2] === 'e' || p[2] === 'f')).map(p => p[0]);
     $('cTick').textContent = (news.length ? news.slice(-6) : ['EMSAY busca a los mejores velocistas de Orbe', 'Recupera páginas perdidas para leer los titulares', 'Hoy: carrera del día en la ciclovía']).join('  ✦  ');
     $('dCh').hidden = S.ch.day === dayKey();
     $('dStory').hidden = S.readClues >= S.clues; $('dMis').hidden = !S.mis.some(m => (misDef(m.k).run ? m.best : m.prog) >= misDef(m.k).n[m.lvl] * 0.8);
+    $('cEd').textContent = 'Nº ' + Math.max(1, Math.floor(S.bestDist / 1000) + 1);
+    requestAnimationFrame(() => this.fit());
     $('dMent').hidden = !MENT.some(m => !S.ment[m.id] && (mentProg(S, m) >= m.n || S.coins >= m.price));
   },
+  /* que el título nunca se salga de la pantalla (fuentes grandes del celular, pantallas angostas) */
+  fit() { for (const el of document.querySelectorAll('.cover .mega.t1, .cover .mega.t2')) { el.style.fontSize = ''; let fs = parseFloat(getComputedStyle(el).fontSize), n = 0; while (el.scrollWidth > el.clientWidth + 1 && fs > 24 && n++ < 60) { fs *= 0.95; el.style.fontSize = fs.toFixed(1) + 'px'; } } },
   ment() {
     const S = SV.S; $('mtWallet').innerHTML = this.wallet();
     $('mtBody').innerHTML = MENT.map(m => {
