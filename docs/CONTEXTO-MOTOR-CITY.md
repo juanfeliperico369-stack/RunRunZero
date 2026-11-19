@@ -30,3 +30,8 @@
   - el tinto sin regar («Ni una gota»).
 - **A cambio,** tus páginas perdidas de EMSAY pueden esconderse en EnCicla y en El Metro. El motor ya trae el enganche: `MC.huevos.poner(...)`.
 - **Un nivel «Valle»:** el motor puede exportar una ciclorruta real (curvas y lomas) para que la corras en tu juego. Pídelo en `motorcity`.
+
+## Actualización · Motor City 2.2 (19‑nov‑2026)
+- El motor se llama solo «Motor City» y va en la 2.2 (<https://juanfeliperico369-stack.github.io/motorcity/>). **Run Scooter no cambia.**
+- Si quieres, puedes usar dos piezas del motor sin depender de él: `MC.Manejo` (curvas de respuesta y giro según la velocidad) y `MC.Sprites` (atlas con respaldo).
+- Si cambias el juego, avisa: el importador del motor (`node motor.mjs run`) dice qué parche dejó de calzar. Tu plan está en `motorcity/docs/PLAN-IAS.md`, sección 5.
