@@ -21,6 +21,8 @@ function startRun(ch, free) {
   const S = SV.S; AU.init(); AU.music(true); if (ch === undefined) { ch = lastCh; free = lastFree; } lastCh = !!ch; lastFree = !!free && !ch;
   UI.ov('oOver', 0); UI.ov('oRevive', 0); UI.ov('oPause', 0); UI.hideScreens(); UI.preview = null;
   refreshPlayer();
+  /* motor 3.0: el tutorial es opcional (un botón, nunca sale solo). La primera vez solo se avisa; se pide en ⚙️ → Tutorial */
+  if (S.tut === 1 && !S.tutPedido) { S.tut = 0; if (!S.tutAvisado) { S.tutAvisado = 1; setTimeout(() => UI.toast('¿Primera vez? En ⚙️ Ajustes → Tutorial lo activas (opcional)'), 1200); } SV.save(); }
   const NO = ({ seed: ch ? daySeed() : (Math.random() * 4294967295) >>> 0, veh: S.veh, up: S.up, mult: 1 + 0.25 * rankOf(S.xp), cluesLeft: STORY.length - S.clues, letters: (S.word.day !== dayKey() ? (S.word = { day: dayKey(), got: '', done: S.word.done || 0, doneDay: S.word.doneDay || '' }, 'EMSAY') : S.word.doneDay === dayKey() ? '' : 'EMSAY'.slice(S.word.got.length)), tut: S.tut === 1, pet: S.cos.mascota && S.cos.mascota !== 'm0', fit: S.fit, inj: S.inj, perks: perksOf(S), skill: S.skill, rivLv: rankOf(S.xp), evt: evToday().id, vup: S.vup[S.veh] });
   if (lastFree) Object.assign(NO, { free: 1, tut: false, letters: '', cluesLeft: 0 });
   G = newGame(NO); $('pEnd').hidden = !lastFree; $('hDrill').hidden = true; $('hCorner').hidden = true;
@@ -88,7 +90,7 @@ function events(g) {
         break;
       }
       case 'tut': UI.tut(e.a); AU.sfx('tut'); break;
-            case 'tutOk': UI.tut(-1); if (e.a === 'deliver' && S.tut) { S.tut = 0; SV.save(); UI.toast('¡Listo! Reparte las nuevas nuevas por todo Orbe', 'g'); } break;
+            case 'tutOk': UI.tut(-1); if (e.a === 'deliver' && S.tut) { S.tut = 0; S.tutPedido = 0; SV.save(); UI.toast('¡Listo! Reparte las nuevas nuevas por todo Orbe', 'g'); } break;
       case 'revive': AU.sfx('revive'); break;
       case 'boost': AU.pumpLv = e.a; AU.sfx('pump'); break;
       case 'deliver': AU.sfx('deliver'); vib(15); UI.pop(DICO[e.a.k] + (e.a.q === 2 ? ' ¡PERFECTA! +' : ' ' + DEL[e.a.k][2] + ' +') + fmt(e.a.pts) + (g.dStreak > 1 ? ' · racha ×' + g.dStreak : '')); break;
@@ -246,7 +248,7 @@ function act(a, arg, el) {
     case 'closeRead': if (el && el.id === 'oRead' || el.tagName === 'BUTTON') { UI.ov('oRead', 0); UI.story(); } break;
     case 'set': S.set[arg] = S.set[arg] ? 0 : 1; SV.save(); document.body.classList.toggle('lh', !!S.set.lh); AU.set(S.set.sfx, S.set.music); $('hFps').hidden = !S.set.fps; UI.settings(); break;
     case 'qual': S.set.q = arg; SV.save(); applyQuality(); UI.settings(); break;
-    case 'tut': S.tut = 1; SV.save(); UI.toast('El tutorial saldrá en tu próxima partida'); break;
+    case 'tut': S.tut = 1; S.tutPedido = 1; SV.save(); UI.toast('El tutorial saldrá en tu próxima partida'); break;
     case 'exp': saveFile('runscooter-partidas-' + dayKey() + '.json', exportJSON(), 'application/json').then(ok => ok && UI.toast('Partidas exportadas ✔')); break;
     case 'csv': saveFile('runscooter-partidas-' + dayKey() + '.csv', '﻿' + exportCSV(), 'text/csv').then(ok => ok && UI.toast('CSV exportado ✔')); break;
     case 'imp': $('fImp').click(); break;
