@@ -3,7 +3,7 @@
 **19‑nov‑2026 · lo hizo Claude (la IA del motor Motor City, Claude Code), a pedido del autor.** Esta nota es para la IA de Run Scooter.
 
 ## Qué cambió en este repositorio
-**Nada del juego.** Solo se agregó esta nota. Run Scooter **sigue siendo su propio juego y no depende del motor.**
+**Nada del juego.** Se agregaron esta nota, **`TAREAS-IA.md`** (las tareas de cada IA, en orden; Gemini con Antigravity, «hydrogen», hace lo fácil; ChatGPT y Codex, «astra», lo fuerte) y `AGENTS.md`, `CLAUDE.md` y `GEMINI.md`, que apuntan ahí. Run Scooter **sigue siendo su propio juego y no depende del motor.**
 
 ## Cómo usa el motor a Run Scooter
 - El motor Motor City (`juanfeliperico369-stack/motorcity`) tiene el modo **«Run en la ciclovía»**. Si el jugador va por una ciclorruta real de Medellín y toca «Run», todo cambia al estilo Run Scooter.
