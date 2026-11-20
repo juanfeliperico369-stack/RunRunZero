@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "agente": "antigravity",
+  "modelo": "Gemini (Antigravity)",
+  "rama": "ia/antigravity-runrunzero",
+  "rama_base": "claude/motor-city-engine-xu7p4y",
+  "actualizado_utc": "2026-11-20T20:54:00Z",
+  "fase": "FASE_0_BALIZA",
+  "estado": "iniciando_fase_1",
+  "reclamado_utc": "2026-11-20T20:54:00Z",
+  "alcance_planificado": {
+    "fase_1": [
+      "Auditoría y corrección de bugs reales (cola FIFO de toasts sin solapar HUD, overflow del botón IMPULSO y aro de carga, perk brazo en HUD, narrow delivery && false, limpieza de g.forks, fastFall en glide, timers al pausar/salir, crack determinista, portada 412x860 sin recorte)",
+      "Optimización WebGL1 y CPU (eliminar asignaciones por cuadro en render.js, caché de tintes RGB y descartes de escenario)",
+      "Game feel (coyote time, input buffer, racha de rozadas con recuperación de energía, aterrizaje con chispa) y realismo familiar (asfalto con desgaste/parches, andenes con baldosa, árboles con volumen)",
+      "Coherencia narrativa con UnoCero (Industry Art / OneZero): +12 páginas nuevas en STORY (índices 113..124) + huevos de pascua de Orbe/Motor City"
+    ],
+    "fase_2": [
+      "Adaptación nativa del motor Motor City 4.0 en src/motorcity-adapter.js (MC.on/emit, MC.huevos, MC.guardado, MC.opciones, MC.GPU, MC.ResDinamica, MC.resorte, MC.Vida hitstop, MC.Telemetria p50/p95/p99, MC.Calendario/Reloj/Cielo/Clima, MC.Estilo para paletas WebGL, MC.Director, MC.Historias, MC.Ocurrencias)",
+      "Nuevo modo jugable C-R40: Carretera de la Nada sobre MC.Planeta.BIOMAS (costa, desierto, bosque, nevado) con obstáculos por bioma (arena, hielo, troncos) y ciclo día/noche de Motor City",
+      "Verificación de compatibilidad 12/12 con motorcity/herramientas/importar-run.mjs",
+      "Reporte técnico completo sobre uso y mejoras de Motor City (docs/REPORTE-USO-MOTOR-CITY.md)"
+    ],
+    "fase_3": [
+      "Re-auditoría integral post-Motor City (bugs, rendimiento CPU 4x con MC.Telemetria, QA visual Playwright 412x860 + horizontal, 100 sims Node + bot de navegador)",
+      "Pulido final y documento maestro para la IA principal (docs/BITACORA-EVOLUCION-Y-SUGERENCIAS.md)"
+    ]
+  },
+  "invariantes_protegidos": [
+    "12 parches exactos de motorcity/herramientas/importar-run.mjs",
+    "Compatibilidad de guardado runscooter.v1",
+    "Índices 0..112 de STORY sin desplazar",
+    "HTML único offline sin librerías externas"
+  ],
+  "skills_aplicadas": [
+    "motor-city-diseno-ui",
+    "motor-city-qa-playwright",
+    "motor-city-revision-ia",
+    "motor-city-web-moderna",
+    "run-scooter-game-feel",
+    "run-scooter-multi-ia-coord"
+  ]
+}
