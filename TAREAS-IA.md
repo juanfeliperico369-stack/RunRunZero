@@ -1,5 +1,14 @@
 # Tareas de cada IA · Run Scooter
 
+> **Motor City 4.0 (20‑nov‑2026): el planeta y *Turno Cero*.**
+> - El motor une Manhattan, Medellín y el Valle y Guatapé en un planeta (`MC.Planeta`), con carreteras de la nada entre ellas.
+> - Trae la búsqueda 0–5 (`MC.Busqueda`) y lee modelos GLB (`MC.Modelos`).
+> - *Turno Cero* es el juego adulto de Motor City y vive aislado en `../motorcity/juegos/getaway/`: **su violencia y su lenguaje no entran a este juego**.
+> - Lee `../motorcity/docs/TURNO-CERO.md` y `../motorcity/TAREAS-IA.md` § 4.0.
+>
+> **Para Run Scooter (Codex, C‑R40):** «Run por la carretera de la nada». Es una variante del runner sobre los biomas de `MC.Planeta.BIOMAS`: costa, desierto, nieve y bosque, con su paleta y obstáculos por bioma (arena, hielo, troncos). Sale del mismo generador de carreteras del motor.
+
+
 > **Motor City 3.0 (20‑nov‑2026):** antes de tu encargo, lee **las 10 reglas que dejó el feedback del autor** en `../motorcity/docs/PROXIMO-NUEVA-YORK.md` §3:
 > - un solo mundo con varias cámaras;
 > - volumen en lo que se levanta;
