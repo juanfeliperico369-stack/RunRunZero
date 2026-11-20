@@ -7,6 +7,12 @@
 - **Gemini con Antigravity** («hydrogen») hace lo fácil.
 - **ChatGPT con Codex** («astra») hace lo fuerte.
 
+**Nuevo (20‑nov‑2026, Motor City 2.10):** las skills y plugins de los videos del autor ya están en `.claude/settings.json`: Hallmark, Modern Web Guidance y HyperFrames. Las demás IA las instalan desde el motor (`node ../motorcity/motor.mjs skills --instalar --agente codex`).
+- **Codex:**
+  - un **tráiler de 20 s** de Run Scooter con HyperFrames, con capturas reales y sin cifras inventadas;
+  - antes de tocar la interfaz, consulta Modern Web Guidance.
+- **Gemini:** corre `node tools/sim.mjs 100 240` y anota el resultado.
+
 ## La IA de Run Scooter (Codex «astra» o Claude): lo fuerte
 1. **Que nada choque al arrancar.** El banner «HOY: …» y el aviso «IMPULSO…» salen al mismo tiempo sobre el marcador. Ponlos en una cola y muéstralos uno tras otro. Lo vio la auditoría de Gemini.
 2. **Más realismo, familiar:**
