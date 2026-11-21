@@ -110,11 +110,22 @@ const ZRAW = [
   Z({ name: 'FINCA CAFETERA', sub: 'Montañas verdes y casitas de colores', bill: 9, top: '#7fc8f5', hor: '#fff1cf', sunC: '#fff8e0', sun: [0.3, 0.75, 0.06], stars: 0, amb: 0.85, sunI: 0.42, emit: 0.2, fog: [70, 185],
     road: ['#7a3b1f', '#e9d8b4', '#7fb24a', '#ffffff', '#e9d8b4'], scen: ['#3f8a3a', '#6b4226', '#e7dfc8', '#c0191c', '#ff3b30'], ui: '#7a3b1f' }),
   Z({ name: 'PUENTE SOBRE EL RÍO', sub: 'Rueda sobre el agua', bill: 0, top: '#6fb2d6', hor: '#cfe6ee', sunC: '#ffffff', sun: [-0.3, 0.8, 0.05], stars: 0, amb: 0.84, sunI: 0.4, emit: 0.25, fog: [70, 185],
-    road: ['#4a4f58', '#b9bcc2', '#2f7fb0', '#ffd23a', '#e8e4c4'], scen: ['#3f8a4f', '#3a3f4a', '#e8e4c4', '#f4f1e6', '#ffd23a'], ui: '#2f7fb0' })
+    road: ['#4a4f58', '#b9bcc2', '#2f7fb0', '#ffd23a', '#e8e4c4'], scen: ['#3f8a4f', '#3a3f4a', '#e8e4c4', '#f4f1e6', '#ffd23a'], ui: '#2f7fb0' }),
+  /* C‑R40 · «Run por la carretera de la nada»: los biomas de las carreteras de MC.Planeta (Motor City) entre una ciudad y otra */
+  Z({ name: 'CARRETERA · COSTA', sub: 'La Ruta del Atlántico junto al mar', bill: 1, top: '#4fb6e8', hor: '#f6e6c0', sunC: '#fff7d6', sun: [0.3, 0.78, 0.06], stars: 0, amb: 0.86, sunI: 0.44, emit: 0.18, fog: [80, 200],
+    road: ['#55585f', '#e9dcb4', '#e7d29a', '#ffffff', '#f2c400'], scen: ['#4aa35e', '#8a5a32', '#f2c400', '#2f9fd1', '#ffd23a'], ui: '#2f9fd1' }),
+  Z({ name: 'CARRETERA · DESIERTO', sub: 'Kilómetros de nada y calor', bill: 3, top: '#f2a65a', hor: '#ffe0a8', sunC: '#fff3c8', sun: [-0.2, 0.7, 0.1], stars: 0, amb: 0.88, sunI: 0.5, emit: 0.22, fog: [60, 175],
+    road: ['#5c4a3a', '#e9c98a', '#d9a35b', '#fff3d0', '#f2c400'], scen: ['#8c9a4a', '#6b4a2b', '#c98a3e', '#e9c98a', '#fff0b0'], ui: '#c0612a' }),
+  Z({ name: 'CARRETERA · NEVADO', sub: 'Hielo en la vía, ojo con resbalar', bill: 4, top: '#a9c3d9', hor: '#eef3f7', sunC: '#ffffff', sun: [0.25, 0.8, 0.04], stars: 0, amb: 0.9, sunI: 0.32, emit: 0.25, fog: [40, 150],
+    road: ['#3d434c', '#dfe7ee', '#f4f7fa', '#ffffff', '#cfe8ff'], scen: ['#2e5e44', '#4a3a2e', '#f4f7fa', '#9fb7cc', '#ffd36b'], ui: '#3a6d96' }),
+  Z({ name: 'CARRETERA · BOSQUE DE LAGOS', sub: 'Pinos, troncos caídos y agua quieta', bill: 8, top: '#8fbcd0', hor: '#dbe9e2', sunC: '#ffffff', sun: [-0.25, 0.82, 0.05], stars: 0, amb: 0.8, sunI: 0.34, emit: 0.28, fog: [45, 160],
+    road: ['#3b4a3a', '#c9c2a8', '#3d6b3f', '#f4f1e6', '#8a7a5a'], scen: ['#2e6b3a', '#5a3a22', '#3f7fb0', '#e8efe9', '#ffd36b'], ui: '#2f5d3a' })
 ];
 /* orden de las ediciones: la revista alterna sus páginas con los nuevos escenarios */
 const ZORD = [0, 1, 7, 2, 9, 3, 8, 4, 10, 5, 6];
 const ZONES = ZORD.map(i => ZRAW[i]);
+/* las zonas de la carretera van al final de ZONES; la partida normal recorre solo ZSEQ y la de la carretera, ZRUTA */
+const ZSEQ = ZONES.map((_, i) => i), ZRUTA = [11, 12, 13, 14].map(i => (ZONES.push(ZRAW[i]), ZONES.length - 1));
 /* nombre corto de la zona para letreros de esquina */
 const zShort = Z => { const p = Z.name.split(' · '); return p.length > 1 && /^(SESIÓN|EDICIÓN)/.test(p[0]) ? p[1] : p[0]; };
 /* zona libre: retos para ganar habilidad */

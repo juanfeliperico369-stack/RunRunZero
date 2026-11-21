@@ -1,6 +1,6 @@
 /* ===== ARRANQUE, BUCLE Y FLUJO DE PARTIDA ===== */
 const Q = [];
-let lastCh = false, lastFree = false, G = null, DEMO = null, GAR = null, mode = 'menu', acc = 0, last = 0, now = 0, count = 0, reviveT = 0, overShown = false, autoplay = false, fpsA = [], qChecked = false, misT = 0, confirmFn = null;
+let lastCh = false, lastFree = false, lastRuta = false, G = null, DEMO = null, GAR = null, mode = 'menu', acc = 0, last = 0, now = 0, count = 0, reviveT = 0, overShown = false, autoplay = false, fpsA = [], qChecked = false, misT = 0, confirmFn = null;
 const ERR = [];
 window.addEventListener('error', e => { ERR.push(String(e.message || e)); });
 window.addEventListener('unhandledrejection', e => { ERR.push('promesa: ' + String(e.reason && e.reason.message || e.reason)); });
@@ -17,14 +17,15 @@ function newGarage() { GAR = newGame({ seed: 7, veh: SV.S.veh, demo: true }); GA
 function refreshPlayer(vid) { RN.setPlayer(cosCfg(SV.S), vid || SV.S.veh); }
 
 const daySeed = () => { let h = 2166136261; for (const c of 'RS' + dayKey()) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
-function startRun(ch, free) {
-  const S = SV.S; AU.init(); AU.music(true); if (ch === undefined) { ch = lastCh; free = lastFree; } lastCh = !!ch; lastFree = !!free && !ch;
-  UI.ov('oOver', 0); UI.ov('oRevive', 0); UI.ov('oPause', 0); UI.hideScreens(); UI.preview = null;
+function startRun(ch, free, ruta) {
+  const S = SV.S; AU.init(); AU.music(true); if (ch === undefined) { ch = lastCh; free = lastFree; ruta = lastRuta; } lastCh = !!ch; lastFree = !!free && !ch; lastRuta = !!ruta && !ch && !lastFree;
+  UI.ov('oOver', 0); UI.ov('oRevive', 0); UI.ov('oPause', 0); UI.ov('oDaily', 0); UI.hideScreens(); UI.preview = null;
   refreshPlayer();
   /* motor 3.0: el tutorial es opcional (un botón, nunca sale solo). La primera vez solo se avisa; se pide en ⚙️ → Tutorial */
   if (S.tut === 1 && !S.tutPedido) { S.tut = 0; if (!S.tutAvisado) { S.tutAvisado = 1; setTimeout(() => UI.toast('¿Primera vez? En ⚙️ Ajustes → Tutorial lo activas (opcional)'), 1200); } SV.save(); }
   const NO = ({ seed: ch ? daySeed() : (Math.random() * 4294967295) >>> 0, veh: S.veh, up: S.up, mult: 1 + 0.25 * rankOf(S.xp), cluesLeft: STORY.length - S.clues, letters: (S.word.day !== dayKey() ? (S.word = { day: dayKey(), got: '', done: S.word.done || 0, doneDay: S.word.doneDay || '' }, 'EMSAY') : S.word.doneDay === dayKey() ? '' : 'EMSAY'.slice(S.word.got.length)), tut: S.tut === 1, pet: S.cos.mascota && S.cos.mascota !== 'm0', fit: S.fit, inj: S.inj, perks: perksOf(S), skill: S.skill, rivLv: rankOf(S.xp), evt: evToday().id, vup: S.vup[S.veh] });
   if (lastFree) Object.assign(NO, { free: 1, tut: false, letters: '', cluesLeft: 0 });
+  if (lastRuta) NO.ruta = 1;   /* C‑R40: la carretera de la nada (costa, desierto, nevado y bosque de lagos) */
   G = newGame(NO); $('pEnd').hidden = !lastFree; $('hDrill').hidden = true; $('hCorner').hidden = true;
   setTimeout(() => { if (mode === 'play') { const E = evToday(); UI.toast('📅 HOY: ' + E.name + ' · ' + E.desc, 'g'); } }, 900);
   if (ch) { G.race = 1; G.nextRiv = 260; }
@@ -32,7 +33,7 @@ function startRun(ch, free) {
   Q.length = 0; acc = 0; overShown = false; reviveT = 0; RN.parts.length = 0; UI.hud = { s: -1, c: -1, d: -1, m: '', pk: '', b: -1, sl: 99, dl: '', en: -1, top: '' };
   $('hud').hidden = false; $('hBanner').innerHTML = ''; UI.tut(-1); $('hCnt').hidden = true;
   if (S.boostTip < 3) { S.boostTip++; setTimeout(() => { if (mode === 'play') UI.toast('⚡ IMPULSO gasta ' + ENL[G.veh.kind].toLowerCase() + ' · ■ FRENO para semáforos, bajadas y animales', 'g'); }, 2600); }
-  G.ch = !!ch; UI.banner(0, 0); AU.zone = 0; mode = 'play'; if (ch) UI.toast('★ CARRERA DEL DÍA · misma ruta para todos y rivales en pista', 'g'); if (lastFree) { $('hBanner').innerHTML = '<div class="banner"><div class="sp">Sin policía, rivales ni entregas</div><div class="mega">ZONA LIBRE</div></div>'; UI.toast('🛹 Cumple los retos para subir tu habilidad · en pausa terminas la sesión', 'g'); } fpsA = []; qChecked = false;
+  G.ch = !!ch; UI.banner(0, G.zseq ? G.zseq[0] : 0); AU.zone = 0; mode = 'play'; if (ch) UI.toast('★ CARRERA DEL DÍA · misma ruta para todos y rivales en pista', 'g'); if (lastFree) { $('hBanner').innerHTML = '<div class="banner"><div class="sp">Sin policía, rivales ni entregas</div><div class="mega">ZONA LIBRE</div></div>'; UI.toast('🛹 Cumple los retos para subir tu habilidad · en pausa terminas la sesión', 'g'); } fpsA = []; qChecked = false;
 }
 function toMenu() {
   mode = 'menu'; G = null; $('hud').hidden = true; UI.ov('oOver', 0); UI.ov('oRevive', 0); UI.ov('oPause', 0);
@@ -208,7 +209,7 @@ function confirmBox(txt, fn) { $('cfT').textContent = txt; confirmFn = fn; UI.ov
 function act(a, arg, el) {
   const S = SV.S; AU.init(); if (a !== 'play') AU.sfx('click');
   switch (a) {
-    case 'play': startRun(arg === 'ch' ? true : arg === 'n' || arg === 'free' ? false : undefined, arg === 'free'); break;
+    case 'play': startRun(arg === 'ch' ? true : arg === 'n' || arg === 'free' || arg === 'ruta' ? false : undefined, arg === 'free', arg === 'ruta'); break;
     case 'endFree': endFree(); break;
     case 'go':
       if (mode === 'over') { UI.ov('oOver', 0); mode = 'menu'; G = null; newDemo(); }
@@ -370,7 +371,8 @@ function boot() {
   for (const [id, k] of [['bDelL', 'Q'], ['bDelR', 'E']]) $(id).addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (mode === 'play') key(k); });
   AU.style = SV.S.set.mus || 'mix';
   const bb = $('bBoost'); bb.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (mode !== 'play') return; key('B'); bb.classList.add('hit'); clearTimeout(bb._t); bb._t = setTimeout(() => bb.classList.remove('hit'), 70); });
-  setTimeout(askDaily, 600);
+  /* mundo abierto primero (regla del autor): el regalo diario ya no abre una ventana que tapa el juego; se entrega solo y se avisa */
+  setTimeout(() => { const S = SV.S; if (S.daily.last !== dayKey()) claimDaily(); }, 600);
   requestAnimationFrame(loop);
   if ('serviceWorker' in navigator && /^https?:/.test(location.protocol) && !window.Capacitor && !/[?&]nosw/.test(location.search)) navigator.serviceWorker.register('sw.js').catch(e => ERR.push('sw: ' + e.message));
 }

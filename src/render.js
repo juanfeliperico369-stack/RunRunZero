@@ -10,9 +10,9 @@ const RN = {
     for (const k of ['road', 'tree', 'pine', 'bush', 'lamp', 'bench', 'hill', 'billFrame', 'gateFrame', 'rock', 'cone', 'barrier', 'pothole', 'puddle', 'kiosk', 'coin', 'gift', 'clue', 'magnet', 'shield', 'turbo', 'x2', 'cube', 'shadow', 'ink', 'flowers', 'wing', 'bfly', 'bird', 'bwing', 'rabbit', 'palm', 'parasol', 'sea', 'mount', 'fence', 'coffee', 'rail', 'boat', 'buzon', 'flag', 'door', 'rarm', 'mag', 'tunnel', 'portal']) mo[k] = mk(MOD[k]());
     mo.runB = [0, 1, 2, 3].map(c => mk(MOD.npcRun(c, 0))); mo.skB = [0, 1, 2, 3].map(c => mk(MOD.npcRun(c, 1))); mo.runL = mk(MOD.npcLeg(0)); mo.skL = mk(MOD.npcLeg(1));
     mo.kite = [0, 1, 2].map(v => mk(MOD.kite(v))); mo.balloon = [0, 1].map(v => mk(MOD.balloon(v)));
-    for (const k of ['tlight', 'wallseg', 'railseg', 'posterWall', 'bundle', 'envelope', 'paper', 'xroad', 'parkArch', 'quarter', 'policia', 'ducks', 'medseg', 'forkSign', 'chev', 'fountain', 'playground', 'pond', 'hedgeseg', 'bedseg', 'manhole', 'crack', 'bump', 'trash', 'pbike', 'container', 'sand', 'scaff']) mo[k] = mk(MOD[k]());
+    for (const k of ['tlight', 'wallseg', 'railseg', 'posterWall', 'bundle', 'envelope', 'paper', 'xroad', 'parkArch', 'quarter', 'policia', 'ducks', 'medseg', 'forkSign', 'chev', 'fountain', 'playground', 'pond', 'hedgeseg', 'bedseg', 'manhole', 'crack', 'bump', 'trash', 'pbike', 'container', 'sand', 'scaff', 'log', 'ice']) mo[k] = mk(MOD[k]());
     mo.signpost = [null, mk(MOD.signpost(1)), mk(MOD.signpost(2))];
-    this.NEWO = new Set(['manhole', 'crack', 'bump', 'trash', 'pbike', 'container', 'sand', 'scaff']);
+    this.NEWO = new Set(['manhole', 'crack', 'bump', 'trash', 'pbike', 'container', 'sand', 'scaff', 'log', 'ice']);
     mo.picnic = [0, 1, 2].map(v => mk(MOD.picnic(v))); mo.sitter = [0, 1, 2, 3].map(v => mk(MOD.sitter(v)));
     mo.shop = [0, 1, 2].map(v => mk(MOD.shop(v))); mo.stall = [0, 1, 2].map(v => mk(MOD.stall(v))); mo.person = [0, 1, 2, 3].map(v => mk(MOD.person(v))); mo.poster = [0, 1, 2, 3].map(v => mk(MOD.poster(v)));
     mo.carNpc = [0, 1, 2, 3].map(v => mk(MOD.carNpc(v))); mo.motoNpc = [0, 1, 2, 3].map(v => mk(MOD.motoNpc(v)));

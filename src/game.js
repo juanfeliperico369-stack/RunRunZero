@@ -34,14 +34,16 @@ const OT = {
   pbike: { hw: 0.32, hd: 0.85, y0: 0, y1: 1.0, fatal: 1, need: 'jump', vault: 1, name: 'una bici parqueada' },
   container: { hw: 0.62, hd: 0.66, y0: 0, y1: 1.3, fatal: 1, land: 1, need: 'block', hard: 1, name: 'un contenedor de basura' },
   sand: { hw: 0.78, hd: 1.6, y0: -0.1, y1: 0.05, ground: 1, sand: 1, need: 'jump', name: 'la arena' },
+  log: { hw: 0.8, hd: 0.38, y0: 0, y1: 0.55, fatal: 1, need: 'jump', vault: 1, name: 'un tronco caído' },
+  ice: { hw: 0.78, hd: 1.9, y0: -0.1, y1: 0.04, ground: 1, ice: 1, need: 'jump', name: 'el hielo' },
   scaff: { hw: 0.8, hd: 0.45, y0: 1.15, y1: 2.9, fatal: 1, need: 'duck', name: 'un andamio de obra' }
 };
 /* cada barrio tiene obstáculos con lógica: ciudad (c), naturaleza (n) y playa (b) */
-const CAT = ZORD.map(i => ['c', 'c', 'c', 'c', 'c', 'n', 'c', 'b', 'n', 'n', 'c'][i]);
+const CAT = ZORD.map(i => ['c', 'c', 'c', 'c', 'c', 'n', 'c', 'b', 'n', 'n', 'c'][i]).concat(['b', 'd', 'i', 'f']);   /* + carretera: costa, desierto, hielo, bosque */
 /* zonas: tabla por tramos; en cada esquina el jugador puede doblar y cambiar de zona */
 function zinfo(g, s) {
   const zt = g.zt; s = Math.max(0, s);
-  while (zt[zt.length - 1].s <= s) { const l = zt[zt.length - 1]; zt.push({ s: l.s + 1000, z: (l.z + 1) % ZONES.length, ed: l.ed + 1 }); }
+  const seq = g.zseq || ZSEQ; while (zt[zt.length - 1].s <= s) { const l = zt[zt.length - 1], k = seq.indexOf(l.z); zt.push({ s: l.s + 1000, z: seq[(k + 1) % seq.length], ed: l.ed + 1 }); }
   let i = zt.length - 2; while (i > 0 && zt[i].s > s) i--;
   const a = zt[i]; return { z: a.z, ed: a.ed, s0: a.s, s1: zt[i + 1].s, pz: i > 0 ? zt[i - 1].z : a.z };
 }
@@ -52,7 +54,11 @@ const POOL = {
   n: { e: [['rock', 2], ['branch', 1.8], ['pothole', 1.4], ['puddle', 1.2], ['trash', 0.4], ['stall', 0.8], ['cone', 0.6]],
        m: [['pothole', 2.2], ['rock', 0.8], ['puddle', 1], ['crack', 0.8], ['cone', 0.8], ['barrier', 0.8], ['bump', 0.6]] },
   b: { e: [['sand', 2], ['trash', 1.2], ['stall', 2], ['puddle', 0.6], ['cone', 0.8], ['pbike', 1]],
-       m: [['sand', 1.6], ['pothole', 1.4], ['bump', 1], ['cone', 1], ['barrier', 0.8], ['crack', 0.5]] }
+       m: [['sand', 1.6], ['pothole', 1.4], ['bump', 1], ['cone', 1], ['barrier', 0.8], ['crack', 0.5]] },
+  /* carretera de la nada (C‑R40): desierto con arena y rocas, nevado con hielo, bosque con troncos */
+  d: { e: [['sand', 2.4], ['rock', 1.8], ['pothole', 0.8], ['crack', 0.8]], m: [['sand', 2], ['rock', 1], ['crack', 1.2], ['bump', 0.8], ['pothole', 0.8]] },
+  i: { e: [['ice', 2.4], ['rock', 1], ['log', 0.8], ['pothole', 0.6]], m: [['ice', 2.2], ['crack', 1], ['bump', 0.6], ['pothole', 0.6]] },
+  f: { e: [['log', 2.2], ['branch', 1.6], ['rock', 1.2], ['puddle', 1]], m: [['log', 1.6], ['puddle', 1.2], ['pothole', 1], ['crack', 0.6]] }
 };
 const STREETX = ['branch', 'scaff', 'stall', 'pbike', 'sand', 'trash', 'rock'];
 const NPCN = ['un ciclista', 'un corredor', 'una patinadora', 'un peatón', '', 'una moto'];
@@ -74,7 +80,12 @@ const THRAW = [
   { near: [['coffee', 4], ['fence', 2], ['tree', 1.5], ['bench', 0.6], ['bill', 0.8]], far: [['coffee', 3], ['mount', 2], ['hill', 2]] },
   { near: [['lamp', 2]], far: [['boat', 1.5], ['mount', 1.2]], rail: 1 }
 ];
-const THEMES = ZORD.map(i => THRAW[i]);
+const THEMES = ZORD.map(i => THRAW[i]).concat([
+  { near: [['palm', 4], ['lamp', 1], ['bush', 1.5]], far: [['palm', 3], ['mount', 1.5]], sea: 1 },
+  { near: [['bush', 1.2], ['fence', 2], ['lamp', 0.8]], far: [['hill', 4], ['mount', 3.5]] },
+  { near: [['pine', 4], ['fence', 1.5]], far: [['pine', 3], ['mount', 4.5]] },
+  { near: [['pine', 4.5], ['tree', 2], ['bush', 1.5]], far: [['pine', 4], ['mount', 2]], sea: 1 }
+]);
 const TUT = [
   { need: 'jump', msg: 'DESLIZA ↑ PARA SALTAR', pc: 'Flecha ↑ · W · Espacio' },
   { need: 'duck', msg: 'DESLIZA ↓ PARA AGACHARTE', pc: 'Flecha ↓ · S' },
@@ -92,8 +103,8 @@ const HILL = s => { const e = clamp((s - 150) / 250, 0, 1); return e * (6.0 * Ma
 const HILLD = s => HILL(s + 0.5) - HILL(s - 0.5);
 /* las subidas cuestan más a los vehículos de fuerza; las bajadas aceleran (toca frenar) */
 const hillK = (g, sl) => { const v = g.veh; if (v.id === 'long' && sl < 0) return clamp(1 - 2.8 * sl, 1, 1.4); if (v.id === 'ebike' && sl > 0) return 1; return v.kind === 'h' ? clamp(1 - 2.0 * sl, 0.72, 1.3) : clamp(1 - sl, 0.86, 1.24); };
-const FLOW = ZORD.map(i => [0.6, 0.6, 0.2, 0.4, 0.3, 0.6, 0.35, 0.2, 0.3, 0.5, 0][i]);
-const DELK = ZORD.map(i => [0.6, 0.7, 0.3, 0.4, 0.3, 0.6, 0.3, 0.45, 0.6, 0.85, -1][i]);
+const FLOW = ZORD.map(i => [0.6, 0.6, 0.2, 0.4, 0.3, 0.6, 0.35, 0.2, 0.3, 0.5, 0][i]).concat([0.15, 0.04, 0.02, 0.35]);
+const DELK = ZORD.map(i => [0.6, 0.7, 0.3, 0.4, 0.3, 0.6, 0.3, 0.45, 0.6, 0.85, -1][i]).concat([0.3, 0.2, 0.2, 0.4]);
 const diffAt = s => clamp((s - 150) / 6500, 0, 1);
 /* semáforos de los cruces: verde, amarillo, rojo (en rojo cruzan carros) */
 const TG = 6.5, TY = 1.3, TR = 4.6, CYC = TG + TY + TR;
@@ -118,7 +129,7 @@ function newGame(o) {
     p: { s: 0, x: LX(2), lane: 2, from: 2, laneT: -9, y: 0, vy: 0, gv: 0, gy: 0, v: 0, air: false, airT: 0, crouch: 0, fastFall: 0, jumps: 0, stumble: 0, slow: 1, inv: 0, alive: true, deadT: 0,
       magnet: 0, turbo: 0, x2: 0, glide: 0, shield: v.id === 'auto' ? 1 : 0, boost: 0, sl: 0, trickHit: 0, phase: 0, brake: 0, en: 0, tapT: 9, over: 0, trN: 0, trT: 9, grind: 0, grT: 0, inPark: 0 },
     obs: [], coins: [], items: [], scen: [], ev: [], lf: [0, 0, 0, 0], resv: [0, 0, 0, 0], sideBusy: [0, 0],
-    zt: [{ s: 0, z: 0, ed: 0 }], corners: [], turns: 0, free: o.free ? 1 : 0, drI: 0, drB: 0, drills: 0, drP: 0, drCur: 0, drNeed: 1, falls: 0,
+    zt: [{ s: 0, z: o.ruta ? ZRUTA[0] : 0, ed: 0 }], zseq: o.ruta ? ZRUTA : null, ruta: o.ruta ? 1 : 0, corners: [], turns: 0, free: o.free ? 1 : 0, drI: 0, drB: 0, drills: 0, drP: 0, drCur: 0, drNeed: 1, falls: 0,
     xs: [], crs: [], nars: [], parks: [], shops: [], forks: [], fork: null, evt: o.evt || '', vs: v.spd * (1 + 0.02 * ((o.vup || {}).v || 0)), hk: v.hnd * (1 + 0.05 * ((o.vup || {}).h || 0)), pads: 0, forksN: 0, nar: null, park: null, pol: null, riv: null, _cars: [],
     genS: 42, scenS: -30, nextGate: 1000, nextSeg: o.free ? 30 : 520, segI: 0, nextCrit: 640, nextRiv: o.free ? 1e12 : 850, nextKio: 420,
     dels: [], deliv: 0, perf: 0, dStreak: 0, dBest: 0, nextDel: 105, stolen: 0, tuns: [], pet: !!o.pet, petSide: 1, edition: 0, score: 0, coinsRun: 0, starsRun: 0, clues: 0, gifts: 0, jumps: 0, ducks: 0, tricks: 0, powers: 0, trucks: 0,
@@ -182,7 +193,7 @@ function genSeg(g) {
     // esquina: a la izquierda y a la derecha salen calles hacia otras zonas (de 2 carriles o un callejón de 1)
     const C = s + 50, tb = tunB(s, C + 30); if (tb) { g.nextSeg = tb[1] + 25; return; }
     if (g.resv.some(x => x > C - 10)) { g.nextSeg = Math.max(...g.resv) + 12; return; }
-    const z = zinfo(g, C).z, o = []; for (let i = 1; i < ZONES.length; i++) o.push((z + i) % ZONES.length);
+    const z = zinfo(g, C).z, o = [], sq = g.zseq || ZSEQ, kz = Math.max(0, sq.indexOf(z)); for (let i = 1; i < sq.length; i++) o.push(sq[(kz + i) % sq.length]);
     for (let i = o.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); const t = o[i]; o[i] = o[j]; o[j] = t; }
     const nL = r() < 0.5 ? 1 : 2, nR = r() < 0.65 ? 3 - nL : nL;
     g.corners.push({ s: C, z, L: { z: o[0], n: nL }, R: { z: o[1], n: nR }, done: 0, ai: null });
@@ -426,6 +437,7 @@ function chase(g, k, d) { if (g.free) return; const P = g.p; g.pol = { k, d, t: 
 function input(g, k) {
   const P = g.p, V = g.veh; if (!P.alive) return;
   if (k === 'L' || k === 'R') {
+    if (P.slip > 0) { ev(g, 'slip'); return; }   /* resbalando en el hielo */
     const nl = clamp(P.lane + (k === 'L' ? -1 : 1), 0, NL - 1);
     if (nl !== P.lane) { P.from = P.lane; P.lane = nl; P.laneT = g.t; ev(g, 'lane'); }
   } else if (k === 'U') {
@@ -572,7 +584,7 @@ function step(g, dt, inp) {
   // descanso en el parque: detente unos segundos para recuperar energía (y curar una lesión)
   if (inPark && P.v < 1.2 && !P.air) { if ((g.restT = (g.restT || 0) + dt) > 2.5 && !g.rested) { g.rested = 1; P.en = g.enMax; ev(g, 'rest'); } } else g.restT = 0;
   // velocidad: v = (14 + 21·(1 − e^(−s/2600)))·vehículo·pendiente + impulso
-  const base = vEst(g, P.s); P.slow = Math.min(1, P.slow + dt * 0.35); P.boost = Math.max(0, P.boost - dt * 0.24);
+  const base = vEst(g, P.s); P.slow = Math.min(1, P.slow + dt * 0.35); if (P.slip > 0) P.slip -= dt; P.boost = Math.max(0, P.boost - dt * 0.24);
   const tv = (base * hillK(g, sl) + g.bmax * P.boost) * (P.turbo > 0 ? 1.4 : 1) * P.slow;
   if (P.brake && P.turbo <= 0 && P.glide <= 0) P.v = Math.max(0, P.v - g.brakeDec * dt);
   else P.v += (tv - P.v) * Math.min(1, dt * (P.v < tv ? 2.2 : 6));
@@ -643,6 +655,7 @@ function step(g, dt, inp) {
     if (frontal) {
       if (g.vault && o.T.vault) { P.air = true; P.airT = 0; P.vy = Math.sqrt(2 * GRAV * (o.y1 + 0.55)); P.slow = Math.min(P.slow, 0.88); P.jumps = 1; P.trickHit = 1; P.crouch = 0; g.vaults++; ev(g, 'vault', o); }
       else if (o.T.sand) { P.slow = Math.min(P.slow, 0.7); ev(g, 'sand', o); continue; }
+      else if (o.T.ice) { P.slip = 1.1; ev(g, 'ice', o); continue; }   /* en el hielo no se puede cambiar de carril un rato */
       else if (o.T.bump && P.v < 13) { if (!P.air) { P.air = true; P.airT = 0; P.vy = 3.2; P.trickHit = 1; } ev(g, 'bump', o); continue; }
       else if (o.T.minor || (g.vault && o.T.ground)) { if (o.t === 'puddle' && V.id === 'inline') { ev(g, 'splash', o); continue; } stumble(g, o, false); if (o.t === 'cone' || o.t === 'trash') smash(g, o); }
       else die(g, o);
@@ -816,7 +829,7 @@ function aiThink(g, skill = 1) {
 
 /* Simulación rápida sin render (bot de pruebas) */
 function simulate(o) {
-  const g = newGame({ seed: o.seed, veh: o.veh || 'foot', ai: true, up: o.up, mult: 1, cluesLeft: 12, pet: o.pet, letters: 'EMSAY', fit: o.fit == null ? 50 : o.fit, inj: o.inj, perks: o.perks, skill: o.skill2 || 0, tut: o.tut, evt: o.evt, vup: o.vup, free: o.free });
+  const g = newGame({ ruta: o.ruta, seed: o.seed, veh: o.veh || 'foot', ai: true, up: o.up, mult: 1, cluesLeft: 12, pet: o.pet, letters: 'EMSAY', fit: o.fit == null ? 50 : o.fit, inj: o.inj, perks: o.perks, skill: o.skill2 || 0, tut: o.tut, evt: o.evt, vup: o.vup, free: o.free });
   const maxT = o.maxT || 240; let n = 0, inp = null, errs = [], stuck = 0; g.aiPad = !!o.padRoute;
   while (g.p.alive && g.t < maxT) {
     if (n % 3 === 0) inp = aiThink(g, o.skill == null ? 1 : o.skill); else inp = null;

@@ -6,6 +6,11 @@
 > - *Turno Cero* es el juego adulto de Motor City y vive aislado en `../motorcity/juegos/getaway/`: **su violencia y su lenguaje no entran a este juego**.
 > - Lee `../motorcity/docs/TURNO-CERO.md` y `../motorcity/TAREAS-IA.md` § 4.0.
 >
+> **✅ Hecho por Claude (21‑nov‑2026), porque Codex ya no sigue:** C‑R40 «Run por la carretera de la nada».
+> - El botón nuevo **🛣️ Carretera de la nada** recorre costa, desierto, nevado y bosque de lagos, cada uno con su paleta, su paisaje y sus obstáculos: arena, hielo (resbala: no se cambia de carril un rato) y troncos caídos.
+> - Además, el regalo diario ya no abre una ventana que tapa el juego: se entrega solo y se avisa (mundo abierto primero).
+> - `node tools/sim.mjs 100 240` corre una de cada cuatro partidas en la carretera, con 0 errores.
+>
 > **Para Run Scooter (Codex, C‑R40):** «Run por la carretera de la nada». Es una variante del runner sobre los biomas de `MC.Planeta.BIOMAS`: costa, desierto, nieve y bosque, con su paleta y obstáculos por bioma (arena, hielo, troncos). Sale del mismo generador de carreteras del motor.
 
 
