@@ -1,0 +1,652 @@
+[
+ {
+  "id": "ukiyoe_ola",
+  "autor": "Hokusai",
+  "obra": "La gran ola de Kanagawa",
+  "anio": 1831,
+  "archivo": "Tsunami by hokusai 19th century.jpg",
+  "fuente": "https://commons.wikimedia.org/wiki/File:Tsunami_by_hokusai_19th_century.jpg",
+  "licencia": "Public domain",
+  "colores": [
+   "#f6e6c7",
+   "#fbf4dd",
+   "#284664",
+   "#f3efdc",
+   "#aeb6b1",
+   "#dbd1b9",
+   "#6b7e8a",
+   "#e6e3ce"
+  ],
+  "pesos": [
+   0.181,
+   0.136,
+   0.135,
+   0.134,
+   0.121,
+   0.106,
+   0.099,
+   0.087
+  ]
+ },
+ {
+  "id": "ukiyoe_fuji_rojo",
+  "autor": "Hokusai",
+  "obra": "Fuji rojo (Viento del sur, cielo despejado)",
+  "anio": 1831,
+  "archivo": "Red Fuji southern wind clear morning.jpg",
+  "fuente": "https://commons.wikimedia.org/wiki/File:Red_Fuji_southern_wind_clear_morning.jpg",
+  "licencia": "Public domain",
+  "colores": [
+   "#a83926",
+   "#2c5489",
+   "#dfe6d4",
+   "#213248",
+   "#79736e",
+   "#3b5f83",
+   "#9ca9ac",
+   "#79382c"
+  ],
+  "pesos": [
+   0.199,
+   0.196,
+   0.15,
+   0.133,
+   0.119,
+   0.094,
+   0.084,
+   0.024
+  ]
+ },
+ {
+  "id": "hiroshige_lluvia",
+  "autor": "Hiroshige",
+  "obra": "Aguacero sobre el puente Ōhashi",
+  "anio": 1857,
+  "archivo": "Hiroshige, Sudden shower over Shin-Ōhashi bridge and Atake, 1857.jpg",
+  "fuente": "https://commons.wikimedia.org/wiki/File:Hiroshige,_Sudden_shower_over_Shin-Ōhashi_bridge_and_Atake,_1857.jpg",
+  "licencia": "Public domain",
+  "colores": [
+   "#496378",
+   "#c7c7b0",
+   "#e9dab7",
+   "#b6b198",
+   "#161c26",
+   "#636e75",
+   "#453736",
+   "#7f8d8e"
+  ],
+  "pesos": [
+   0.171,
+   0.157,
+   0.125,
+   0.124,
+   0.12,
+   0.119,
+   0.114,
+   0.069
+  ]
+ },
+ {
+  "id": "van_gogh_cafe",
+  "autor": "Vincent van Gogh",
+  "obra": "Terraza de café por la noche",
+  "anio": 1888,
+  "archivo": "Vincent-van-gogh-cafe-terrace-on-the-place-du-forum-arles-at-night-the.jpg",
+  "fuente": "https://commons.wikimedia.org/wiki/File:Vincent-van-gogh-cafe-terrace-on-the-place-du-forum-arles-at-night-the.jpg",
+  "licencia": "CC0",
+  "colores": [
+   "#15111c",
+   "#e9cc59",
+   "#718286",
+   "#b98f67",
+   "#495062",
+   "#bcb585",
+   "#93574e",
+   "#2a436a"
+  ],
+  "pesos": [
+   0.157,
+   0.138,
+   0.138,
+   0.134,
+   0.125,
+   0.115,
+   0.102,
+   0.092
+  ]
+ },
+ {
+  "id": "monet_impresion",
+  "autor": "Claude Monet",
+  "obra": "Impresión, sol naciente",
+  "anio": 1872,
+  "archivo": "Monet - Impression, Sunrise.jpg",
+  "fuente": "https://commons.wikimedia.org/wiki/File:Monet_-_Impression,_Sunrise.jpg",
+  "licencia": "Public domain",
+  "colores": [
+   "#576b63",
+   "#6d7a6c",
+   "#827666",
+   "#687269",
+   "#746e60",
+   "#878372",
+   "#756553",
+   "#4e5b4e"
+  ],
+  "pesos": [
+   0.162,
+   0.156,
+   0.133,
+   0.133,
+   0.111,
+   0.108,
+   0.102,
+   0.094
+  ]
+ },
+ {
+  "id": "little_nemo",
+  "autor": "Winsor McCay",
+  "obra": "Little Nemo in Slumberland",
+  "anio": 1906,
+  "archivo": "Little Nemo 1906-10-21.jpg",
+  "fuente": "https://commons.wikimedia.org/wiki/File:Little_Nemo_1906-10-21.jpg",
+  "licencia": "Public domain",
+  "colores": [
+   "#cbdbb6",
+   "#b69f64",
+   "#877752",
+   "#a8bc92",
+   "#7d9b86",
+   "#cbc188",
+   "#f2eaaf",
+   "#714127"
+  ],
+  "pesos": [
+   0.147,
+   0.144,
+   0.13,
+   0.126,
+   0.12,
+   0.112,
+   0.112,
+   0.109
+  ]
+ },
+ {
+  "id": "mucha",
+  "autor": "Alfons Mucha",
+  "obra": "Las estaciones",
+  "anio": 1896,
+  "archivo": "Toronto - ON - Four Seasons Centre.jpg",
+  "fuente": "https://commons.wikimedia.org/wiki/File:Toronto_-_ON_-_Four_Seasons_Centre.jpg",
+  "licencia": "FAL",
+  "colores": [
+   "#a1a7b7",
+   "#776f68",
+   "#a1958a",
+   "#44403f",
+   "#1d1e23",
+   "#5d5d5a",
+   "#b9b9c0",
+   "#8991a0"
+  ],
+  "pesos": [
+   0.181,
+   0.161,
+   0.15,
+   0.13,
+   0.118,
+   0.116,
+   0.112,
+   0.033
+  ]
+ },
+ {
+  "id": "corografica",
+  "autor": "Comisión Corográfica (Manuel María Paz / Henry Price)",
+  "obra": "Acuarelas de la Nueva Granada",
+  "anio": 1853,
+  "archivo": "Habitantes notables, provincia de Tundama.png",
+  "fuente": "https://commons.wikimedia.org/wiki/File:Habitantes_notables,_provincia_de_Tundama.png",
+  "licencia": "CC BY-SA 4.0",
+  "colores": [
+   "#f5f5ef",
+   "#cbcbc2",
+   "#edede5",
+   "#7f796a",
+   "#d1dddd",
+   "#afaea5",
+   "#3b382e",
+   "#e3e1d5"
+  ],
+  "pesos": [
+   0.147,
+   0.138,
+   0.131,
+   0.124,
+   0.123,
+   0.114,
+   0.114,
+   0.109
+  ]
+ },
+ {
+  "id": "hopper_dp",
+  "autor": "Winslow Homer",
+  "obra": "Acuarela del trópico",
+  "anio": 1899,
+  "archivo": "Winslow Homer - The Gulf Stream - Metropolitan Museum of Art.jpg",
+  "fuente": "https://commons.wikimedia.org/wiki/File:Winslow_Homer_-_The_Gulf_Stream_-_Metropolitan_Museum_of_Art.jpg",
+  "licencia": "Public domain",
+  "colores": [
+   "#cecdbc",
+   "#576c73",
+   "#181e1f",
+   "#49504e",
+   "#303e40",
+   "#252927",
+   "#79827e",
+   "#afb2a7"
+  ],
+  "pesos": [
+   0.149,
+   0.134,
+   0.132,
+   0.125,
+   0.125,
+   0.119,
+   0.11,
+   0.105
+  ]
+ },
+ {
+  "id": "dore_grabado",
+  "autor": "Gustave Doré",
+  "obra": "Grabado de la Divina Comedia",
+  "anio": 1861,
+  "archivo": "Gustave Doré - Dante Alighieri - Inferno - Plate 9 (Canto III - Charon).jpg",
+  "fuente": "https://commons.wikimedia.org/wiki/File:Gustave_Doré_-_Dante_Alighieri_-_Inferno_-_Plate_9_(Canto_III_-_Charon).jpg",
+  "licencia": "Public domain",
+  "colores": [
+   "#f7f1df",
+   "#070706",
+   "#645f55",
+   "#867f72",
+   "#2b2924",
+   "#46433c",
+   "#171613",
+   "#bcb5a6"
+  ],
+  "pesos": [
+   0.139,
+   0.136,
+   0.133,
+   0.129,
+   0.129,
+   0.122,
+   0.111,
+   0.101
+  ]
+ },
+ {
+  "id": "col_1",
+  "autor": "Henry Price, 1852",
+  "obra": "Gentes de la provincia de Medellín* (Comisión Corográfica)",
+  "anio": null,
+  "archivo": "Acuarela de Henry Price, Comisión Corográfica, Medellín, 1852.jpg",
+  "fuente": "https://commons.wikimedia.org/wiki/File:Acuarela_de_Henry_Price,_Comisi%C3%B3n_Corogr%C3%A1fica,_Medell%C3%ADn,_1852.jpg",
+  "licencia": "Public domain",
+  "colores": [
+   "#d6ba5b",
+   "#fdf7e3",
+   "#d6b249",
+   "#a58e2e",
+   "#8a3c13",
+   "#f9f1db",
+   "#c7ae4c",
+   "#dfd393"
+  ],
+  "pesos": [
+   0.21,
+   0.19,
+   0.124,
+   0.122,
+   0.109,
+   0.1,
+   0.09,
+   0.054
+  ],
+  "curaduria": "Gemini G-H8"
+ },
+ {
+  "id": "col_2",
+  "autor": "Carmelo Fernández, 1850",
+  "obra": "Casa principal de Cachirí, provincia de Soto* (Comisión Corográfica)",
+  "anio": null,
+  "archivo": "Soto - Casa principal de Cachirí (1850).jpg",
+  "fuente": "https://commons.wikimedia.org/wiki/File:Soto_-_Casa_principal_de_Cachir%C3%AD_(1850).jpg",
+  "licencia": "Public domain",
+  "colores": [
+   "#e5d5b0",
+   "#75705a",
+   "#988f72",
+   "#82816e",
+   "#f9efc7",
+   "#b1a785",
+   "#d2c29b",
+   "#493f2a"
+  ],
+  "pesos": [
+   0.147,
+   0.147,
+   0.133,
+   0.128,
+   0.124,
+   0.116,
+   0.111,
+   0.095
+  ],
+  "curaduria": "Gemini G-H8"
+ },
+ {
+  "id": "col_3",
+  "autor": "Manuel María Paz, 1853",
+  "obra": "Acuarela de la Comisión Corográfica (9040)",
+  "anio": null,
+  "archivo": "Manuel María Paz (watercolor 9040, 1853 CE).png",
+  "fuente": "https://commons.wikimedia.org/wiki/File:Manuel_Mar%C3%ADa_Paz_(watercolor_9040,_1853_CE).png",
+  "licencia": "Public domain",
+  "colores": [
+   "#ecede4",
+   "#716154",
+   "#c1b39c",
+   "#f2f3eb",
+   "#e3e5dd",
+   "#9e8c76",
+   "#392d2e",
+   "#d3d4c6"
+  ],
+  "pesos": [
+   0.145,
+   0.132,
+   0.13,
+   0.129,
+   0.124,
+   0.118,
+   0.115,
+   0.107
+  ],
+  "curaduria": "Gemini G-H8"
+ },
+ {
+  "id": "col_4",
+  "autor": "Manuel María Paz, 1853",
+  "obra": "Acuarela de la Comisión Corográfica (9042)",
+  "anio": null,
+  "archivo": "Manuel María Paz (watercolor 9042, 1853 CE).png",
+  "fuente": "https://commons.wikimedia.org/wiki/File:Manuel_Mar%C3%ADa_Paz_(watercolor_9042,_1853_CE).png",
+  "licencia": "Public domain",
+  "colores": [
+   "#e3dfc2",
+   "#f3f3e8",
+   "#edebda",
+   "#d6d0b5",
+   "#9da29c",
+   "#bcc5d0",
+   "#e1e2d8",
+   "#5c5c55"
+  ],
+  "pesos": [
+   0.147,
+   0.139,
+   0.137,
+   0.127,
+   0.124,
+   0.117,
+   0.105,
+   0.105
+  ],
+  "curaduria": "Gemini G-H8"
+ },
+ {
+  "id": "col_6",
+  "autor": "Manuel María Paz, 1853",
+  "obra": "Acuarela de la Comisión Corográfica (9055)",
+  "anio": null,
+  "archivo": "Manuel María Paz (watercolor 9055, 1853 CE).png",
+  "fuente": "https://commons.wikimedia.org/wiki/File:Manuel_Mar%C3%ADa_Paz_(watercolor_9055,_1853_CE).png",
+  "licencia": "Public domain",
+  "colores": [
+   "#ece4cb",
+   "#f3ecd6",
+   "#e7ddc1",
+   "#a07e5b",
+   "#c4a881",
+   "#774e2e",
+   "#ded7c3",
+   "#d9c8a8"
+  ],
+  "pesos": [
+   0.16,
+   0.132,
+   0.131,
+   0.127,
+   0.127,
+   0.112,
+   0.109,
+   0.102
+  ],
+  "curaduria": "Gemini G-H8"
+ },
+ {
+  "id": "col_7",
+  "autor": "Manuel María Paz, 1853",
+  "obra": "Acuarela de la Comisión Corográfica (9056)",
+  "anio": null,
+  "archivo": "Manuel María Paz (watercolor 9056, 1853 CE).png",
+  "fuente": "https://commons.wikimedia.org/wiki/File:Manuel_Mar%C3%ADa_Paz_(watercolor_9056,_1853_CE).png",
+  "licencia": "Public domain",
+  "colores": [
+   "#fcf8df",
+   "#faf2d7",
+   "#d0be9f",
+   "#e5cfb0",
+   "#f6ecd0",
+   "#4b443b",
+   "#a4947d",
+   "#eee2c5"
+  ],
+  "pesos": [
+   0.144,
+   0.14,
+   0.132,
+   0.13,
+   0.125,
+   0.119,
+   0.11,
+   0.1
+  ],
+  "curaduria": "Gemini G-H8"
+ },
+ {
+  "id": "col_9",
+  "autor": "Manuel María Paz, 1855",
+  "obra": "Lagunas de Siecha, lámina 103* (Comisión Corográfica)",
+  "anio": null,
+  "archivo": "Manuel María Paz (watercolor 9098, 1855 CE) cropped.jpg",
+  "fuente": "https://commons.wikimedia.org/wiki/File:Manuel_Mar%C3%ADa_Paz_(watercolor_9098,_1855_CE)_cropped.jpg",
+  "licencia": "Public domain",
+  "colores": [
+   "#dbccb8",
+   "#c1bead",
+   "#898a7b",
+   "#b9b1a0",
+   "#a2a497",
+   "#e3dbca",
+   "#d5c2ab",
+   "#484c3b"
+  ],
+  "pesos": [
+   0.143,
+   0.137,
+   0.135,
+   0.13,
+   0.126,
+   0.116,
+   0.116,
+   0.097
+  ],
+  "curaduria": "Gemini G-H8"
+ },
+ {
+  "id": "col_10",
+  "autor": "Manuel María Paz, 1856",
+  "obra": "Acuarela de la Comisión Corográfica (9018)",
+  "anio": null,
+  "archivo": "Manuel María Paz (watercolor 9018, 1856 CE).png",
+  "fuente": "https://commons.wikimedia.org/wiki/File:Manuel_Mar%C3%ADa_Paz_(watercolor_9018,_1856_CE).png",
+  "licencia": "Public domain",
+  "colores": [
+   "#8c8c88",
+   "#f5f5ee",
+   "#bec8cb",
+   "#97a9b0",
+   "#edebe1",
+   "#dad6cd",
+   "#b6b2ac",
+   "#5d4f44"
+  ],
+  "pesos": [
+   0.149,
+   0.144,
+   0.142,
+   0.138,
+   0.125,
+   0.107,
+   0.102,
+   0.093
+  ],
+  "curaduria": "Gemini G-H8"
+ },
+ {
+  "id": "col_11",
+  "autor": "Ramón Torres Méndez, s. XIX (f. 1885)",
+  "obra": "Vendedoras de papas",
+  "anio": null,
+  "archivo": "Vendedoras de Papas by Ramón Torres Méndez.jpg",
+  "fuente": "https://commons.wikimedia.org/wiki/File:Vendedoras_de_Papas_by_Ram%C3%B3n_Torres_M%C3%A9ndez.jpg",
+  "licencia": "Public domain",
+  "colores": [
+   "#babab9",
+   "#c6c8c8",
+   "#f1f2f1",
+   "#919293",
+   "#b4a7a7",
+   "#513a40",
+   "#dbd4d2",
+   "#b45272"
+  ],
+  "pesos": [
+   0.145,
+   0.131,
+   0.13,
+   0.124,
+   0.121,
+   0.121,
+   0.12,
+   0.108
+  ],
+  "curaduria": "Gemini G-H8"
+ },
+ {
+  "id": "col_12",
+  "autor": "José María Espinosa, 1840 (f. 1883)",
+  "obra": "Batalla de Boyacá",
+  "anio": null,
+  "archivo": "Batalla de Boyacá por José María Espinosa (1840).jpg",
+  "fuente": "https://commons.wikimedia.org/wiki/File:Batalla_de_Boyac%C3%A1_por_Jos%C3%A9_Mar%C3%ADa_Espinosa_(1840).jpg",
+  "licencia": "Public domain",
+  "colores": [
+   "#c9c8c0",
+   "#6f6243",
+   "#564b31",
+   "#8a7d5c",
+   "#3d321f",
+   "#e6dec6",
+   "#b9b5aa",
+   "#a59c86"
+  ],
+  "pesos": [
+   0.144,
+   0.13,
+   0.129,
+   0.125,
+   0.119,
+   0.118,
+   0.118,
+   0.116
+  ],
+  "curaduria": "Gemini G-H8"
+ },
+ {
+  "id": "col_14",
+  "autor": "Ricardo Acevedo Bernal, c. 1910 (f. 1930)",
+  "obra": "Retrato de Francisco Antonio Cano",
+  "anio": null,
+  "archivo": "Francisco Antonio Cano by Ricardo Acevedo Bernal.jpg",
+  "fuente": "https://commons.wikimedia.org/wiki/File:Francisco_Antonio_Cano_by_Ricardo_Acevedo_Bernal.jpg",
+  "licencia": "Public domain",
+  "colores": [
+   "#907789",
+   "#352b39",
+   "#0f0506",
+   "#494054",
+   "#191216",
+   "#77566a",
+   "#bba0a7",
+   "#2e181d"
+  ],
+  "pesos": [
+   0.171,
+   0.164,
+   0.145,
+   0.122,
+   0.112,
+   0.105,
+   0.097,
+   0.083
+  ],
+  "curaduria": "Gemini G-H8"
+ },
+ {
+  "id": "col_16",
+  "autor": "Grabador del *Papel Periódico Ilustrado*, 15 mar 1887",
+  "obra": "Grabado de Ramón Torres Méndez* (*Papel Periódico Ilustrado*)",
+  "anio": null,
+  "archivo": "Ramón Torres Méndez.png",
+  "fuente": "https://commons.wikimedia.org/wiki/File:Ram%C3%B3n_Torres_M%C3%A9ndez.png",
+  "licencia": "Public domain",
+  "colores": [
+   "#ffffff",
+   "#343434",
+   "#cbcbcb",
+   "#eaeaea",
+   "#777777",
+   "#9f9f9f",
+   "#f8f8f8",
+   "#fefefe"
+  ],
+  "pesos": [
+   0.481,
+   0.109,
+   0.091,
+   0.084,
+   0.071,
+   0.071,
+   0.056,
+   0.036
+  ],
+  "curaduria": "Gemini G-H8"
+ }
+]

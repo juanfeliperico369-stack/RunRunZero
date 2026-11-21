@@ -1,5 +1,8 @@
 # Tareas de cada IA · Run Scooter
 
+> **Motor City 4.5 (21‑nov‑2026) · LEE PRIMERO `docs/INFORME-MOTOR-CITY-4.5.md`.** El autor decidió que este juego **sigue con su propio motor**: no se migra a Motor City (si abajo dice «Migrar a `motor-city/`», queda anulado). El motor 4.5 viaja en `motor-city/` como referencia y caja de herramientas; el informe dice qué cambió Claude, qué mejoró, qué falta auditar, qué te toca (manejo y controles, modelos, rostros, árboles con lógica, Guatapé, la forma cenital, efectos para todo público, interfaz) y **cómo usar el motor sin dejar el tuyo**.
+
+
 > **Motor City 4.0 (20‑nov‑2026): el planeta y *Turno Cero*.**
 > - El motor une Manhattan, Medellín y el Valle y Guatapé en un planeta (`MC.Planeta`), con carreteras de la nada entre ellas.
 > - Trae la búsqueda 0–5 (`MC.Busqueda`) y lee modelos GLB (`MC.Modelos`).

@@ -1,0 +1,25 @@
+# generados que no se suben (se rehacen con node motor.mjs construir / fuentes)
+dist/mundo-*.js
+dist/.sandbox.check.js
+geo/cache/
+salida/
+__pycache__/
+node_modules/
+.DS_Store
+# skills externas instaladas por cada IA (node motor.mjs skills --instalar): no se suben
+.agents/skills/hallmark/
+.agents/skills/modern-web-guidance/
+.agents/skills/hyperframes/
+.agents/skills/find-skills/
+.claude/skills/hallmark/
+.claude/skills/modern-web-guidance/
+.claude/skills/hyperframes/
+.skill-lock.json
+.hallmark/
+skills-lock.json
+dist/publico.md
+dist/publico.json
+# salidas de los generadores 3D (se rehacen con python3 juegos/getaway/arte3d/*.py; el juego usa arte/modelos/turno-cero)
+juegos/getaway/arte3d/modelos/
+juegos/getaway/arte3d/pbr/
+juegos/getaway/arte3d/rigged/
