@@ -58,3 +58,13 @@ El autor: «el problema es el arranque: si se suelta el joystick se deja de acel
   - el 🚀 Ir del mapa;
   - el arreglo del caché, si este juego descomprime sectores por demanda.
 - Este repositorio solo recibió la copia del motor; el juego no cambió.
+
+## Motor City 4.9.0 «Realismo» (22‑nov‑2026, Claude)
+- **three.js 0.170 (MIT) incrustado en el motor y `MC.VistaTres` (`motor-city/js/45-tres.js`):** el 3D realista sobre las mismas mallas, con:
+  - sol con sombras de verdad;
+  - luz física y exposición neutra;
+  - ventanas que brillan de noche;
+  - grano en muros y suelo.
+- **Lección para portar:** con three.js ≥ 0.163, no usar `scene.environment` (tiñe de azul todo lo que mira hacia arriba); los reflejos van por material.
+- **Plan de realismo y pedidos de arte y datos:** `motor-city/docs/PLAN-REALISMO.md` y `motor-city/docs/PEDIDOS-CHATGPT-4.9.md`.
+- Este juego no cambió en esta versión.
