@@ -35,7 +35,7 @@
 - **Gemini con Antigravity** («hydrogen») hace lo fácil.
 - **ChatGPT con Codex** («astra») hace lo fuerte.
 
-**Nuevo (20‑nov‑2026, Motor City 2.10):** las skills y plugins de los videos del autor ya están en `.claude/settings.json`: Hallmark, Modern Web Guidance y HyperFrames. Las demás IA las instalan desde el motor (`node ../motorcity/motor.mjs skills --instalar --agente codex`).
+**Nuevo (20‑nov‑2026, Motor City 2.10):** las skills y plugins de los videos del autor ya están en `.claude/settings.json`: Hallmark, Modern Web Guidance y HyperFrames. Desde la 5.3.1, cualquier IA las integra desde la raíz con `node motor-city/motor.mjs skills --integrar --agente <tu-agente>` (pasos y reglas: `motor-city/docs/PROMPT-SKILLS.md`).
 - **Codex:**
   - un **tráiler de 20 s** de Run Scooter con HyperFrames, con capturas reales y sin cifras inventadas;
   - antes de tocar la interfaz, consulta Modern Web Guidance.
