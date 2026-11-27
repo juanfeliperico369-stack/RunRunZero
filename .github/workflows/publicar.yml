@@ -2,7 +2,7 @@ name: Publicar Run Scooter (APK + GitHub Pages)
 on:
   push:
     branches: [ccr-cbc7f0af-0306uo, main]
-    paths: ['web/**', 'apk/**', '.github/workflows/publicar.yml', 'tools/verify.mjs']
+    paths: ['web/**', 'apk/**', '.github/workflows/publicar.yml', 'tools/verify.mjs', 'tools/comentarios-tragados.mjs']
   workflow_dispatch:
 concurrency: { group: publicar, cancel-in-progress: false }
 jobs:
@@ -14,6 +14,8 @@ jobs:
         with: { node-version: 20 }
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: 21 }
+      - name: "Ningún comentario de línea se traga código"
+        run: node tools/comentarios-tragados.mjs
       - name: Proyecto Capacitor
         run: |
           mkdir -p cap/www && cp -r web/. cap/www/ && rm -f cap/www/sw.js cap/www/RunScooter.apk
