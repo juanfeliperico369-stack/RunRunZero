@@ -114,9 +114,9 @@ class MB {
 
 /* ---------- Renderizador ---------- */
 const VS = `attribute vec3 aP;attribute vec3 aN;attribute vec4 aC;attribute vec2 aT;
-uniform mat4 uM,uV,uP;uniform vec2 uBend;uniform vec4 uHill;uniform float uH0;uniform float uPal;uniform float uTime;uniform vec3 uTint,uTintE,uK0,uK1,uK2,uK3,uK4;
+uniform mat4 uM,uV,uP;uniform vec2 uBend;uniform vec4 uHill;uniform float uH0;uniform float uPal;uniform float uTime;uniform float uSway;uniform vec3 uTint,uTintE,uK0,uK1,uK2,uK3,uK4;
 varying vec3 vN;varying vec3 vC;varying float vE;varying vec2 vT;varying float vD;varying float vH;varying vec3 vW;varying float vPF;
-void main(){vec4 w=uM*vec4(aP,1.0);vH=w.y;vPF=uPal;if(uPal>0.5&&aC.r<0.06&&aP.y>0.9){float sw=sin(uTime*1.7+w.z*0.21+w.x*0.37)*0.045*aP.y;w.x+=sw;w.z+=sw*0.6;}if(uHill.w>0.5){float sa=uHill.z-w.z;w.y+=clamp((sa-150.0)/250.0,0.0,1.0)*(6.0*sin(uHill.x-w.z*0.0105)+2.2*sin(uHill.y-w.z*0.027))-uH0;}vec4 v=uV*w;float z=min(v.z,0.0);v.x+=uBend.x*z*z;v.y+=uBend.y*z*z;
+void main(){vec4 w=uM*vec4(aP,1.0);vH=w.y;vPF=uPal;if(uSway>0.5&&uPal>0.5&&aC.r<0.06&&aP.y>0.9){float sw=sin(uTime*1.7+w.z*0.21+w.x*0.37)*0.045*aP.y;w.x+=sw;w.z+=sw*0.6;}if(uHill.w>0.5){float sa=uHill.z-w.z;w.y+=clamp((sa-150.0)/250.0,0.0,1.0)*(6.0*sin(uHill.x-w.z*0.0105)+2.2*sin(uHill.y-w.z*0.027))-uH0;}vec4 v=uV*w;float z=min(v.z,0.0);v.x+=uBend.x*z*z;v.y+=uBend.y*z*z;
 gl_Position=uP*v;vN=(uM*vec4(aN,0.0)).xyz;vE=aC.a;vT=aT;vD=-v.z;vW=w.xyz;
 float k=aC.r*4.0;vec3 pc=uK0*max(0.0,1.0-abs(k))+uK1*max(0.0,1.0-abs(k-1.0))+uK2*max(0.0,1.0-abs(k-2.0))+uK3*max(0.0,1.0-abs(k-3.0))+uK4*max(0.0,1.0-abs(k-4.0));
 vec3 dc=aC.rgb*mix(uTint,uTintE,step(0.5,aC.a));vC=mix(dc,pc*aC.g*uTint,uPal);}`;
@@ -214,13 +214,15 @@ const R = {
     gl.uniform3fv(U.uL, env.L); gl.uniform1f(U.uAmb, env.amb); gl.uniform1f(U.uSun, env.sunI);
     gl.uniform1f(U.uEmit, env.emit); this.emit = env.emit; this._e = env.emit;
     if (U.uCam) gl.uniform3f(U.uCam, cam.ex, cam.ey, cam.ez); if (U.uTime) gl.uniform1f(U.uTime, time);
-    gl.uniform1f(U.uAlpha, 1); gl.uniform1f(U.uCut, 0.5); gl.uniform1f(U.uPal, 0);
+    gl.uniform1f(U.uAlpha, 1); gl.uniform1f(U.uCut, 0.5); gl.uniform1f(U.uPal, 0); if (U.uSway) gl.uniform1f(U.uSway, 1);
     gl.uniform3fv(U.uTint, ONE); gl.uniform3fv(U.uTintE, ONE);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.tex); gl.uniform1i(U.uTex, 0);
     for (let i = 0; i < 4; i++) if (this.A[i] >= 0) gl.enableVertexAttribArray(this.A[i]);
     this.last = null; this._tint = null; this._tintE = null; this._pal = 0; this.draws = 0;
     return true;
   },
+  /* 2.5.1: el viento mece la vegetación, no las montañas ni las colinas (antes la montaña de 30 m se separaba de su nieve) */
+  sway(on) { if (this.U.uSway) this.gl.uniform1f(this.U.uSway, on ? 1 : 0); },
   pal(on, k) {
     const gl = this.gl, U = this.U; gl.uniform1f(U.uPal, on ? 1 : 0); this._pal = on;
     if (k) { gl.uniform3fv(U.uK0, k[0]); gl.uniform3fv(U.uK1, k[1]); gl.uniform3fv(U.uK2, k[2]); gl.uniform3fv(U.uK3, k[3]); gl.uniform3fv(U.uK4, k[4]); }

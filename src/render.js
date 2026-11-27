@@ -235,7 +235,9 @@ const RN = {
         default: m = mo[sc.k];
       }
       if (!m) continue;
+      const quieto = sc.k === 'mount' || sc.k === 'hill'; if (quieto) R.sway(false);
       M4.trs(M, sc.x, 0, z, ry, 0, 0, kx, ky, kx); R.draw(m, M, sh);
+      if (quieto) R.sway(true);
     }
     // parques: arboleda, bancas, faroles y flores (con la paleta de la edición)
     const PH = (a, b) => { const x = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453; return x - Math.floor(x); };

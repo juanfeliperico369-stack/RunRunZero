@@ -118,7 +118,7 @@ const MOD = {
     }
     return m;
   },
-  billFrame() { const m = new MB(); for (const x of [-2, 2]) m.box(x, 1.6, 0.12, 0.16, 3.2, 0.16, PC(1, 0.8)); m.box(0, 3.95, 0.06, 5.0, 1.95, 0.12, PC(1, 0.7)); return m; },
+  billFrame() { const m = new MB(); for (const x of [-2, 2]) m.box(x, 1.6, -0.1, 0.16, 3.2, 0.16, PC(1, 0.8)); m.box(0, 3.95, -0.07, 5.0, 1.95, 0.12, PC(1, 0.7)); return m; },   // 2.5.1: el respaldo y los postes van detrás de la imagen (antes la tapaban)
   billPanelUV(uv) { const m = new MB(); m.quad([-2.4, 3.05, 0], [2.4, 3.05, 0], [2.4, 4.85, 0], [-2.4, 4.85, 0], WH, 1, uv); return m; },
   billPanel(i) { const m = new MB(); m.quad([-2.4, 3.05, 0], [2.4, 3.05, 0], [2.4, 4.85, 0], [-2.4, 4.85, 0], WH, 1, BILL(i)); return m; },
   gateFrame() { const m = new MB(); for (const x of [-4.4, 4.4]) { m.box(x, 3, 0, 0.5, 6, 0.5, PC(1, 0.85)); m.box(x, 0.2, 0, 0.8, 0.4, 0.8, PC(1, 0.7)); } m.box(0, 6.0, 0, 9.4, 0.4, 0.5, PC(1, 0.85)); m.box(0, 5.05, 0.02, 7.1, 2.0, 0.2, PC(1, 0.6)); return m; },
